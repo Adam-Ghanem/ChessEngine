@@ -17,6 +17,7 @@ add_executable(ChessEngine
     src/chess/position.cpp
     src/chess/move_generator.cpp
     src/chess/legal_move_generator.cpp
+    src/chess/game_state.cpp
     src/utils/log.cpp
 )
 
@@ -66,6 +67,14 @@ if(CHESS_ENGINE_BUILD_TESTS)
         tests/m6_legal_move_tests.cpp
     )
 
+    add_executable(ChessEngineGameStateTests
+        src/chess/position.cpp
+        src/chess/move_generator.cpp
+        src/chess/legal_move_generator.cpp
+        src/chess/game_state.cpp
+        tests/m7_game_state_tests.cpp
+    )
+
     foreach(test_target
         ChessEngineFoundationTests
         ChessEngineRepresentationTests
@@ -73,6 +82,7 @@ if(CHESS_ENGINE_BUILD_TESTS)
         ChessEngineMoveTests
         ChessEngineMoveGenerationTests
         ChessEngineLegalMoveTests
+        ChessEngineGameStateTests
     )
         target_include_directories(${test_target}
             PRIVATE
@@ -92,4 +102,5 @@ if(CHESS_ENGINE_BUILD_TESTS)
     add_test(NAME ChessEngineMoveTests COMMAND ChessEngineMoveTests)
     add_test(NAME ChessEngineMoveGenerationTests COMMAND ChessEngineMoveGenerationTests)
     add_test(NAME ChessEngineLegalMoveTests COMMAND ChessEngineLegalMoveTests)
+    add_test(NAME ChessEngineGameStateTests COMMAND ChessEngineGameStateTests)
 endif()
