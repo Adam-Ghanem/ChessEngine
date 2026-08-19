@@ -9,17 +9,39 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Configure
-        run: cmake -S . -B build -DCHESS_ENGINE_BUILD_TESTS=ON
+      - name: Configure Release
+        run: cmake -S . -B build -DCMAKE_BUILD_TYPE=Release -DCHESS_ENGINE_BUILD_TESTS=ON
 
-      - name: Build
+      - name: Build Release
         run: cmake --build build --parallel
 
-      - name: Test
+      - name: Test Release
         working-directory: build
+        run: ctest --output-on-failure
+
+  sanitizer:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configure Sanitizers
+        run: >-
+          cmake -S . -B build-sanitize
+          -DCMAKE_BUILD_TYPE=Debug
+          -DCHESS_ENGINE_BUILD_TESTS=ON
+          -DCMAKE_CXX_FLAGS="-fsanitize=address,undefined -fno-omit-frame-pointer"
+
+      - name: Build Sanitizers
+        run: cmake --build build-sanitize --parallel
+
+      - name: Test Sanitizers
+        working-directory: build-sanitize
+        env:
+          ASAN_OPTIONS: detect_leaks=1:halt_on_error=1
+          UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
         run: ctest --output-on-failure
