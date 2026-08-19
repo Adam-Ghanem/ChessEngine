@@ -32,18 +32,31 @@ endif()
 
 if(CHESS_ENGINE_BUILD_TESTS)
     enable_testing()
-    add_executable(ChessEngineTests
+
+    add_executable(ChessEngineFoundationTests
         tests/foundation_tests.cpp
     )
-    target_include_directories(ChessEngineTests
-        PRIVATE
-            ${CMAKE_CURRENT_SOURCE_DIR}/include
+
+    add_executable(ChessEngineRepresentationTests
+        tests/m2_representation_tests.cpp
     )
-    target_compile_features(ChessEngineTests PRIVATE cxx_std_20)
-    if(MSVC)
-        target_compile_options(ChessEngineTests PRIVATE /W4 /permissive-)
-    else()
-        target_compile_options(ChessEngineTests PRIVATE -Wall -Wextra -Wpedantic)
-    endif()
-    add_test(NAME ChessEngineTests COMMAND ChessEngineTests)
+
+    foreach(test_target
+        ChessEngineFoundationTests
+        ChessEngineRepresentationTests
+    )
+        target_include_directories(${test_target}
+            PRIVATE
+                ${CMAKE_CURRENT_SOURCE_DIR}/include
+        )
+        target_compile_features(${test_target} PRIVATE cxx_std_20)
+        if(MSVC)
+            target_compile_options(${test_target} PRIVATE /W4 /permissive-)
+        else()
+            target_compile_options(${test_target} PRIVATE -Wall -Wextra -Wpedantic)
+        endif()
+    endforeach()
+
+    add_test(NAME ChessEngineFoundationTests COMMAND ChessEngineFoundationTests)
+    add_test(NAME ChessEngineRepresentationTests COMMAND ChessEngineRepresentationTests)
 endif()
