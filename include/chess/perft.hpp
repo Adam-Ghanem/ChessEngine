@@ -1,5 +1,6 @@
 #pragma once
 
+#include "chess/move.hpp"
 #include "chess/position.hpp"
 
 #include <cstdint>
