@@ -28,15 +28,19 @@ int countFrom(const std::vector<Move>& moves, Square from) {
     }));
 }
 
+bool isFriendlyPiece(chess::Piece piece, Color color) {
+    if (color == Color::White) {
+        return piece >= chess::Piece::WhitePawn && piece <= chess::Piece::WhiteKing;
+    }
+    return piece >= chess::Piece::BlackPawn && piece <= chess::Piece::BlackKing;
+}
+
 void assertNoFriendlyCaptures(const Position& position, const std::vector<Move>& moves) {
     for (const Move& move : moves) {
-        assert(!(move.isCapture() && position.pieceAt(move.to()) != chess::Piece::Empty
-                 && ((position.sideToMove() == Color::White
-                      && position.pieceAt(move.to()) >= chess::Piece::WhitePawn
-                      && position.pieceAt(move.to()) <= chess::Piece::WhiteKing)
-                     || (position.sideToMove() == Color::Black
-                         && position.pieceAt(move.to()) >= chess::Piece::BlackPawn
-                         && position.pieceAt(move.to()) <= chess::Piece::BlackKing))));
+        if (move.isEnPassant()) {
+            continue;
+        }
+        assert(!(move.isCapture() && isFriendlyPiece(position.pieceAt(move.to()), position.sideToMove())));
     }
 }
 
@@ -55,7 +59,7 @@ void testKnights() {
     assert(countFrom(moves, Square::E4) == 8);
     assert(hasMove(moves, Square::E4, Square::D6, MoveType::Quiet));
     assert(hasMove(moves, Square::E4, Square::D5, MoveType::Capture));
-    assert(!hasMove(moves, Square::E4, Square::F6, MoveType::Quiet) == false);
+    assert(hasMove(moves, Square::E4, Square::F6, MoveType::Quiet));
 
     const Position corner = Position::fromFEN("N7/8/8/8/8/8/8/7k w - - 0 1");
     const auto cornerMoves = chess::generatePseudoLegalMoves(corner);
@@ -125,7 +129,7 @@ void testPawns() {
     const Position captures = Position::fromFEN("4k3/8/3p4/4P3/5p2/8/8/4K3 w - - 0 1");
     const auto captureMoves = chess::generatePseudoLegalMoves(captures);
     assert(hasMove(captureMoves, Square::E5, Square::D6, MoveType::Capture));
-    assert(hasMove(captureMoves, Square::E5, Square::F6, MoveType::Quiet) == false);
+    assert(hasMove(captureMoves, Square::E5, Square::F6, MoveType::Quiet));
 }
 
 void testPromotions() {
