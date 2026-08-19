@@ -5,17 +5,15 @@
 
 #include <algorithm>
 #include <array>
+#include <bit>
 #include <chrono>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
 #include <limits>
 #include <memory>
-#include <random>
 #include <sstream>
 #include <string>
-#include <unordered_map>
-#include <utility>
 #include <vector>
 
 namespace chess {
@@ -24,6 +22,7 @@ namespace {
 constexpr int Infinity = 32000;
 constexpr int MateScore = 30000;
 constexpr int MaxPly = 128;
+constexpr int MateThreshold = MateScore - MaxPly;
 
 constexpr std::array<int, 13> Material = {
     0, 100, 320, 330, 500, 900, 20000,
@@ -107,7 +106,7 @@ constexpr std::array<int, 64> KingEndgameTable = {
     -50,-30,-30,-30,-30,-30,-30,-50
 };
 
-std::uint64_t splitmix64(std::uint64_t& x) {
+std::uint64_t splitmix64(std::uint64_t& x) noexcept {
     x += 0x9e3779b97f4a7c15ULL;
     std::uint64_t z = x;
     z = (z ^ (z >> 30U)) * 0xbf58476d1ce4e5b9ULL;
@@ -115,17 +114,12 @@ std::uint64_t splitmix64(std::uint64_t& x) {
     return z ^ (z >> 31U);
 }
 
-int mirroredSquare(int sq) noexcept {
-    return sq ^ 56;
-}
+int mirroredSquare(int sq) noexcept { return sq ^ 56; }
 
-int pieceIndex(Piece piece) noexcept {
-    return static_cast<int>(piece);
-}
+int pieceIndex(Piece piece) noexcept { return static_cast<int>(piece); }
 
 int tableValue(Piece piece, int sq, bool endgame) noexcept {
-    const int s = pieceIndex(piece);
-    switch (s) {
+    switch (pieceIndex(piece)) {
     case 1: return PawnTable[sq];
     case 2: return KnightTable[sq];
     case 3: return BishopTable[sq];
@@ -155,10 +149,9 @@ public:
     std::uint64_t hash(const Position& p) const noexcept {
         std::uint64_t h = 0;
         for (int pi = 1; pi <= 12; ++pi) {
-            const auto piece = static_cast<Piece>(pi);
-            Bitboard bb = p.pieces(piece);
+            Bitboard bb = p.pieces(static_cast<Piece>(pi));
             while (bb) {
-                const int sq = static_cast<int>(__builtin_ctzll(bb));
+                const int sq = static_cast<int>(std::countr_zero(bb));
                 h ^= pieceSquare_[pi][sq];
                 bb &= bb - 1;
             }
@@ -191,6 +184,71 @@ struct TTEntry {
     Move best{};
 };
 
+int scoreToTt(int score, int ply) noexcept {
+    if (score > MateThreshold) return score + ply;
+    if (score < -MateThreshold) return score - ply;
+    return score;
+}
+
+int scoreFromTt(int score, int ply) noexcept {
+    if (score > MateThreshold) return score - ply;
+    if (score < -MateThreshold) return score + ply;
+    return score;
+}
+
+int fileMask(int file) noexcept { return 0x0101010101010101ULL << file; }
+
+int pawnStructure(const Position& p) noexcept {
+    int score = 0;
+    const Bitboard wp = p.pieces(Piece::WhitePawn);
+    const Bitboard bp = p.pieces(Piece::BlackPawn);
+    for (int file = 0; file < 8; ++file) {
+        const int wc = std::popcount(wp & static_cast<Bitboard>(fileMask(file)));
+        const int bc = std::popcount(bp & static_cast<Bitboard>(fileMask(file)));
+        if (wc > 1) score -= 14 * (wc - 1);
+        if (bc > 1) score += 14 * (bc - 1);
+        if (wc == 0) {
+            const Bitboard adjacent = ((file > 0) ? static_cast<Bitboard>(fileMask(file - 1)) : 0ULL) |
+                                      ((file < 7) ? static_cast<Bitboard>(fileMask(file + 1)) : 0ULL);
+            if ((wp & adjacent) == 0) score -= 10;
+        }
+        if (bc == 0) {
+            const Bitboard adjacent = ((file > 0) ? static_cast<Bitboard>(fileMask(file - 1)) : 0ULL) |
+                                      ((file < 7) ? static_cast<Bitboard>(fileMask(file + 1)) : 0ULL);
+            if ((bp & adjacent) == 0) score += 10;
+        }
+    }
+
+    for (int sq = 0; sq < 64; ++sq) {
+        const Bitboard bit = 1ULL << sq;
+        const int file = sq & 7;
+        const int rank = sq >> 3;
+        if (wp & bit) {
+            const Bitboard front = fileMask(file) | (file > 0 ? static_cast<Bitboard>(fileMask(file - 1)) : 0ULL) |
+                                   (file < 7 ? static_cast<Bitboard>(fileMask(file + 1)) : 0ULL);
+            const int frontRank = rank + 1;
+            bool passed = true;
+            if (frontRank < 8) {
+                const Bitboard ranksAhead = ~((1ULL << (8 * frontRank)) - 1ULL);
+                passed = (bp & front & ranksAhead) == 0;
+            }
+            if (passed) score += 18 + rank * 8;
+        }
+        if (bp & bit) {
+            const Bitboard front = fileMask(file) | (file > 0 ? static_cast<Bitboard>(fileMask(file - 1)) : 0ULL) |
+                                   (file < 7 ? static_cast<Bitboard>(fileMask(file + 1)) : 0ULL);
+            const int frontRank = rank - 1;
+            bool passed = true;
+            if (frontRank >= 0) {
+                const Bitboard ranksAhead = (1ULL << (8 * (frontRank + 1))) - 1ULL;
+                passed = (wp & front & ranksAhead) == 0;
+            }
+            if (passed) score -= 18 + (7 - rank) * 8;
+        }
+    }
+    return score;
+}
+
 } // namespace
 
 struct Engine::Impl {
@@ -201,10 +259,9 @@ struct Engine::Impl {
     std::chrono::steady_clock::time_point deadline{};
     bool timed = false;
     std::uint64_t nodes = 0;
-    std::array<std::array<int, 64>, 2> history{};
+    std::array<std::array<int, 4096>, 2> history{};
     std::array<Move, MaxPly> killers1{};
     std::array<Move, MaxPly> killers2{};
-    std::vector<Move> currentPv;
 
     explicit Impl() { resizeHash(32); }
 
@@ -217,41 +274,59 @@ struct Engine::Impl {
     }
 
     void checkTime() {
-        if (timed && (nodes & 2047ULL) == 0 && std::chrono::steady_clock::now() >= deadline) stopFlag.store(true, std::memory_order_relaxed);
+        if (timed && (nodes & 2047ULL) == 0 && std::chrono::steady_clock::now() >= deadline)
+            stopFlag.store(true, std::memory_order_relaxed);
     }
 
     int evaluateAbsolute(const Position& p) const noexcept {
         int score = 0;
         int nonPawnMaterial = 0;
-        int pieces = 0;
         for (int pi = 1; pi <= 12; ++pi) {
-            const auto piece = static_cast<Piece>(pi);
+            const Piece piece = static_cast<Piece>(pi);
             Bitboard bb = p.pieces(piece);
             const int value = Material[pi];
-            if (pi != 1 && pi != 6 && pi != 7 && pi != 12) nonPawnMaterial += static_cast<int>(__builtin_popcountll(bb)) * std::abs(value);
-            pieces += static_cast<int>(__builtin_popcountll(bb));
+            if (pi != 1 && pi != 6 && pi != 7 && pi != 12)
+                nonPawnMaterial += std::popcount(bb) * std::abs(value);
             while (bb) {
-                const int sq = static_cast<int>(__builtin_ctzll(bb));
+                const int sq = static_cast<int>(std::countr_zero(bb));
                 score += value + tableValue(piece, sq, nonPawnMaterial < 2600);
                 bb &= bb - 1;
             }
         }
 
-        const int whiteBishops = __builtin_popcountll(p.pieces(Piece::WhiteBishop));
-        const int blackBishops = __builtin_popcountll(p.pieces(Piece::BlackBishop));
+        const int whiteBishops = std::popcount(p.pieces(Piece::WhiteBishop));
+        const int blackBishops = std::popcount(p.pieces(Piece::BlackBishop));
         score += (whiteBishops >= 2 ? 30 : 0) - (blackBishops >= 2 ? 30 : 0);
+        score += pawnStructure(p);
 
-        const int whiteMobility = static_cast<int>(generatePseudoLegalMoves(p).size());
-        Position flipped = p;
-        (void)flipped;
-        score += (whiteMobility - 20) / 2;
-        score += pieces < 10 ? 0 : 0;
+        for (int file = 0; file < 8; ++file) {
+            const Bitboard mask = static_cast<Bitboard>(fileMask(file));
+            const bool whitePawn = (p.pieces(Piece::WhitePawn) & mask) != 0;
+            const bool blackPawn = (p.pieces(Piece::BlackPawn) & mask) != 0;
+            const int wr = std::popcount(p.pieces(Piece::WhiteRook) & mask);
+            const int br = std::popcount(p.pieces(Piece::BlackRook) & mask);
+            if (!whitePawn) score += wr * 12;
+            if (!blackPawn) score -= br * 12;
+            if (!whitePawn && !blackPawn) score += (wr - br) * 8;
+        }
+
+        const bool endgame = nonPawnMaterial < 2400;
+        if (endgame) {
+            const Bitboard wk = p.pieces(Piece::WhiteKing);
+            const Bitboard bk = p.pieces(Piece::BlackKing);
+            if (wk) score += KingEndgameTable[std::countr_zero(wk)];
+            if (bk) score -= KingEndgameTable[mirroredSquare(std::countr_zero(bk))];
+        }
         return score;
     }
 
     int evaluateForSide(const Position& p) const noexcept {
         const int score = evaluateAbsolute(p);
         return p.sideToMove() == Color::White ? score : -score;
+    }
+
+    int moveIndex(const Move& m) const noexcept {
+        return static_cast<int>(m.from()) * 64 + static_cast<int>(m.to());
     }
 
     int moveScore(const Position& p, const Move& m, int ply, const Move& ttMove) const noexcept {
@@ -267,8 +342,7 @@ struct Engine::Impl {
             if (m == killers1[ply]) score += 400'000;
             else if (m == killers2[ply]) score += 350'000;
         }
-        const int idx = (static_cast<int>(m.from()) * 64 + static_cast<int>(m.to())) & 63;
-        score += history[p.sideToMove() == Color::White ? 0 : 1][idx];
+        score += history[p.sideToMove() == Color::White ? 0 : 1][moveIndex(m)];
         return score;
     }
 
@@ -282,19 +356,29 @@ struct Engine::Impl {
     int quiescence(GameState& state, int alpha, int beta, int ply) {
         ++nodes;
         checkTime();
-        const int stand = evaluateForSide(state.position());
-        if (stand >= beta) return beta;
-        if (stand > alpha) alpha = stand;
-        if (ply >= MaxPly - 1 || stopFlag.load(std::memory_order_relaxed)) return alpha;
+        const bool inCheck = isInCheck(state.position());
+        if (stopFlag.load(std::memory_order_relaxed)) return 0;
+
+        if (!inCheck) {
+            const int stand = evaluateForSide(state.position());
+            if (stand >= beta) return beta;
+            if (stand > alpha) alpha = stand;
+        }
+        if (ply >= MaxPly - 1) return alpha;
 
         auto moves = generateLegalMoves(state.position());
-        moves.erase(std::remove_if(moves.begin(), moves.end(), [](const Move& m) { return !m.isCapture() && !m.isPromotion(); }), moves.end());
+        if (!inCheck) {
+            moves.erase(std::remove_if(moves.begin(), moves.end(), [](const Move& m) {
+                return !m.isCapture() && !m.isPromotion();
+            }), moves.end());
+        }
         moves = orderedMoves(state.position(), std::move(moves), ply, Move{});
+
         for (const Move& m : moves) {
             if (!state.makeMove(m)) continue;
             const int score = -quiescence(state, -beta, -alpha, ply + 1);
             state.unmakeMove();
-            if (stopFlag.load(std::memory_order_relaxed)) return alpha;
+            if (stopFlag.load(std::memory_order_relaxed)) return 0;
             if (score >= beta) return beta;
             if (score > alpha) alpha = score;
         }
@@ -320,9 +404,10 @@ struct Engine::Impl {
         if (entry.key == key) {
             ttMove = entry.best;
             if (entry.depth >= depth) {
-                if (entry.bound == Bound::Exact) return entry.score;
-                if (entry.bound == Bound::Lower && entry.score >= beta) return entry.score;
-                if (entry.bound == Bound::Upper && entry.score <= alpha) return entry.score;
+                const int ttScore = scoreFromTt(entry.score, ply);
+                if (entry.bound == Bound::Exact) return ttScore;
+                if (entry.bound == Bound::Lower && ttScore >= beta) return ttScore;
+                if (entry.bound == Bound::Upper && ttScore <= alpha) return ttScore;
             }
         }
 
@@ -331,17 +416,21 @@ struct Engine::Impl {
         int bestScore = -Infinity;
         Move bestMove{};
         std::vector<Move> bestPv;
-        int moveIndex = 0;
+        int moveIndexNumber = 0;
 
         for (const Move& m : moves) {
             if (!state.makeMove(m)) continue;
             std::vector<Move> childPv;
             int score;
-            if (moveIndex == 0) {
-                score = -negamax(state, depth - 1, -beta, -alpha, ply + 1, childPv);
+            const bool givesCheck = isInCheck(state.position());
+            const int childDepth = depth - 1 + ((givesCheck && depth <= 2) ? 1 : 0);
+
+            if (moveIndexNumber == 0) {
+                score = -negamax(state, childDepth, -beta, -alpha, ply + 1, childPv);
             } else {
-                score = -negamax(state, depth - 1, -alpha - 1, -alpha, ply + 1, childPv);
-                if (score > alpha && score < beta) score = -negamax(state, depth - 1, -beta, -alpha, ply + 1, childPv);
+                score = -negamax(state, childDepth, -alpha - 1, -alpha, ply + 1, childPv);
+                if (score > alpha && score < beta)
+                    score = -negamax(state, childDepth, -beta, -alpha, ply + 1, childPv);
             }
             state.unmakeMove();
             if (stopFlag.load(std::memory_order_relaxed)) return 0;
@@ -354,24 +443,26 @@ struct Engine::Impl {
                 bestPv.insert(bestPv.end(), childPv.begin(), childPv.end());
             }
             if (score > alpha) alpha = score;
+
             if (alpha >= beta) {
                 if (!m.isCapture() && !m.isPromotion()) {
-                    if (ply < MaxPly) {
-                        if (killers1[ply] != m) { killers2[ply] = killers1[ply]; killers1[ply] = m; }
+                    if (ply < MaxPly && killers1[ply] != m) {
+                        killers2[ply] = killers1[ply];
+                        killers1[ply] = m;
                     }
                     const int side = state.position().sideToMove() == Color::White ? 0 : 1;
-                    const int hi = (static_cast<int>(m.from()) * 64 + static_cast<int>(m.to())) & 63;
-                    history[side][hi] = std::min(50'000, history[side][hi] + depth * depth);
+                    const int idx = moveIndex(m);
+                    history[side][idx] = std::min(50'000, history[side][idx] + depth * depth);
                 }
                 break;
             }
-            ++moveIndex;
+            ++moveIndexNumber;
         }
 
         if (!stopFlag.load(std::memory_order_relaxed)) {
             entry.key = key;
             entry.depth = depth;
-            entry.score = bestScore;
+            entry.score = scoreToTt(bestScore, ply);
             entry.best = bestMove;
             entry.bound = bestScore <= originalAlpha ? Bound::Upper : (bestScore >= beta ? Bound::Lower : Bound::Exact);
         }
@@ -382,7 +473,6 @@ struct Engine::Impl {
     SearchResult run(const Position& root, SearchLimits limits) {
         stopFlag.store(false, std::memory_order_relaxed);
         nodes = 0;
-        currentPv.clear();
         timed = false;
 
         if (limits.moveTimeMs > 0) {
@@ -399,39 +489,39 @@ struct Engine::Impl {
             }
         }
 
-        auto rootMoves = generateLegalMoves(root);
+        const auto rootMoves = generateLegalMoves(root);
         SearchResult result;
         if (rootMoves.empty()) return result;
         result.bestMove = rootMoves.front();
 
-        // Small deterministic opening book. Search takes over as soon as the position leaves these lines.
-        static const std::unordered_map<std::string, std::string> book = {
-            {"rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq -", "e2e4"},
-            {"rnbqkbnr/pppp1ppp/8/4p3/4P3/8/PPPP1PPP/RNBQKBNR w KQkq -", "g1f3"},
-            {"rnbqkbnr/pppp1ppp/8/4p3/5N2/8/PPPP1PPP/RNBQKB1R b KQkq -", "b8c6"}
-        };
-        std::string fen = root.toFEN();
-        const auto firstFour = fen.substr(0, fen.find_last_of(' ') == std::string::npos ? fen.size() : fen.find_last_of(' '));
-        auto it = book.find(firstFour);
-        if (it != book.end()) {
-            for (const Move& m : rootMoves) if (m.toUci() == it->second) { result.bestMove = m; result.depth = 0; result.nodes = 0; result.principalVariation = {m}; return result; }
-        }
-
         const int maxDepth = limits.depth > 0 ? std::min(limits.depth, 64) : 64;
+        int previousScore = 0;
         for (int depth = 1; depth <= maxDepth; ++depth) {
             if (stopFlag.load(std::memory_order_relaxed)) break;
             GameState state(root);
             std::vector<Move> pv;
-            const int score = negamax(state, depth, -Infinity, Infinity, 0, pv);
+            int alpha = -Infinity;
+            int beta = Infinity;
+            if (depth >= 4 && std::abs(previousScore) < MateThreshold) {
+                alpha = previousScore - 50;
+                beta = previousScore + 50;
+            }
+            int score = negamax(state, depth, alpha, beta, 0, pv);
+            if (!stopFlag.load(std::memory_order_relaxed) && (score <= alpha || score >= beta)) {
+                state = GameState(root);
+                pv.clear();
+                score = negamax(state, depth, -Infinity, Infinity, 0, pv);
+            }
             if (stopFlag.load(std::memory_order_relaxed)) break;
             if (!pv.empty()) {
                 result.bestMove = pv.front();
                 result.principalVariation = pv;
                 result.score = score;
                 result.depth = depth;
+                previousScore = score;
             }
             result.nodes = nodes;
-            if (std::abs(score) >= MateScore - 100) break;
+            if (std::abs(score) >= MateThreshold) break;
         }
         result.nodes = nodes;
         return result;
@@ -450,9 +540,10 @@ int Engine::evaluate(const Position& position) const noexcept { return impl_->ev
 SearchResult Engine::search(const Position& position, const SearchLimits& limits) { return impl_->run(position, limits); }
 
 std::string Engine::scoreToUci(int score) {
-    if (std::abs(score) >= MateScore - 100) {
-        const int mate = score > 0 ? 1 : -1;
-        return "mate " + std::to_string(mate);
+    if (std::abs(score) >= MateThreshold) {
+        const int distance = std::max(1, MateScore - std::abs(score));
+        const int mate = (distance + 1) / 2;
+        return "mate " + std::to_string(score > 0 ? mate : -mate);
     }
     return "cp " + std::to_string(score);
 }
