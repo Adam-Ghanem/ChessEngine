@@ -103,9 +103,11 @@ void addPawnMoves(const Position& position, Square from, Color color, std::vecto
     if (ep != Square::None && rankOf(ep) == rank + direction && std::abs(fileOf(ep) - file) == 1
         && position.pieceAt(ep) == Piece::Empty) {
         const int capturedRank = rankOf(ep) - direction;
-        const Square captured = static_cast<Square>(capturedRank * 8 + fileOf(ep));
-        if (position.pieceAt(captured) == pieceFor(opposite(color), PieceType::Pawn)) {
-            moves.push_back(Move::enPassant(from, ep));
+        if (capturedRank >= 0 && capturedRank < 8) {
+            const Square captured = static_cast<Square>(capturedRank * 8 + fileOf(ep));
+            if (position.pieceAt(captured) == pieceFor(opposite(color), PieceType::Pawn)) {
+                moves.push_back(Move::enPassant(from, ep));
+            }
         }
     }
 }
@@ -132,13 +134,13 @@ void addKnightMoves(const Position& position, Square from, Color color, std::vec
     }
 }
 
+template <std::size_t N>
 void addSlidingMoves(const Position& position, Square from, Color color,
-                     const std::array<std::pair<int, int>, 8>& directions,
-                     int directionCount, std::vector<Move>& moves) {
+                     const std::array<std::pair<int, int>, N>& directions,
+                     std::vector<Move>& moves) {
     const int file = fileOf(from);
     const int rank = rankOf(from);
-    for (int i = 0; i < directionCount; ++i) {
-        const auto [df, dr] = directions[i];
+    for (const auto [df, dr] : directions) {
         int targetFile = file + df;
         int targetRank = rank + dr;
         while (targetFile >= 0 && targetFile < 8 && targetRank >= 0 && targetRank < 8) {
@@ -253,15 +255,15 @@ std::vector<Move> generatePseudoLegalMoves(const Position& position) {
             break;
         case Piece::WhiteBishop:
         case Piece::BlackBishop:
-            addSlidingMoves(position, from, color, bishopDirections, 4, moves);
+            addSlidingMoves(position, from, color, bishopDirections, moves);
             break;
         case Piece::WhiteRook:
         case Piece::BlackRook:
-            addSlidingMoves(position, from, color, rookDirections, 4, moves);
+            addSlidingMoves(position, from, color, rookDirections, moves);
             break;
         case Piece::WhiteQueen:
         case Piece::BlackQueen:
-            addSlidingMoves(position, from, color, queenDirections, 8, moves);
+            addSlidingMoves(position, from, color, queenDirections, moves);
             break;
         case Piece::WhiteKing:
         case Piece::BlackKing:
