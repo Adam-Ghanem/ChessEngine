@@ -6,10 +6,12 @@
 #include <algorithm>
 #include <atomic>
 #include <chrono>
+#include <cstdint>
 #include <iostream>
 #include <sstream>
 #include <string>
 #include <thread>
+#include <vector>
 
 namespace {
 
@@ -34,6 +36,39 @@ void printUciInfo(const SearchResult& result) {
     std::cout << '\n' << std::flush;
 }
 
+void runBench(Engine& engine, int depth) {
+    struct BenchPosition { const char* name; const char* fen; };
+    static constexpr BenchPosition suite[] = {
+        {"startpos", "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"},
+        {"kiwipete", "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1"},
+        {"tactical", "r1bq1rk1/ppp2ppp/2n1pn2/8/2B5/2N1PN2/PPPQ1PPP/2RR2K1 w - - 0 1"},
+        {"endgame", "8/8/8/3k4/8/3K4/3P4/8 w - - 0 1"}
+    };
+
+    std::uint64_t totalNodes = 0;
+    const auto start = std::chrono::steady_clock::now();
+    for (const auto& item : suite) {
+        engine.clearHash();
+        const Position position = Position::fromFEN(item.fen);
+        SearchLimits limits;
+        limits.depth = std::clamp(depth, 1, 12);
+        const SearchResult result = engine.search(position, limits);
+        totalNodes += result.nodes;
+        std::cout << "bench " << item.name
+                  << " depth " << result.depth
+                  << " nodes " << result.nodes
+                  << " score " << Engine::scoreToUci(result.score)
+                  << " bestmove " << result.bestMove.toUci()
+                  << '\n';
+    }
+    const auto ms = std::max<std::int64_t>(1, std::chrono::duration_cast<std::chrono::milliseconds>(
+        std::chrono::steady_clock::now() - start).count());
+    std::cout << "bench total nodes " << totalNodes
+              << " time " << ms << "ms"
+              << " nps " << (totalNodes * 1000ULL / static_cast<std::uint64_t>(ms))
+              << '\n' << std::flush;
+}
+
 void runUci() {
     Engine engine;
     Position position;
@@ -54,7 +89,7 @@ void runUci() {
         if (command.empty()) continue;
 
         if (command == "uci") {
-            std::cout << "id name ChessEngine 0.2.0\n"
+            std::cout << "id name ChessEngine 0.3.0\n"
                       << "id author Adam Ghanem\n"
                       << "option name Hash type spin default 32 min 1 max 1024\n"
                       << "uciok\n" << std::flush;
@@ -75,22 +110,26 @@ void runUci() {
             engine.clearHash();
         } else if (command == "position") {
             stopSearch();
-            std::string token;
-            in >> token;
-            if (token == "startpos") {
-                position = Position{};
-            } else if (token == "fen") {
-                std::string fen, part;
-                for (int i = 0; i < 6 && in >> part; ++i) {
-                    if (!fen.empty()) fen += ' ';
-                    fen += part;
+            try {
+                std::string token;
+                in >> token;
+                if (token == "startpos") {
+                    position = Position{};
+                } else if (token == "fen") {
+                    std::string fen, part;
+                    for (int i = 0; i < 6 && in >> part; ++i) {
+                        if (!fen.empty()) fen += ' ';
+                        fen += part;
+                    }
+                    position = Position::fromFEN(fen);
                 }
-                position = Position::fromFEN(fen);
-            }
-            if (in >> token && token == "moves") {
-                while (in >> token) {
-                    if (!playUciMove(position, token)) break;
+                if (in >> token && token == "moves") {
+                    while (in >> token) {
+                        if (!playUciMove(position, token)) break;
+                    }
                 }
+            } catch (const std::exception& ex) {
+                std::cout << "info string invalid position: " << ex.what() << '\n' << std::flush;
             }
         } else if (command == "go") {
             stopSearch();
@@ -127,14 +166,10 @@ void runUci() {
             const auto elapsed = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count();
             std::cout << "perft depth " << depth << " nodes " << nodes << " time " << elapsed << "ms\n" << std::flush;
         } else if (command == "bench") {
-            SearchLimits limits;
-            limits.depth = 6;
-            const auto start = std::chrono::steady_clock::now();
-            const SearchResult result = engine.search(position, limits);
-            const auto ms = std::max<std::int64_t>(1, std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::steady_clock::now() - start).count());
-            std::cout << "bench depth " << result.depth << " nodes " << result.nodes
-                      << " nps " << (result.nodes * 1000ULL / static_cast<std::uint64_t>(ms))
-                      << " bestmove " << result.bestMove.toUci() << '\n' << std::flush;
+            int depth = 6;
+            in >> depth;
+            stopSearch();
+            runBench(engine, depth);
         }
     }
     stopSearch();
