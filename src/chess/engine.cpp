@@ -264,7 +264,7 @@ struct Engine::Impl {
     void resizeHash(std::size_t mb) {
         const std::size_t bytes = std::max<std::size_t>(1, mb) * 1024ULL * 1024ULL;
         std::size_t count = 1;
-        while ((count << 1U) * sizeof(TTEntry) <= bytes) count <<= 1U;
+        while ((count << 1U) * sizeof(TTEntry) <= bytes) count <<= 1;
         tt.assign(count, TTEntry{});
         ttMask = count - 1;
     }
@@ -443,9 +443,19 @@ struct Engine::Impl {
             std::vector<Move> childPv;
             const bool givesCheck = isInCheck(state.position());
             const int childDepth = depth - 1 + ((givesCheck && depth <= 2) ? 1 : 0);
+            const bool quietMove = !m.isCapture() && !m.isPromotion();
+            const bool killerMove = ply < MaxPly && (m == killers1[ply] || m == killers2[ply]);
+            const bool reduceMove = lmr && !inCheck && !givesCheck && quietMove &&
+                !killerMove && moveNumber >= 4 && depth >= 3;
             int score;
+
             if (moveNumber == 0) {
                 score = -negamax(state, childDepth, -beta, -alpha, ply + 1, childPv);
+            } else if (reduceMove) {
+                const int reducedDepth = std::max(1, childDepth - 1);
+                score = -negamax(state, reducedDepth, -alpha - 1, -alpha, ply + 1, childPv);
+                if (score > alpha && score < beta)
+                    score = -negamax(state, childDepth, -alpha - 1, -alpha, ply + 1, childPv);
             } else {
                 score = -negamax(state, childDepth, -alpha - 1, -alpha, ply + 1, childPv);
                 if (score > alpha && score < beta)
