@@ -54,11 +54,11 @@ void testInitialPositions() {
 }
 
 void testKnights() {
-    const Position center = Position::fromFEN("8/8/8/3p4/4N3/8/8/8 w - - 0 1");
+    const Position center = Position::fromFEN("8/8/8/2p5/4N3/8/8/8 w - - 0 1");
     const auto moves = chess::generatePseudoLegalMoves(center);
     assert(countFrom(moves, Square::E4) == 8);
     assert(hasMove(moves, Square::E4, Square::D6, MoveType::Quiet));
-    assert(hasMove(moves, Square::E4, Square::D5, MoveType::Capture));
+    assert(hasMove(moves, Square::E4, Square::C5, MoveType::Capture));
     assert(hasMove(moves, Square::E4, Square::F6, MoveType::Quiet));
 
     const Position corner = Position::fromFEN("N7/8/8/8/8/8/8/7k w - - 0 1");
