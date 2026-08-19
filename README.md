@@ -4,20 +4,22 @@ A modular chess engine built from scratch in modern C++20.
 
 ## Current status
 
-The engine has completed the core chess pipeline through PERFT and now includes a first complete playing/search layer:
+The engine has completed the core chess pipeline through PERFT and now has a substantially upgraded playing/search layer:
 
-- M1–M9: representation, moves, legal move generation, make/undo, game status and PERFT
-- M10: static evaluation with material, piece-square tables, bishop pair and king/endgame terms
-- M11: Negamax with alpha-beta pruning
-- M12: iterative deepening and principal variation search
-- M13: move ordering with TT move, MVV-LVA, killer moves and history heuristic
-- M14: quiescence search
-- M15: deterministic Zobrist hashing and transposition table
-- M16: UCI protocol, time controls and hash configuration
-- M17: small deterministic opening book
-- M18: search-strength improvements and endgame-aware evaluation
-- M19: regression coverage for search in addition to the existing M1–M9 suite
-- M20: built-in `bench` command for repeatable search measurements
+- **M1–M9:** representation, moves, legal move generation, make/undo, game status and PERFT
+- **M10:** static evaluation with material and piece-square tables
+- **M11:** Negamax with alpha-beta pruning
+- **M12:** iterative deepening and principal variation search
+- **M13:** move ordering with TT move, MVV-LVA, killer moves and history heuristic
+- **M14:** quiescence search, including full evasions while in check
+- **M15:** deterministic Zobrist hashing and transposition table with mate-score normalization
+- **M16:** UCI protocol, time controls and hash configuration
+- **M17:** deterministic search instead of a shallow hard-coded opening shortcut
+- **M18:** pawn-structure, passed-pawn, rook-file and endgame-aware evaluation terms
+- **M19:** search regression coverage
+- **M20:** repeatable multi-position `bench` command
+- **M21:** upgraded search core with aspiration windows and selective check extensions
+- **CI:** Release build plus AddressSanitizer/UndefinedBehaviorSanitizer verification
 
 Correctness remains the priority: the existing PERFT suite is kept as a regression gate before search changes are considered complete.
 
@@ -42,41 +44,50 @@ position startpos
 go depth 8
 ```
 
-The engine also provides useful console commands:
+Supported search controls include `depth`, `movetime`, `wtime`, `btime`, `winc`, and `binc`.
+
+The engine exposes:
 
 ```text
 perft 4
 eval
-bench
+bench 6
 ```
 
-Supported UCI search controls include `depth`, `movetime`, `wtime`, `btime`, `winc`, and `binc`. The `Hash` option controls the transposition-table size in MB.
+`bench` runs a deterministic suite of representative positions and reports total nodes, elapsed time and NPS.
 
-## Architecture
+The UCI `Hash` option controls the transposition-table size in MB.
 
-The implementation is intentionally incremental and keeps the chess rules independent from the search layer:
+## Search architecture
 
-1. Project foundation
-2. Chess representation
-3. Board representation and FEN
-4. Move representation
-5. Pseudo-legal move generation
-6. Legal move generation
-7. Make/undo move
-8. PERFT
-9. Static evaluation
-10. Negamax and alpha-beta search
-11. Iterative deepening
-12. Move ordering
-13. Quiescence search
-14. Zobrist hashing and transposition table
-15. Advanced search
-16. UCI
-17. Opening book
-18. Strength improvements
-19. Comprehensive testing
-20. Benchmarking
+The search layer is intentionally separate from the chess-rule implementation:
+
+1. Legal move generation
+2. Static evaluation
+3. Iterative deepening
+4. Alpha-beta / PVS
+5. Transposition table
+6. TT / MVV-LVA / killer / history move ordering
+7. Quiescence search with check evasions
+8. Aspiration windows
+9. Selective check extensions
+10. UCI time management
+11. Deterministic benchmarking
+
+## Evaluation
+
+The evaluation combines:
+
+- material balance
+- piece-square tables
+- bishop-pair bonus
+- doubled and isolated pawn penalties
+- passed-pawn bonuses
+- rook open/semi-open file bonuses
+- king/endgame piece-square terms
+
+The evaluation is deliberately deterministic and lightweight so search behavior remains reproducible.
 
 ## Engineering priorities
 
-Correctness comes before optimization. Every major subsystem is compiled and regression-tested before it is used by the next layer.
+Correctness comes before optimization. Every major subsystem is compiled and regression-tested before it is used by the next layer. CI also runs sanitizer builds to catch memory errors and undefined behavior.
