@@ -135,7 +135,7 @@ void testPromotions() {
     constexpr std::array<PieceType, 4> pieces = {
         PieceType::Knight, PieceType::Bishop, PieceType::Rook, PieceType::Queen,
     };
-    const Position white = Position::fromFEN("4k3/4P3/8/8/8/8/8/4K3 w - - 0 1");
+    const Position white = Position::fromFEN("k7/4P3/8/8/8/8/8/4K3 w - - 0 1");
     const auto whiteMoves = chess::generatePseudoLegalMoves(white);
     for (const PieceType piece : pieces) {
         assert(hasMove(whiteMoves, Square::E7, Square::E8, MoveType::Promotion, piece));
