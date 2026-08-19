@@ -18,6 +18,8 @@ public:
 
     bool makeMove(const Move& move);
     bool unmakeMove() noexcept;
+    bool makeNullMove();
+    bool unmakeNullMove() noexcept;
 
 private:
     Position position_;
