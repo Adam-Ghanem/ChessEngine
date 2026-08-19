@@ -14,6 +14,7 @@ public:
 
     const Position& position() const noexcept { return position_; }
     const std::vector<Move>& moveHistory() const noexcept { return moves_; }
+    const std::vector<Position>& positionHistory() const noexcept { return history_; }
 
     bool makeMove(const Move& move);
     bool unmakeMove() noexcept;
