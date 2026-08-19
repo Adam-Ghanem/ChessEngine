@@ -4,9 +4,9 @@ A modular chess engine built from scratch in modern C++20.
 
 ## Current status
 
-Milestone 1 — Project Foundation is in progress.
+**Milestone 2 — Chess Representation: complete.**
 
-At this stage the project contains only the build system, executable entry point, and a lightweight test harness. Chess logic is intentionally not implemented yet.
+The project currently provides strongly typed chess colors, piece types, pieces, and 64-square bitboard indexing. Board state, FEN, move generation, search, and UCI are intentionally not implemented yet.
 
 ## Build
 
@@ -31,9 +31,9 @@ On Windows, run `ChessEngine.exe` from the build output directory.
 ctest --output-on-failure
 ```
 
-## Architecture roadmap
+The M2 representation regression test is registered with CTest.
 
-The engine will be developed incrementally:
+## Architecture roadmap
 
 1. Project foundation
 2. Chess representation
@@ -58,4 +58,4 @@ The engine will be developed incrementally:
 
 ## Engineering priorities
 
-Correctness comes before optimization. Every major subsystem will be implemented, compiled, tested, and regression-checked before the next subsystem is started.
+Correctness comes before optimization. Every major subsystem is implemented, compiled, tested, and regression-checked before the next subsystem starts.
