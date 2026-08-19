@@ -47,10 +47,15 @@ if(CHESS_ENGINE_BUILD_TESTS)
         tests/m3_position_tests.cpp
     )
 
+    add_executable(ChessEngineMoveTests
+        tests/m4_move_tests.cpp
+    )
+
     foreach(test_target
         ChessEngineFoundationTests
         ChessEngineRepresentationTests
         ChessEnginePositionTests
+        ChessEngineMoveTests
     )
         target_include_directories(${test_target}
             PRIVATE
@@ -67,4 +72,5 @@ if(CHESS_ENGINE_BUILD_TESTS)
     add_test(NAME ChessEngineFoundationTests COMMAND ChessEngineFoundationTests)
     add_test(NAME ChessEngineRepresentationTests COMMAND ChessEngineRepresentationTests)
     add_test(NAME ChessEnginePositionTests COMMAND ChessEnginePositionTests)
+    add_test(NAME ChessEngineMoveTests COMMAND ChessEngineMoveTests)
 endif()
