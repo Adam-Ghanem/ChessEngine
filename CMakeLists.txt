@@ -14,12 +14,15 @@ option(CHESS_ENGINE_BUILD_TESTS "Build ChessEngine tests" ON)
 
 add_executable(ChessEngine
     src/main.cpp
+    src/utils/log.cpp
 )
 
 target_include_directories(ChessEngine
     PRIVATE
         ${CMAKE_CURRENT_SOURCE_DIR}/include
 )
+
+target_compile_features(ChessEngine PRIVATE cxx_std_20)
 
 if(MSVC)
     target_compile_options(ChessEngine PRIVATE /W4 /permissive-)
@@ -36,6 +39,7 @@ if(CHESS_ENGINE_BUILD_TESTS)
         PRIVATE
             ${CMAKE_CURRENT_SOURCE_DIR}/include
     )
+    target_compile_features(ChessEngineTests PRIVATE cxx_std_20)
     if(MSVC)
         target_compile_options(ChessEngineTests PRIVATE /W4 /permissive-)
     else()
