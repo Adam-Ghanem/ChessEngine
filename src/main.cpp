@@ -10,7 +10,6 @@
 #include <sstream>
 #include <string>
 #include <thread>
-#include <vector>
 
 namespace {
 
@@ -19,11 +18,9 @@ using namespace chess;
 bool playUciMove(Position& position, const std::string& uci) {
     GameState state(position);
     for (const Move& move : generateLegalMoves(position)) {
-        if (move.toUci() == uci) {
-            if (state.makeMove(move)) {
-                position = state.position();
-                return true;
-            }
+        if (move.toUci() == uci && state.makeMove(move)) {
+            position = state.position();
+            return true;
         }
     }
     return false;
@@ -44,11 +41,9 @@ void runUci() {
     std::atomic<bool> searching{false};
 
     auto stopSearch = [&]() {
-        if (searching.load()) {
-            engine.stop();
-            if (searchThread.joinable()) searchThread.join();
-            searching.store(false);
-        }
+        if (searching.load()) engine.stop();
+        if (searchThread.joinable()) searchThread.join();
+        searching.store(false);
     };
 
     std::string line;
@@ -70,7 +65,6 @@ void runUci() {
             in >> token;
             if (token == "name") in >> name;
             if (name == "Hash") {
-                std::string valueToken;
                 int value = 32;
                 while (in >> token) if (token == "value") in >> value;
                 engine.setHashSizeMb(static_cast<std::size_t>(std::clamp(value, 1, 1024)));
@@ -88,7 +82,6 @@ void runUci() {
             } else if (token == "fen") {
                 std::string fen, part;
                 for (int i = 0; i < 6 && in >> part; ++i) {
-                    if (part == "moves") break;
                     if (!fen.empty()) fen += ' ';
                     fen += part;
                 }
@@ -110,7 +103,6 @@ void runUci() {
                 else if (token == "btime") in >> limits.blackTimeMs;
                 else if (token == "winc") in >> limits.whiteIncrementMs;
                 else if (token == "binc") in >> limits.blackIncrementMs;
-                else if (token == "infinite") limits.moveTimeMs = 0;
             }
             const Position root = position;
             searching.store(true);
