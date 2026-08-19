@@ -40,13 +40,13 @@ int main() {
         const Position repetition = Position::fromFEN("7k/8/8/8/8/8/8/K6N w - - 0 1");
         GameState state(repetition);
         assert(state.makeMove(Move::quiet(Square::H1, Square::F2)));
-        assert(state.makeMove(Move::quiet(Square::H8, Square::F7)));
+        assert(state.makeMove(Move::quiet(Square::H8, Square::G7)));
         assert(state.makeMove(Move::quiet(Square::F2, Square::H1)));
-        assert(state.makeMove(Move::quiet(Square::F7, Square::H8)));
+        assert(state.makeMove(Move::quiet(Square::G7, Square::H8)));
         assert(state.makeMove(Move::quiet(Square::H1, Square::F2)));
-        assert(state.makeMove(Move::quiet(Square::H8, Square::F7)));
+        assert(state.makeMove(Move::quiet(Square::H8, Square::G7)));
         assert(state.makeMove(Move::quiet(Square::F2, Square::H1)));
-        assert(state.makeMove(Move::quiet(Square::F7, Square::H8)));
+        assert(state.makeMove(Move::quiet(Square::G7, Square::H8)));
         assert(isThreefoldRepetition(state));
         assert(gameStatus(state) == GameStatus::ThreefoldRepetition);
     }
