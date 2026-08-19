@@ -147,7 +147,7 @@ void testPromotions() {
         assert(hasMove(whiteCaptureMoves, Square::E7, Square::D8, MoveType::PromotionCapture, piece));
     }
 
-    const Position black = Position::fromFEN("4k3/8/8/8/8/8/4p3/4K3 b - - 0 1");
+    const Position black = Position::fromFEN("7k/8/8/8/8/8/4p3/K7 b - - 0 1");
     const auto blackMoves = chess::generatePseudoLegalMoves(black);
     for (const PieceType piece : pieces) {
         assert(hasMove(blackMoves, Square::E2, Square::E1, MoveType::Promotion, piece));
