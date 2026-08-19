@@ -186,7 +186,7 @@ void testCastling() {
     assert(hasMove(blackMoves, Square::E8, Square::G8, MoveType::CastleKingside));
     assert(hasMove(blackMoves, Square::E8, Square::C8, MoveType::CastleQueenside));
 
-    const Position blocked = Position::fromFEN("4k3/8/8/8/8/8/8/R2BK2R w KQ - 0 1");
+    const Position blocked = Position::fromFEN("4k3/8/8/8/8/8/8/R3KB1R w KQ - 0 1");
     const auto blockedMoves = chess::generatePseudoLegalMoves(blocked);
     assert(!hasMove(blockedMoves, Square::E1, Square::G1, MoveType::CastleKingside));
     assert(hasMove(blockedMoves, Square::E1, Square::C1, MoveType::CastleQueenside));
