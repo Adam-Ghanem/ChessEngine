@@ -74,14 +74,8 @@ std::string placement(const Board& board) {
         int empty = 0;
         for (int file = 0; file < 8; ++file) {
             const Piece piece = board[static_cast<std::size_t>(rank * 8 + file)];
-            if (piece == Piece::Empty) {
-                ++empty;
-                continue;
-            }
-            if (empty != 0) {
-                result += static_cast<char>('0' + empty);
-                empty = 0;
-            }
+            if (piece == Piece::Empty) { ++empty; continue; }
+            if (empty != 0) { result += static_cast<char>('0' + empty); empty = 0; }
             result += pieceToFen(piece);
         }
         if (empty != 0) result += static_cast<char>('0' + empty);
@@ -91,16 +85,12 @@ std::string placement(const Board& board) {
 }
 
 bool containsLegalMove(const Position& position, const Move& wanted) {
-    for (const Move& move : generateLegalMoves(position)) {
-        if (move == wanted) return true;
-    }
+    for (const Move& move : generateLegalMoves(position)) if (move == wanted) return true;
     return false;
 }
 
 void updateCastlingRights(std::string& rights, Color color, Square from, Square to, Piece captured) {
-    auto erase = [&rights](char c) {
-        rights.erase(std::remove(rights.begin(), rights.end(), c), rights.end());
-    };
+    auto erase = [&rights](char c) { rights.erase(std::remove(rights.begin(), rights.end(), c), rights.end()); };
     if (color == Color::White && from == Square::E1) { erase('K'); erase('Q'); }
     if (color == Color::Black && from == Square::E8) { erase('k'); erase('q'); }
     if (from == Square::A1 || to == Square::A1) erase('Q');
@@ -119,7 +109,6 @@ GameState::GameState(Position position) : position_(std::move(position)) {}
 
 bool GameState::makeMove(const Move& move) {
     if (!containsLegalMove(position_, move)) return false;
-
     const Color color = position_.sideToMove();
     Board board = boardFromPosition(position_);
     const int from = squareIndex(move.from());
@@ -127,27 +116,19 @@ bool GameState::makeMove(const Move& move) {
     const Piece moving = board[static_cast<std::size_t>(from)];
     Piece captured = board[static_cast<std::size_t>(to)];
     board[static_cast<std::size_t>(from)] = Piece::Empty;
-
     if (move.isEnPassant()) {
         const int capturedIndex = to + (color == Color::White ? -8 : 8);
         captured = board[static_cast<std::size_t>(capturedIndex)];
         board[static_cast<std::size_t>(capturedIndex)] = Piece::Empty;
     }
     board[static_cast<std::size_t>(to)] = moving;
-
     if (move.isCastle()) {
-        if (color == Color::White && move.to() == Square::G1) {
-            board[squareIndex(Square::H1)] = Piece::Empty; board[squareIndex(Square::F1)] = Piece::WhiteRook;
-        } else if (color == Color::White && move.to() == Square::C1) {
-            board[squareIndex(Square::A1)] = Piece::Empty; board[squareIndex(Square::D1)] = Piece::WhiteRook;
-        } else if (color == Color::Black && move.to() == Square::G8) {
-            board[squareIndex(Square::H8)] = Piece::Empty; board[squareIndex(Square::F8)] = Piece::BlackRook;
-        } else if (color == Color::Black && move.to() == Square::C8) {
-            board[squareIndex(Square::A8)] = Piece::Empty; board[squareIndex(Square::D8)] = Piece::BlackRook;
-        }
+        if (color == Color::White && move.to() == Square::G1) { board[squareIndex(Square::H1)] = Piece::Empty; board[squareIndex(Square::F1)] = Piece::WhiteRook; }
+        else if (color == Color::White && move.to() == Square::C1) { board[squareIndex(Square::A1)] = Piece::Empty; board[squareIndex(Square::D1)] = Piece::WhiteRook; }
+        else if (color == Color::Black && move.to() == Square::G8) { board[squareIndex(Square::H8)] = Piece::Empty; board[squareIndex(Square::F8)] = Piece::BlackRook; }
+        else if (color == Color::Black && move.to() == Square::C8) { board[squareIndex(Square::A8)] = Piece::Empty; board[squareIndex(Square::D8)] = Piece::BlackRook; }
     }
     if (move.isPromotion()) board[static_cast<std::size_t>(to)] = promotionPiece(color, move.promotionPiece());
-
     std::string rights;
     if (position_.canCastleKingside(Color::White)) rights += 'K';
     if (position_.canCastleQueenside(Color::White)) rights += 'Q';
@@ -155,16 +136,12 @@ bool GameState::makeMove(const Move& move) {
     if (position_.canCastleQueenside(Color::Black)) rights += 'q';
     updateCastlingRights(rights, color, move.from(), move.to(), captured);
     if (rights.empty()) rights = "-";
-
     Square ep = Square::None;
     if (move.isDoublePawnPush()) ep = static_cast<Square>((from + to) / 2);
-
     const std::uint16_t halfmove = (isPawn(moving) || move.isCapture()) ? 0 : static_cast<std::uint16_t>(position_.halfmoveClock() + 1);
     const std::uint32_t fullmove = position_.fullmoveNumber() + (color == Color::Black ? 1U : 0U);
     const Color next = opposite(color);
-    const std::string fen = placement(board) + ' ' + (next == Color::White ? "w" : "b") + ' ' + rights + ' '
-        + squareName(ep) + ' ' + std::to_string(halfmove) + ' ' + std::to_string(fullmove);
-
+    const std::string fen = placement(board) + ' ' + (next == Color::White ? "w" : "b") + ' ' + rights + ' ' + squareName(ep) + ' ' + std::to_string(halfmove) + ' ' + std::to_string(fullmove);
     history_.push_back(position_);
     moves_.push_back(move);
     position_ = Position::fromFEN(fen);
@@ -176,6 +153,31 @@ bool GameState::unmakeMove() noexcept {
     position_ = history_.back();
     history_.pop_back();
     moves_.pop_back();
+    return true;
+}
+
+bool GameState::makeNullMove() {
+    const Color color = position_.sideToMove();
+    Board board = boardFromPosition(position_);
+    const Color next = opposite(color);
+    const std::string fen = placement(board) + ' ' + (next == Color::White ? "w" : "b") + ' ';
+    const std::string rights = [&]() {
+        std::string r;
+        if (position_.canCastleKingside(Color::White)) r += 'K';
+        if (position_.canCastleQueenside(Color::White)) r += 'Q';
+        if (position_.canCastleKingside(Color::Black)) r += 'k';
+        if (position_.canCastleQueenside(Color::Black)) r += 'q';
+        return r.empty() ? std::string("-") : r;
+    }();
+    history_.push_back(position_);
+    position_ = Position::fromFEN(fen + rights + " - " + std::to_string(position_.halfmoveClock() + 1) + ' ' + std::to_string(position_.fullmoveNumber()));
+    return true;
+}
+
+bool GameState::unmakeNullMove() noexcept {
+    if (history_.empty()) return false;
+    position_ = history_.back();
+    history_.pop_back();
     return true;
 }
 
