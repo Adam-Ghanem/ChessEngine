@@ -1,6 +1,8 @@
 #include "chess/move_generator.hpp"
 
 #include <array>
+#include <cstdlib>
+#include <utility>
 
 namespace chess {
 namespace {
@@ -180,11 +182,6 @@ void addKingMoves(const Position& position, Square from, Color color, std::vecto
 
 void addCastlingMoves(const Position& position, Color color, std::vector<Move>& moves) {
     const Square kingSquare = color == Color::White ? Square::E1 : Square::E8;
-    const Square king = pieceFor(color, PieceType::King);
-    const Square rook = pieceFor(color, PieceType::Rook);
-    (void)king;
-    (void)rook;
-
     if (position.pieceAt(kingSquare) != pieceFor(color, PieceType::King)) {
         return;
     }
