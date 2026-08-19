@@ -4,9 +4,9 @@ A modular chess engine built from scratch in modern C++20.
 
 ## Current status
 
-Milestone 1 — Project Foundation is in progress.
+Milestone 3 — Board / Position Representation is implemented.
 
-At this stage the project contains only the build system, executable entry point, and a lightweight test harness. Chess logic is intentionally not implemented yet.
+The project now represents complete chess positions with piece bitboards, cached occupancies, side-to-move state, castling rights, en-passant state, move counters, FEN parsing/serialization, and position equality. Move generation and search are intentionally not implemented yet.
 
 ## Build
 
@@ -30,6 +30,8 @@ On Windows, run `ChessEngine.exe` from the build output directory.
 ```bash
 ctest --output-on-failure
 ```
+
+The test suite currently includes foundation, M2 representation, and M3 position/FEN tests.
 
 ## Architecture roadmap
 

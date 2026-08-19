@@ -14,6 +14,7 @@ option(CHESS_ENGINE_BUILD_TESTS "Build ChessEngine tests" ON)
 
 add_executable(ChessEngine
     src/main.cpp
+    src/chess/position.cpp
     src/utils/log.cpp
 )
 
@@ -41,9 +42,15 @@ if(CHESS_ENGINE_BUILD_TESTS)
         tests/m2_representation_tests.cpp
     )
 
+    add_executable(ChessEnginePositionTests
+        src/chess/position.cpp
+        tests/m3_position_tests.cpp
+    )
+
     foreach(test_target
         ChessEngineFoundationTests
         ChessEngineRepresentationTests
+        ChessEnginePositionTests
     )
         target_include_directories(${test_target}
             PRIVATE
@@ -59,4 +66,5 @@ if(CHESS_ENGINE_BUILD_TESTS)
 
     add_test(NAME ChessEngineFoundationTests COMMAND ChessEngineFoundationTests)
     add_test(NAME ChessEngineRepresentationTests COMMAND ChessEngineRepresentationTests)
+    add_test(NAME ChessEnginePositionTests COMMAND ChessEnginePositionTests)
 endif()
