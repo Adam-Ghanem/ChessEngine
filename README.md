@@ -39,7 +39,6 @@ Run the executable and communicate with it using the standard UCI protocol:
 uci
 isready
 position startpos
- go depth 8
 go depth 8
 ```
 
