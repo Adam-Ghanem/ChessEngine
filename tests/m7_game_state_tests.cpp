@@ -9,7 +9,7 @@ int main() {
     {
         GameState state;
         const Position initial = state.position();
-        assert(state.makeMove(Move::quiet(Square::E2, Square::E4)));
+        assert(state.makeMove(Move::doublePawnPush(Square::E2, Square::E4)));
         assert(state.position().toFEN() == "rnbqkbnr/pppppppp/8/8/4P3/8/PPPP1PPP/RNBQKBNR b KQkq e3 0 1");
         assert(state.unmakeMove());
         assert(state.position() == initial);
