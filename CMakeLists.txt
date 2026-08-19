@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.20)
 
 project(ChessEngine
-    VERSION 0.2.0
+    VERSION 0.3.0
     DESCRIPTION "A modular chess engine built from scratch in modern C++"
     LANGUAGES CXX
 )
