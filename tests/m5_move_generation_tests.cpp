@@ -129,7 +129,6 @@ void testPawns() {
     const Position captures = Position::fromFEN("4k3/8/3p4/4P3/5p2/8/8/4K3 w - - 0 1");
     const auto captureMoves = chess::generatePseudoLegalMoves(captures);
     assert(hasMove(captureMoves, Square::E5, Square::D6, MoveType::Capture));
-    assert(hasMove(captureMoves, Square::E5, Square::F6, MoveType::Quiet));
 }
 
 void testPromotions() {
