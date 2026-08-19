@@ -2,6 +2,7 @@
 
 #include "chess/game_state.hpp"
 
+#include <atomic>
 #include <cstdint>
 #include <memory>
 #include <string>
