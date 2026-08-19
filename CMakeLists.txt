@@ -85,6 +85,15 @@ if(CHESS_ENGINE_BUILD_TESTS)
         tests/m8_game_status_tests.cpp
     )
 
+    add_executable(ChessEnginePerftTests
+        src/chess/position.cpp
+        src/chess/move_generator.cpp
+        src/chess/legal_move_generator.cpp
+        src/chess/game_state.cpp
+        src/chess/perft.cpp
+        tests/m9_perft_tests.cpp
+    )
+
     foreach(test_target
         ChessEngineFoundationTests
         ChessEngineRepresentationTests
@@ -94,6 +103,7 @@ if(CHESS_ENGINE_BUILD_TESTS)
         ChessEngineLegalMoveTests
         ChessEngineGameStateTests
         ChessEngineGameStatusTests
+        ChessEnginePerftTests
     )
         target_include_directories(${test_target}
             PRIVATE
@@ -115,4 +125,5 @@ if(CHESS_ENGINE_BUILD_TESTS)
     add_test(NAME ChessEngineLegalMoveTests COMMAND ChessEngineLegalMoveTests)
     add_test(NAME ChessEngineGameStateTests COMMAND ChessEngineGameStateTests)
     add_test(NAME ChessEngineGameStatusTests COMMAND ChessEngineGameStatusTests)
+    add_test(NAME ChessEnginePerftTests COMMAND ChessEnginePerftTests)
 endif()
