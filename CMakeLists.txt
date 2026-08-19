@@ -46,11 +46,13 @@ if(CHESS_ENGINE_BUILD_TESTS)
     add_executable(ChessEngineGameStatusTests src/chess/position.cpp src/chess/move_generator.cpp src/chess/legal_move_generator.cpp src/chess/game_state.cpp src/chess/game_status.cpp tests/m8_game_status_tests.cpp)
     add_executable(ChessEnginePerftTests src/chess/position.cpp src/chess/move_generator.cpp src/chess/legal_move_generator.cpp src/chess/game_state.cpp src/chess/perft.cpp tests/m9_perft_tests.cpp)
     add_executable(ChessEngineSearchTests src/chess/position.cpp src/chess/move_generator.cpp src/chess/legal_move_generator.cpp src/chess/game_state.cpp src/chess/game_status.cpp src/chess/engine.cpp tests/m10_search_tests.cpp)
+    add_executable(ChessEngineM22PruningTests src/chess/position.cpp src/chess/move_generator.cpp src/chess/legal_move_generator.cpp src/chess/game_state.cpp src/chess/game_status.cpp src/chess/engine.cpp tests/m22_search_pruning_tests.cpp)
 
     foreach(test_target
         ChessEngineFoundationTests ChessEngineRepresentationTests ChessEnginePositionTests
         ChessEngineMoveTests ChessEngineMoveGenerationTests ChessEngineLegalMoveTests
-        ChessEngineGameStateTests ChessEngineGameStatusTests ChessEnginePerftTests ChessEngineSearchTests)
+        ChessEngineGameStateTests ChessEngineGameStatusTests ChessEnginePerftTests ChessEngineSearchTests
+        ChessEngineM22PruningTests)
         target_include_directories(${test_target} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)
         target_compile_features(${test_target} PRIVATE cxx_std_20)
         if(MSVC)
@@ -70,4 +72,5 @@ if(CHESS_ENGINE_BUILD_TESTS)
     add_test(NAME ChessEngineGameStatusTests COMMAND ChessEngineGameStatusTests)
     add_test(NAME ChessEnginePerftTests COMMAND ChessEnginePerftTests)
     add_test(NAME ChessEngineSearchTests COMMAND ChessEngineSearchTests)
+    add_test(NAME ChessEngineM22PruningTests COMMAND ChessEngineM22PruningTests)
 endif()
