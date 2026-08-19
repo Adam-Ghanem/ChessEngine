@@ -2,9 +2,8 @@
 
 #include "chess/game_state.hpp"
 
-#include <atomic>
-#include <chrono>
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -30,6 +29,11 @@ struct SearchResult {
 class Engine {
 public:
     Engine();
+    ~Engine();
+    Engine(Engine&&) noexcept;
+    Engine& operator=(Engine&&) noexcept;
+    Engine(const Engine&) = delete;
+    Engine& operator=(const Engine&) = delete;
 
     void stop() noexcept;
     void clearHash() noexcept;
@@ -43,7 +47,7 @@ public:
 
 private:
     struct Impl;
-    Impl* impl_;
+    std::unique_ptr<Impl> impl_;
 };
 
 } // namespace chess
