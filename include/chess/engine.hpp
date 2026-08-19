@@ -39,6 +39,9 @@ public:
     void stop() noexcept;
     void clearHash() noexcept;
     void setHashSizeMb(std::size_t megabytes);
+    void setNullMovePruning(bool enabled) noexcept;
+    void setLmr(bool enabled) noexcept;
+    void setFutilityPruning(bool enabled) noexcept;
 
     int evaluate(const Position& position) const noexcept;
     SearchResult search(const Position& position, const SearchLimits& limits);
