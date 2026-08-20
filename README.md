@@ -61,6 +61,18 @@ bench 6
 
 The UCI `Hash` option controls the transposition-table size in MB.
 
+## WebAssembly build
+
+The repository includes a small Embind bridge for a real browser integration. It accepts a FEN plus a requested depth and returns the C++ engine’s best move, score, depth, nodes, and principal variation as JSON.
+
+```bash
+sudo apt-get install emscripten
+chmod +x tools/build-wasm.sh
+tools/build-wasm.sh /path/to/output
+```
+
+The script emits `chessengine-wasm.js` and `chessengine-wasm.wasm`. The browser companion loads these assets through Emscripten’s modularized ES-module output; it never presents a heuristic reply as a native-engine result.
+
 ## Search architecture
 
 The search layer is intentionally separate from the chess-rule implementation:
