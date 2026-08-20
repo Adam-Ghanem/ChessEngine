@@ -433,6 +433,7 @@ struct Engine::Impl {
         }
 
         const int originalAlpha = alpha;
+        const int staticEval = futilityPruning ? evaluateForSide(state.position()) : 0;
         auto moves = orderedMoves(state.position(), legal, ply, ttMove);
         int bestScore = -Infinity;
         Move bestMove{};
@@ -447,6 +448,13 @@ struct Engine::Impl {
             const bool killerMove = ply < MaxPly && (m == killers1[ply] || m == killers2[ply]);
             const bool reduceMove = lmr && !inCheck && !givesCheck && quietMove &&
                 !killerMove && moveNumber >= 4 && depth >= 3;
+            const bool futilityCandidate = futilityPruning && !pvNode && !inCheck &&
+                !givesCheck && quietMove && !killerMove && moveNumber > 0 && depth <= 2;
+            if (futilityCandidate && staticEval + 120 + depth * 80 <= alpha) {
+                state.unmakeMove();
+                ++moveNumber;
+                continue;
+            }
             int score;
 
             if (moveNumber == 0) {
@@ -518,7 +526,12 @@ struct Engine::Impl {
         }
         const auto rootMoves = generateLegalMoves(root);
         SearchResult result;
-        if (rootMoves.empty()) return result;
+        if (rootMoves.empty()) {
+            result.score = isInCheck(root) ? -MateScore : 0;
+            result.depth = 0;
+            result.nodes = 1;
+            return result;
+        }
         result.bestMove = rootMoves.front();
         const int maxDepth = limits.depth > 0 ? std::min(limits.depth, 64) : 64;
         int previousScore = 0;

@@ -19,6 +19,9 @@ The engine has completed the core chess pipeline through PERFT and now has a sub
 - **M19:** search regression coverage
 - **M20:** repeatable multi-position `bench` command
 - **M21:** upgraded search core with aspiration windows and selective check extensions
+- **M22:** null-move pruning with reversible state support and regression coverage
+- **M22.2:** late move reductions for quiet, non-critical moves with tactical safeguards
+- **M22.3:** shallow futility pruning with score-preservation regression coverage
 - **CI:** Release build plus AddressSanitizer/UndefinedBehaviorSanitizer verification
 
 Correctness remains the priority: the existing PERFT suite is kept as a regression gate before search changes are considered complete.
@@ -71,8 +74,11 @@ The search layer is intentionally separate from the chess-rule implementation:
 7. Quiescence search with check evasions
 8. Aspiration windows
 9. Selective check extensions
-10. UCI time management
-11. Deterministic benchmarking
+10. Null-move pruning
+11. Late move reductions
+12. Shallow futility pruning
+13. UCI time management
+14. Deterministic benchmarking
 
 ## Evaluation
 
@@ -87,6 +93,10 @@ The evaluation combines:
 - king/endgame piece-square terms
 
 The evaluation is deliberately deterministic and lightweight so search behavior remains reproducible.
+
+## Search pruning
+
+The pruning layer is conservative by design. Null-move pruning is restricted to non-PV positions that are not in check and contain non-pawn material. Late move reductions apply only to quiet, late, non-checking moves that are not killer moves, and reduced searches are re-searched when they raise alpha. Futility pruning is limited to shallow non-PV nodes and never removes captures, promotions, checks, or killer moves. These safeguards keep tactical correctness ahead of node-count reduction.
 
 ## Engineering priorities
 

@@ -10,11 +10,21 @@ chess::SearchResult searchWithLmr(const chess::Position& position, int depth, bo
     engine.setNullMovePruning(true);
     engine.setLmr(enabled);
     engine.setFutilityPruning(false);
-
     chess::SearchLimits limits;
     limits.depth = depth;
     return engine.search(position, limits);
 }
+
+chess::SearchResult searchWithFutility(const chess::Position& position, int depth, bool enabled) {
+    chess::Engine engine;
+    engine.setNullMovePruning(false);
+    engine.setLmr(false);
+    engine.setFutilityPruning(enabled);
+    chess::SearchLimits limits;
+    limits.depth = depth;
+    return engine.search(position, limits);
+}
+
 
 } // namespace
 
@@ -72,8 +82,22 @@ int main() {
     assert(nodesOff.nodes > 0);
     assert(nodesOn.nodes < nodesOff.nodes);
 
-    std::cout << "M22.2 LMR tests passed\n";
+    const SearchResult quietOff = searchWithFutility(start, 5, false);
+    const SearchResult quietOn = searchWithFutility(start, 5, true);
+    assert(quietOff.score == quietOn.score);
+    assert(quietOff.bestMove == quietOn.bestMove);
+    assert(quietOff.nodes > 0);
+    assert(quietOn.nodes < quietOff.nodes);
+
+    const SearchResult futilityMateOff = searchWithFutility(winning, 4, false);
+    const SearchResult futilityMateOn = searchWithFutility(winning, 4, true);
+    assert(futilityMateOff.score == futilityMateOn.score);
+    assert(futilityMateOn.score > 29000);
+
+    std::cout << "M22.2/M22.3 pruning tests passed\n";
     std::cout << "LMR nodes: " << nodesOn.nodes
               << " vs disabled: " << nodesOff.nodes << '\n';
+    std::cout << "Futility nodes: " << quietOn.nodes
+              << " vs disabled: " << quietOff.nodes << '\n';
     return 0;
 }
