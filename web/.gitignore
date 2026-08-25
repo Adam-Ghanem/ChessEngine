@@ -1,0 +1,29 @@
+node_modules/
+dist/
+.manus-logs/
+*** Add File: /home/ubuntu/ChessEngine/web/README.md
+# ChessEngine Web Workstation
+
+This directory contains the first product-facing frontend for ChessEngine: a dark-first, responsive game-analysis workstation. The C++ engine remains separate from this UI; the intended browser boundary is the existing Embind/WebAssembly bridge in `src/web/wasm_bridge.cpp`.
+
+## Current capability
+
+The UI implements the flagship analysis screen with a responsive board, selected-square and legal-target feedback, evaluation spine and trace, synchronized move navigation, engine-analysis state, explanation panel, critical moments, accuracy summary, light/dark mode, keyboard focus, and reduced-motion support. The current screen intentionally uses local structured sample data until a PGN/game-state adapter and WebAssembly engine assets are connected.
+
+## Run locally
+
+```bash
+pnpm install
+pnpm dev
+```
+
+Use `pnpm check` for TypeScript validation and `pnpm build` for the production bundle.
+
+## Engine integration
+
+1. Build `chessengine-wasm.js` and `chessengine-wasm.wasm` with `tools/build-wasm.sh`.
+2. Place the generated browser assets in the frontend deployment pipeline.
+3. Add a typed `EngineClient` that loads the modularized Emscripten module and calls `analyzePosition(fen, depth)`.
+4. Convert each selected PGN ply to a FEN and normalize the bridge response into the UI’s `AnalysisMove` contract.
+
+The full implementation roadmap is available at `../docs/UI_UX_IMPLEMENTATION_PLAN.md`.
