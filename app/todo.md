@@ -1,0 +1,33 @@
+# ChessIQ Rebrand Checklist
+
+- [x] Audit every current frontend component, design token, responsive rule, motion rule, and accessibility treatment.
+- [x] Complete the ChessIQ prompt review and record the scoped UI/UX implementation plan.
+- [x] Generate and apply the ChessIQ logo mark and signature visual assets.
+- [x] Centralize ChessIQ color, typography, spacing, radius, shadow, border, motion, z-index, and breakpoint tokens.
+- [x] Replace all product-facing ChessEngine identity with ChessIQ, including metadata and favicon.
+- [x] Refine the flagship analysis workstation around IQ Pulse, Calculation Grid, and Analysis Thread.
+- [x] Upgrade board states, evaluation spine, graph markers, and classification interactions.
+- [x] Add polished loading, empty, error, onboarding, and mobile-specific states.
+- [x] Refine board squares, coordinates, and piece rendering using the supplied clean tournament-board reference while preserving ChessIQ identity.
+- [x] Replace the current glyph treatment with an original rounded tournament-piece set that better matches the supplied visual reference.
+- [x] Add synchronized 3D-like move, capture, castling, and promotion motion for the ChessIQ pieces.
+- [x] Redraw ChessIQ king, queen, rook, bishop, knight, and pawn silhouettes with the supplied thicker rounded black-outline style.
+- [x] Replace the current vector silhouettes with a cleaner, less over-detailed original piece family that better captures the supplied reference’s simple rounded visual hierarchy.
+- [x] Remove the hand-drawn piece system and integrate one coherent professionally designed, legally usable SVG piece family.
+- [x] Add an animated ChessIQ Game Review card that surfaces Brilliant, Best, Mistake, and Blunder explanations during analysis.
+- [x] Add a compact animated classification marker above the moved ChessIQ piece after analysis.
+- [x] Commit and push the staged ChessIQ frontend and documentation to the ChessEngine GitHub repository.
+- [x] Resolve the Vercel output-directory configuration and confirm a successful production deployment.
+- [x] Upgrade ChessIQ to a full-stack project with authenticated users, database persistence, and secure backend routes.
+- [x] Implement playable local chess games with legal moves, promotion, game state, and PGN export/import.
+- [x] Connect real position analysis to the first-party ChessEngine C++ runtime with bounded-depth fallback errors.
+- [x] Persist games, analysis sessions, lessons, puzzle attempts, and user progress.
+- [x] Build usable Play, Learn, Puzzles, Games, Progress, and Coach product workflows from live persisted data.
+- [x] Validate TypeScript, production build, keyboard focus, reduced motion, desktop and mobile rendering.
+- [x] Add a user-facing promotion choice for queen, rook, bishop, or knight and verify legal persisted moves for each option.
+- [x] Run and document keyboard-focus, reduced-motion, and wider mobile-route validation for core ChessIQ product controls.
+- [x] Perform and document an explicit keyboard-only validation pass across Play, Analyze, Learn, Puzzles, Games, Progress, and Coach.
+- [x] Verify and document reduced-motion behavior with motion preferences enabled on core product routes.
+- [ ] Synchronize the final frontend source and design documentation into the ChessEngine repository staging directory.
+- [ ] Add an explicit full-stack deployment handoff that distinguishes the real Docker service from the static Vercel preview.
+- [ ] Commit and push the synchronized full-stack ChessIQ source without modifying the original C++ engine implementation.

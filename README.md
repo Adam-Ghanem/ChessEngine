@@ -113,3 +113,15 @@ The pruning layer is conservative by design. Null-move pruning is restricted to 
 ## Engineering priorities
 
 Correctness comes before optimization. Every major subsystem is compiled and regression-tested before it is used by the next layer. CI also runs sanitizer builds to catch memory errors and undefined behavior.
+
+## ChessIQ application
+
+The repository now also contains **ChessIQ**, a full-stack chess product in [`app/`](app/). It preserves this repository’s C++ engine and adds authenticated play, saved games, PGN import/export, bounded C++ UCI analysis, lessons, puzzles, private progress, and activity-derived coaching.
+
+| Directory | Purpose | Runtime scope |
+| --- | --- | --- |
+| `app/` | Real ChessIQ Node, database, OAuth, and C++ engine service | Full product deployment |
+| `web/` | Historical static analysis UI | Visual Vercel preview only |
+| `src/` | Original C++20 ChessEngine | Engine development and UCI tooling |
+
+For the real product, start with [`app/docs/CHESSIQ_FULLSTACK_DEPLOYMENT.md`](app/docs/CHESSIQ_FULLSTACK_DEPLOYMENT.md). The full-stack service is containerized so it can compile and run the first-party C++ engine alongside the Node API. The static Vercel preview in `web/` does not provide OAuth, database persistence, or server-side engine execution.

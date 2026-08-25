@@ -1,0 +1,258 @@
+
+> ChessEngine-web@1.0.0 test:accessibility /home/ubuntu/ChessEngine-web
+> node scripts/verify-accessibility.mjs
+
+{
+  "focusReport": [
+    {
+      "route": "/play",
+      "firstFocus": [
+        {
+          "tag": "A",
+          "label": "CHESSIQ",
+          "outline": "auto",
+          "outlineWidth": "1px"
+        },
+        {
+          "tag": "A",
+          "label": "Play",
+          "outline": "auto",
+          "outlineWidth": "1px"
+        },
+        {
+          "tag": "A",
+          "label": "Analyze",
+          "outline": "auto",
+          "outlineWidth": "1px"
+        },
+        {
+          "tag": "A",
+          "label": "Learn",
+          "outline": "auto",
+          "outlineWidth": "1px"
+        },
+        {
+          "tag": "A",
+          "label": "Puzzles",
+          "outline": "auto",
+          "outlineWidth": "1px"
+        }
+      ]
+    },
+    {
+      "route": "/analyze",
+      "firstFocus": [
+        {
+          "tag": "A",
+          "label": "CHESSIQ",
+          "outline": "auto",
+          "outlineWidth": "1px"
+        },
+        {
+          "tag": "A",
+          "label": "Play",
+          "outline": "auto",
+          "outlineWidth": "1px"
+        },
+        {
+          "tag": "A",
+          "label": "Analyze",
+          "outline": "auto",
+          "outlineWidth": "1px"
+        },
+        {
+          "tag": "A",
+          "label": "Learn",
+          "outline": "auto",
+          "outlineWidth": "1px"
+        },
+        {
+          "tag": "A",
+          "label": "Puzzles",
+          "outline": "auto",
+          "outlineWidth": "1px"
+        }
+      ]
+    },
+    {
+      "route": "/learn",
+      "firstFocus": [
+        {
+          "tag": "A",
+          "label": "CHESSIQ",
+          "outline": "auto",
+          "outlineWidth": "1px"
+        },
+        {
+          "tag": "A",
+          "label": "Play",
+          "outline": "auto",
+          "outlineWidth": "1px"
+        },
+        {
+          "tag": "A",
+          "label": "Analyze",
+          "outline": "auto",
+          "outlineWidth": "1px"
+        },
+        {
+          "tag": "A",
+          "label": "Learn",
+          "outline": "auto",
+          "outlineWidth": "1px"
+        },
+        {
+          "tag": "A",
+          "label": "Puzzles",
+          "outline": "auto",
+          "outlineWidth": "1px"
+        }
+      ]
+    },
+    {
+      "route": "/puzzles",
+      "firstFocus": [
+        {
+          "tag": "A",
+          "label": "CHESSIQ",
+          "outline": "auto",
+          "outlineWidth": "1px"
+        },
+        {
+          "tag": "A",
+          "label": "Play",
+          "outline": "auto",
+          "outlineWidth": "1px"
+        },
+        {
+          "tag": "A",
+          "label": "Analyze",
+          "outline": "auto",
+          "outlineWidth": "1px"
+        },
+        {
+          "tag": "A",
+          "label": "Learn",
+          "outline": "auto",
+          "outlineWidth": "1px"
+        },
+        {
+          "tag": "A",
+          "label": "Puzzles",
+          "outline": "auto",
+          "outlineWidth": "1px"
+        }
+      ]
+    },
+    {
+      "route": "/games",
+      "firstFocus": [
+        {
+          "tag": "A",
+          "label": "CHESSIQ",
+          "outline": "auto",
+          "outlineWidth": "1px"
+        },
+        {
+          "tag": "A",
+          "label": "Play",
+          "outline": "auto",
+          "outlineWidth": "1px"
+        },
+        {
+          "tag": "A",
+          "label": "Analyze",
+          "outline": "auto",
+          "outlineWidth": "1px"
+        },
+        {
+          "tag": "A",
+          "label": "Learn",
+          "outline": "auto",
+          "outlineWidth": "1px"
+        },
+        {
+          "tag": "A",
+          "label": "Puzzles",
+          "outline": "auto",
+          "outlineWidth": "1px"
+        }
+      ]
+    },
+    {
+      "route": "/progress",
+      "firstFocus": [
+        {
+          "tag": "A",
+          "label": "CHESSIQ",
+          "outline": "auto",
+          "outlineWidth": "1px"
+        },
+        {
+          "tag": "A",
+          "label": "Play",
+          "outline": "auto",
+          "outlineWidth": "1px"
+        },
+        {
+          "tag": "A",
+          "label": "Analyze",
+          "outline": "auto",
+          "outlineWidth": "1px"
+        },
+        {
+          "tag": "A",
+          "label": "Learn",
+          "outline": "auto",
+          "outlineWidth": "1px"
+        },
+        {
+          "tag": "A",
+          "label": "Puzzles",
+          "outline": "auto",
+          "outlineWidth": "1px"
+        }
+      ]
+    },
+    {
+      "route": "/coach",
+      "firstFocus": [
+        {
+          "tag": "A",
+          "label": "CHESSIQ",
+          "outline": "auto",
+          "outlineWidth": "1px"
+        },
+        {
+          "tag": "A",
+          "label": "Play",
+          "outline": "auto",
+          "outlineWidth": "1px"
+        },
+        {
+          "tag": "A",
+          "label": "Analyze",
+          "outline": "auto",
+          "outlineWidth": "1px"
+        },
+        {
+          "tag": "A",
+          "label": "Learn",
+          "outline": "auto",
+          "outlineWidth": "1px"
+        },
+        {
+          "tag": "A",
+          "label": "Puzzles",
+          "outline": "auto",
+          "outlineWidth": "1px"
+        }
+      ]
+    }
+  ],
+  "motionReport": {
+    "reducedMotionMatches": true,
+    "buttonAnimationDuration": "1e-05s",
+    "buttonTransitionDuration": "1e-05s"
+  }
+}
