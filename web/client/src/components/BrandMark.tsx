@@ -6,7 +6,7 @@ interface BrandMarkProps { compact?: boolean; }
 export function BrandMark({ compact = false }: BrandMarkProps) {
   return (
     <div className="brand-lockup" aria-label="ChessIQ">
-      <img className="brand-mark" src="/manus-storage/chessiq-mark_9f1c1596.png" alt="" />
+      <span className="brand-mark brand-mark-glyph" aria-hidden="true"><i /><b /></span>
       {!compact && <span className="brand-wordmark">CHESS<span>IQ</span><i aria-hidden="true" /></span>}
     </div>
   );

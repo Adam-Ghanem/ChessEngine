@@ -16,5 +16,7 @@
 - [x] Remove the hand-drawn piece system and integrate one coherent professionally designed, legally usable SVG piece family.
 - [x] Add an animated ChessIQ Game Review card that surfaces Brilliant, Best, Mistake, and Blunder explanations during analysis.
 - [x] Add a compact animated classification marker above the moved ChessIQ piece after analysis.
+- [x] Commit and push the staged ChessIQ frontend and documentation to the ChessEngine GitHub repository.
+- [ ] Resolve the Vercel output-directory configuration and confirm a successful production deployment.
 - [ ] Validate TypeScript, production build, keyboard focus, reduced motion, desktop and mobile rendering.
 - [ ] Synchronize the final frontend source and design documentation into the ChessEngine repository staging directory.

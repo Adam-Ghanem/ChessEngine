@@ -8,8 +8,8 @@ export type ChessPieceKind = "K" | "Q" | "R" | "B" | "N" | "P";
 interface ChessPieceProps { color: PieceColor; kind: ChessPieceKind; className?: string; }
 
 const pieceAssets: Record<PieceColor, Record<ChessPieceKind, string>> = {
-  black: { B: "/manus-storage/bb_38e24902.svg", K: "/manus-storage/bk_864daf7a.svg", N: "/manus-storage/bn_fa1614bf.svg", P: "/manus-storage/bp_b6d40493.svg", Q: "/manus-storage/bq_d33b0b2c.svg", R: "/manus-storage/br_1b48ed41.svg" },
-  white: { B: "/manus-storage/wb_397bd9a9.svg", K: "/manus-storage/wk_5f1c8489.svg", N: "/manus-storage/wn_ddfefbf5.svg", P: "/manus-storage/wp_49b4863d.svg", Q: "/manus-storage/wq_586beb28.svg", R: "/manus-storage/wr_ceaf83bb.svg" },
+  black: { B: "https://raw.githubusercontent.com/kmar/chess_svg_piece_sets/main/meridian_shaded/bb.svg", K: "https://raw.githubusercontent.com/kmar/chess_svg_piece_sets/main/meridian_shaded/bk.svg", N: "https://raw.githubusercontent.com/kmar/chess_svg_piece_sets/main/meridian_shaded/bn.svg", P: "https://raw.githubusercontent.com/kmar/chess_svg_piece_sets/main/meridian_shaded/bp.svg", Q: "https://raw.githubusercontent.com/kmar/chess_svg_piece_sets/main/meridian_shaded/bq.svg", R: "https://raw.githubusercontent.com/kmar/chess_svg_piece_sets/main/meridian_shaded/br.svg" },
+  white: { B: "https://raw.githubusercontent.com/kmar/chess_svg_piece_sets/main/meridian_shaded/wb.svg", K: "https://raw.githubusercontent.com/kmar/chess_svg_piece_sets/main/meridian_shaded/wk.svg", N: "https://raw.githubusercontent.com/kmar/chess_svg_piece_sets/main/meridian_shaded/wn.svg", P: "https://raw.githubusercontent.com/kmar/chess_svg_piece_sets/main/meridian_shaded/wp.svg", Q: "https://raw.githubusercontent.com/kmar/chess_svg_piece_sets/main/meridian_shaded/wq.svg", R: "https://raw.githubusercontent.com/kmar/chess_svg_piece_sets/main/meridian_shaded/wr.svg" },
 };
 
 export function ChessPiece({ color, kind, className = "" }: ChessPieceProps) {
