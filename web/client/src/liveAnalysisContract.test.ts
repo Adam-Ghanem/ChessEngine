@@ -2,11 +2,13 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 describe("production live ChessEngine analysis", () => {
-  it("calls the production analysis function from the visible Analyze action", () => {
+  it("calls the production analysis client from the visible Analyze action", () => {
     const home = readFileSync(new URL("./pages/Home.tsx", import.meta.url), "utf8");
-    expect(home).toContain('fetch("/api/analyze"');
+    const client = readFileSync(new URL("./engine/serverEngine.ts", import.meta.url), "utf8");
+    expect(home).toContain("analyzePosition(");
     expect(home).toContain("setEngineAnalysis");
     expect(home).not.toContain("ChessIQ is calculating this position.");
+    expect(client).toContain('fetch("/api/analyze"');
   });
 
   it("renders real engine output when a live result is available", () => {
