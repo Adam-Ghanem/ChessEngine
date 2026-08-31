@@ -69,8 +69,23 @@ async function queryEngine(fen: string, move?: string): Promise<PlayResult> {
 
 export default async function handler(request: any, response: any) {
   response.setHeader("Cache-Control", "no-store");
+
+  if (request.method === "GET") {
+    if (request.query?.smoke !== "1") {
+      response.setHeader("Allow", "GET, POST");
+      return response.status(400).json({ error: "Use ?smoke=1 for the runtime check" });
+    }
+    try {
+      const result = await queryEngine(START_FEN);
+      return response.status(200).json({ ...result, smoke: true });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "ChessEngine play smoke check failed";
+      return response.status(500).json({ error: message, smoke: true });
+    }
+  }
+
   if (request.method !== "POST") {
-    response.setHeader("Allow", "POST");
+    response.setHeader("Allow", "GET, POST");
     return response.status(405).json({ error: "Method not allowed" });
   }
 
