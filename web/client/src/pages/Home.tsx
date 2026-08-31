@@ -1,7 +1,7 @@
 /**
  * ChessIQ analysis workspace — board-first product experience.
  */
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   BarChart3,
@@ -34,11 +34,14 @@ import { MoveList } from "@/components/MoveList";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { sampleGame } from "@/data/sampleAnalysis";
 import { useTheme } from "@/contexts/ThemeContext";
+import { analyzePosition, type ServerEngineAnalysis } from "@/engine/serverEngine";
 import type { AnalysisMode } from "@/types/analysis";
 
 export default function Home() {
   const [activeIndex, setActiveIndex] = useState(10);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [analysisError, setAnalysisError] = useState<string | null>(null);
+  const [engineAnalysis, setEngineAnalysis] = useState<{ moveIndex: number; result: ServerEngineAnalysis } | null>(null);
   const [mode, setMode] = useState<AnalysisMode>("beginner");
   const [practiceIndex, setPracticeIndex] = useState<number | null>(null);
   const [reviewIndex, setReviewIndex] = useState<number | null>(() => {
@@ -56,12 +59,12 @@ export default function Home() {
   const canGoForward = activeIndex < moves.length - 1;
   const modeLabel = mode === "advanced" ? "Advanced" : "Beginner";
   const practiceMove = practiceIndex === null ? null : moves[practiceIndex];
-
-  useEffect(() => {
-    if (!isAnalyzing) return undefined;
-    const timer = window.setTimeout(() => setIsAnalyzing(false), 2400);
-    return () => window.clearTimeout(timer);
-  }, [isAnalyzing]);
+  const liveAnalysis = engineAnalysis?.moveIndex === activeIndex ? engineAnalysis.result : null;
+  const liveScore = liveAnalysis ? liveAnalysis.scoreCp / 100 : currentMove.evaluation.score;
+  const liveBestMove = liveAnalysis?.bestMove ?? currentMove.bestMove;
+  const liveArrow = liveAnalysis && /^[a-h][1-8][a-h][1-8]/.test(liveAnalysis.bestMove)
+    ? { from: liveAnalysis.bestMove.slice(0, 2), to: liveAnalysis.bestMove.slice(2, 4) }
+    : { from: currentMove.from, to: currentMove.to };
 
   const activeMoment = useMemo(
     () => criticalMoments.find((moment) => moment.moveIndex === activeIndex),
@@ -71,13 +74,28 @@ export default function Home() {
   function selectMove(index: number, revealReview = false) {
     const nextIndex = Math.max(0, Math.min(moves.length - 1, index));
     setActiveIndex(nextIndex);
+    setAnalysisError(null);
     if (revealReview) setReviewIndex(nextIndex);
   }
 
-  function startAnalysis() {
+  async function startAnalysis() {
+    if (isAnalyzing) return;
+    const analyzedIndex = activeIndex;
     setIsAnalyzing(true);
-    window.setTimeout(() => setReviewIndex(activeIndex), 520);
-    toast("ChessIQ is calculating this position.");
+    setAnalysisError(null);
+
+    try {
+      const result = await analyzePosition(currentMove.fen, mode === "advanced" ? 8 : 5);
+      setEngineAnalysis({ moveIndex: analyzedIndex, result });
+      setReviewIndex(analyzedIndex);
+      toast.success(`ChessEngine found ${result.bestMove} at depth ${result.depth}.`);
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "ChessEngine analysis failed";
+      setAnalysisError(message);
+      toast.error(message);
+    } finally {
+      setIsAnalyzing(false);
+    }
   }
 
   function startTryAgain(index: number) {
@@ -147,7 +165,7 @@ export default function Home() {
             </div>
             <div className={isAnalyzing ? "engine-status is-live" : "engine-status"}>
               <span>Engine</span>
-              <strong>{isAnalyzing ? "Calculating" : "Ready"}</strong>
+              <strong>{isAnalyzing ? "Calculating" : liveAnalysis ? `Live · d${liveAnalysis.depth}` : "Ready"}</strong>
             </div>
           </div>
         </section>
@@ -168,11 +186,11 @@ export default function Home() {
 
               <div className="analysis-board-stage">
                 <div className="analysis-board-wrap">
-                  <EvaluationBar evaluation={currentMove.evaluation} />
+                  <EvaluationBar evaluation={{ ...currentMove.evaluation, score: liveScore }} />
                   <ChessBoard
                     fen={currentMove.fen}
                     lastMove={{ from: currentMove.from, to: currentMove.to }}
-                    engineArrow={{ from: currentMove.from, to: currentMove.to }}
+                    engineArrow={liveArrow}
                     classification={currentMove.classification}
                     showClassificationMarker={reviewIndex === activeIndex}
                   />
@@ -228,8 +246,9 @@ export default function Home() {
               </div>
               <button className="primary-action analysis-primary-action" onClick={startAnalysis} disabled={isAnalyzing}>
                 <BarChart3 size={17} />
-                {isAnalyzing ? "Calculating…" : "Analyze position"}
+                {isAnalyzing ? "Calculating…" : liveAnalysis ? "Analyze again" : "Analyze position"}
               </button>
+              {analysisError && <p className="analysis-inline-error" role="alert">{analysisError}</p>}
               <div className="analysis-quick-actions">
                 <button aria-label="Toggle analysis detail" onClick={() => setMode((current) => current === "beginner" ? "advanced" : "beginner")}><SlidersHorizontal size={17} /> Detail</button>
                 <button aria-label="Import a PGN" onClick={() => toast("PGN import will be available from the Games workspace.")}><FileUp size={17} /> Import</button>
@@ -237,7 +256,7 @@ export default function Home() {
               </div>
             </section>
 
-            <AnalysisPanel move={currentMove} mode={mode} isAnalyzing={isAnalyzing} />
+            <AnalysisPanel move={currentMove} mode={mode} isAnalyzing={isAnalyzing} liveAnalysis={liveAnalysis} />
 
             <section className="analysis-insight-card" aria-labelledby="explanation-heading">
               <div className="analysis-section-heading compact">
@@ -248,8 +267,8 @@ export default function Home() {
                 <ClassificationBadge classification={currentMove.classification} />
                 <strong>{currentMove.fullMove}{currentMove.side === "black" ? "…" : "."} {currentMove.san}</strong>
               </div>
-              <p>{currentMove.explanation}</p>
-              <div className="analysis-best-move"><span>Best move</span><strong>{currentMove.bestMove}</strong></div>
+              <p>{liveAnalysis ? `Live ChessEngine search at depth ${liveAnalysis.depth}. Principal variation: ${liveAnalysis.principalVariation || "not returned"}.` : currentMove.explanation}</p>
+              <div className="analysis-best-move"><span>Best move</span><strong>{liveBestMove}</strong></div>
               {activeMoment?.practiceIndex !== undefined && (
                 <button className="inline-try-again" onClick={() => startTryAgain(activeMoment.practiceIndex!)}><RotateCcw size={13} /> Try again from here</button>
               )}
