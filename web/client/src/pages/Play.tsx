@@ -62,7 +62,7 @@ export default function Play() {
       .catch(err => { if (!cancelled) setError(err instanceof Error ? err.message : "Unable to load legal moves"); })
       .finally(() => { if (!cancelled) setBusy(false); });
     return () => { cancelled = true; };
-  }, []);
+  }, [fen]);
 
   async function applyComputerReply(positionFen: string, availableMoves: string[]) {
     if (!availableMoves.length) return;
@@ -132,7 +132,13 @@ export default function Play() {
     setSelected(null);
     setError(null);
     setComputerThinking(false);
-    fetchLegalMoves(START_FEN).then(result => setLegalMoves(result.legalMoves)).catch(() => undefined);
+    if (fen === START_FEN) {
+      setBusy(true);
+      fetchLegalMoves(START_FEN)
+        .then(result => setLegalMoves(result.legalMoves))
+        .catch(err => setError(err instanceof Error ? err.message : "Unable to load legal moves"))
+        .finally(() => setBusy(false));
+    }
     toast(nextMode === "computer" ? "New game vs ChessIQ ready." : "New local game ready.");
   }
 
