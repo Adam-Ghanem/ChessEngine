@@ -1,6 +1,9 @@
+export type PlayEngineStatus = "ongoing" | "check" | "checkmate" | "stalemate" | "draw";
+
 export type PlayEngineState = {
   fen: string;
   legalMoves: string[];
+  status: "ongoing" | "check" | "checkmate" | "stalemate" | "draw";
   engine: string;
 };
 
