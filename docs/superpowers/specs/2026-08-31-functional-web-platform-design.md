@@ -57,7 +57,7 @@ Primary behavior:
 
 - start position by default;
 - click source square then legal destination;
-- promotion defaults to queen initially with a small promotion choice if straightforward to support;
+- pawn promotion automatically promotes to queen in this milestone;
 - New Game, Undo, Reset;
 - live turn/game-status label;
 - move list.
@@ -74,7 +74,7 @@ Analyze will no longer depend on the fixed `sampleGame` as the only usable input
 - Load Position action with validation;
 - analysis of the currently loaded FEN;
 - live result rendering: best move, centipawn score, depth, PV, engine name;
-- optional board arrow for the engine best move;
+- board arrow for a valid engine best move;
 - loading and error states that reflect the actual API response.
 
 The legacy sample review data may remain only as an optional example dataset, never as the source of truth for live engine output.
@@ -101,7 +101,7 @@ Provide a curated local puzzle catalog with:
 - title/theme/difficulty;
 - expected UCI solution line.
 
-The player makes legal moves on the same shared board logic. ChessIQ validates the entered move sequence against the expected solution and shows solved/try-again state. Puzzle completion can be stored in `localStorage`.
+The player makes legal moves on the same shared board logic. ChessIQ validates the entered move sequence against the expected solution and shows solved/try-again state. Solved puzzle keys are stored in `localStorage`.
 
 ### 7. Mobile layout
 
