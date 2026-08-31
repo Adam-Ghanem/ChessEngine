@@ -1,7 +1,6 @@
 import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import { normalizeDepth, parseUciInfo } from "../shared/engineProtocol";
 
 const SMOKE_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
@@ -13,6 +12,29 @@ type AnalysisResult = {
   engine: string;
 };
 
+type ParsedUciInfo = {
+  depth: number;
+  scoreCp: number;
+  principalVariation: string;
+};
+
+function normalizeDepth(requestedDepth: number) {
+  if (!Number.isFinite(requestedDepth)) return 4;
+  return Math.max(1, Math.min(8, Math.floor(requestedDepth)));
+}
+
+function parseUciInfo(line: string): ParsedUciInfo {
+  const depth = Number(line.match(/\bdepth\s+(\d+)/)?.[1] ?? 0);
+  const scoreMatch = line.match(/\bscore\s+(cp|mate)\s+(-?\d+)/);
+  const scoreCp = scoreMatch
+    ? scoreMatch[1] === "mate"
+      ? Math.sign(Number(scoreMatch[2])) * 10_000
+      : Number(scoreMatch[2])
+    : 0;
+  const principalVariation = line.match(/\bpv\s+(.+)$/)?.[1] ?? "";
+  return { depth, scoreCp, principalVariation };
+}
+
 function isSafeFen(value: unknown): value is string {
   if (typeof value !== "string") return false;
   const fen = value.trim();
@@ -23,9 +45,7 @@ function isSafeFen(value: unknown): value is string {
 async function analyze(fen: string, requestedDepth: number): Promise<AnalysisResult> {
   const depth = normalizeDepth(requestedDepth);
   const enginePath = path.join(process.cwd(), "api", "bin", "ChessEngine");
-  if (!fs.existsSync(enginePath)) {
-    throw new Error("ChessEngine binary is unavailable in this deployment");
-  }
+  if (!fs.existsSync(enginePath)) throw new Error("ChessEngine binary is unavailable in this deployment");
 
   return new Promise((resolve, reject) => {
     const engineProcess = spawn(enginePath, [], { stdio: ["pipe", "pipe", "pipe"] });
@@ -48,10 +68,7 @@ async function analyze(fen: string, requestedDepth: number): Promise<AnalysisRes
       if (trimmed.startsWith("info ")) latest = { ...latest, ...parseUciInfo(trimmed) };
       if (trimmed.startsWith("bestmove ")) {
         const bestMove = trimmed.split(/\s+/)[1] ?? "";
-        if (!bestMove || bestMove === "0000") {
-          finish(new Error("ChessEngine did not find a legal move"));
-          return;
-        }
+        if (!bestMove || bestMove === "0000") return finish(new Error("ChessEngine did not find a legal move"));
         finish(undefined, {
           bestMove,
           scoreCp: latest.scoreCp,
@@ -88,7 +105,6 @@ export default async function handler(request: any, response: any) {
       response.setHeader("Allow", "POST");
       return response.status(405).json({ error: "Use POST for position analysis" });
     }
-
     try {
       const result = await analyze(SMOKE_FEN, 1);
       return response.status(200).json({ ...result, smoke: true });
