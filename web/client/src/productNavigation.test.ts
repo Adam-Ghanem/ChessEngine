@@ -11,7 +11,9 @@ describe("ChessIQ production product navigation", () => {
     expect(app).toContain('path="/learn"');
     expect(app).toContain('path="/puzzles"');
     expect(home).toContain('href="/learn"');
+    expect(home).toContain('href="/puzzles"');
     expect(home).not.toContain("Learning workspace is coming next.");
+    expect(home).not.toContain("Puzzle training is coming next.");
     expect(learn).toContain('href="/puzzles"');
     expect(learn).not.toContain("Puzzle training is the next production surface.");
   });
