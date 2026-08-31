@@ -10,13 +10,8 @@
     }
   },
   "rewrites": [
-    {
-      "source": "/analyze",
-      "destination": "/index.html"
-    },
-    {
-      "source": "/learn",
-      "destination": "/index.html"
-    }
+    { "source": "/analyze", "destination": "/index.html" },
+    { "source": "/learn", "destination": "/index.html" },
+    { "source": "/puzzles", "destination": "/index.html" }
   ]
 }
