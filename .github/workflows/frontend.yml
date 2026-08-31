@@ -4,20 +4,20 @@ on:
   push:
     branches: [main]
     paths:
-      - "web/**"
+      - "app/**"
       - ".github/workflows/frontend.yml"
   pull_request:
     branches: [main]
     paths:
-      - "web/**"
+      - "app/**"
       - ".github/workflows/frontend.yml"
 
 jobs:
-  web:
+  app:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: web
+        working-directory: app
 
     steps:
       - name: Checkout
@@ -33,7 +33,7 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
-          cache-dependency-path: web/pnpm-lock.yaml
+          cache-dependency-path: app/pnpm-lock.yaml
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
@@ -43,6 +43,9 @@ jobs:
 
       - name: TypeScript check
         run: pnpm run check
+
+      - name: Accessibility checks
+        run: pnpm run test:accessibility
 
       - name: Production build
         run: pnpm run build:vercel
