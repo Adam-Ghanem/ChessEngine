@@ -9,6 +9,7 @@
     "build:vercel": "vite build --config vite.prod.config.ts",
     "start": "NODE_ENV=production node dist/index.js",
     "preview": "vite preview --host",
+    "test": "vitest run",
     "check": "tsc --noEmit",
     "format": "prettier --write ."
   },
