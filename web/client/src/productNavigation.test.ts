@@ -40,17 +40,20 @@ describe("ChessIQ production product navigation", () => {
     expect(css).toContain("@media (max-width: 720px)");
   });
 
-  it("ships a real Puzzles workspace with persisted progress and accessible choices", () => {
+  it("ships an engine-backed interactive Puzzles workspace with persisted progress", () => {
     const puzzles = readFileSync(new URL("./pages/Puzzles.tsx", import.meta.url), "utf8");
     const css = readFileSync(new URL("./product-surfaces.css", import.meta.url), "utf8");
 
     expect(puzzles).toContain("ChessIQ Training");
     expect(puzzles).toContain("chessiq-puzzles-solved-v1");
-    expect(puzzles).toContain('role="group" aria-label="Candidate moves"');
+    expect(puzzles).toContain("LegalChessBoard");
+    expect(puzzles).toContain("fetchLegalMoves");
+    expect(puzzles).toContain("playMove");
+    expect(puzzles).not.toContain('aria-label="Candidate moves"');
     expect(puzzles).toContain('aria-live="polite"');
     expect(puzzles).toContain('href="/learn"');
     expect(css).toContain(".puzzles-layout");
-    expect(css).toContain(".puzzle-choices");
+    expect(css).toContain(".puzzle-feedback");
   });
 
   it("makes client-side product routes directly addressable on Vercel", () => {
