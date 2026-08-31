@@ -1,10 +1,9 @@
 import { useMemo, useState } from "react";
-import { BarChart3, Gauge, Moon, Sparkles, Sun } from "lucide-react";
+import { BarChart3, Gauge, Sparkles } from "lucide-react";
 import { Link } from "wouter";
 import { toast } from "sonner";
-import { BrandMark } from "@/components/BrandMark";
 import { ChessBoard } from "@/components/ChessBoard";
-import { useTheme } from "@/contexts/ThemeContext";
+import { ProductHeader } from "@/components/ProductHeader";
 import { analyzePosition, type ServerEngineAnalysis } from "@/engine/serverEngine";
 import { validateFenShape } from "@/engine/fen";
 import "@/fen-analyze.css";
@@ -12,7 +11,6 @@ import "@/fen-analyze.css";
 const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 export default function Analyze() {
-  const { theme, toggleTheme } = useTheme();
   const [draftFen, setDraftFen] = useState(START_FEN);
   const [loadedFen, setLoadedFen] = useState(START_FEN);
   const [depth, setDepth] = useState(6);
@@ -55,22 +53,7 @@ export default function Analyze() {
   return (
     <main className="app-shell chessiq-shell">
       <div className="analysis-product-shell fen-analyze-shell">
-        <header className="app-header product-header">
-          <Link href="/review" className="brand-link" aria-label="Open ChessIQ Game Review"><BrandMark /></Link>
-          <nav className="app-nav" aria-label="Primary navigation">
-            <Link className="nav-item" href="/play">Play</Link>
-            <Link className="nav-item is-active" href="/analyze" aria-current="page">Analyze</Link>
-            <Link className="nav-item" href="/review">Review</Link>
-            <Link className="nav-item" href="/learn">Learn</Link>
-            <Link className="nav-item" href="/puzzles">Puzzles</Link>
-          </nav>
-          <div className="header-actions">
-            <button className="theme-toggle" aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`} onClick={toggleTheme}>
-              {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
-              <span>{theme === "dark" ? "Light" : "Dark"}</span>
-            </button>
-          </div>
-        </header>
+        <ProductHeader activePath="/analyze" />
 
         <section className="analysis-hero fen-analyze-hero">
           <div className="analysis-hero-copy">
@@ -89,7 +72,7 @@ export default function Analyze() {
           <div className="analysis-board-card fen-board-card">
             <div className="analysis-card-header">
               <div><span className="analysis-label">Loaded position</span><h2>Board</h2></div>
-              <Link href="/review" className="fen-review-link">Open Game Review</Link>
+              <Link href="/play" className="fen-review-link">Open Play</Link>
             </div>
             <div className="analysis-board-stage">
               <div className="analysis-board-wrap fen-board-wrap">
