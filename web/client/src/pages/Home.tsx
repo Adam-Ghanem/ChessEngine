@@ -21,7 +21,7 @@ import {
   Sun,
   Target,
 } from "lucide-react";
-import { AnalysisPanel, type LiveEngineAnalysis } from "@/components/AnalysisPanel";
+import { AnalysisPanel } from "@/components/AnalysisPanel";
 import { AnalysisThread } from "@/components/AnalysisThread";
 import { BrandMark } from "@/components/BrandMark";
 import { ChessBoard } from "@/components/ChessBoard";
@@ -34,13 +34,14 @@ import { MoveList } from "@/components/MoveList";
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { sampleGame } from "@/data/sampleAnalysis";
 import { useTheme } from "@/contexts/ThemeContext";
+import { analyzePosition, type ServerEngineAnalysis } from "@/engine/serverEngine";
 import type { AnalysisMode } from "@/types/analysis";
 
 export default function Home() {
   const [activeIndex, setActiveIndex] = useState(10);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [analysisError, setAnalysisError] = useState<string | null>(null);
-  const [engineAnalysis, setEngineAnalysis] = useState<{ moveIndex: number; result: LiveEngineAnalysis } | null>(null);
+  const [engineAnalysis, setEngineAnalysis] = useState<{ moveIndex: number; result: ServerEngineAnalysis } | null>(null);
   const [mode, setMode] = useState<AnalysisMode>("beginner");
   const [practiceIndex, setPracticeIndex] = useState<number | null>(null);
   const [reviewIndex, setReviewIndex] = useState<number | null>(() => {
@@ -84,15 +85,7 @@ export default function Home() {
     setAnalysisError(null);
 
     try {
-      const response = await fetch("/api/analyze", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ fen: currentMove.fen, depth: mode === "advanced" ? 8 : 5 }),
-      });
-      const payload = await response.json().catch(() => ({}));
-      if (!response.ok) throw new Error(typeof payload.error === "string" ? payload.error : "ChessEngine analysis failed");
-
-      const result = payload as LiveEngineAnalysis;
+      const result = await analyzePosition(currentMove.fen, mode === "advanced" ? 8 : 5);
       setEngineAnalysis({ moveIndex: analyzedIndex, result });
       setReviewIndex(analyzedIndex);
       toast.success(`ChessEngine found ${result.bestMove} at depth ${result.depth}.`);
