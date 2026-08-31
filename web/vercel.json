@@ -7,9 +7,14 @@
     "api/analyze.ts": {
       "includeFiles": "api/bin/ChessEngine",
       "maxDuration": 15
+    },
+    "api/play.ts": {
+      "includeFiles": "api/bin/ChessEngine",
+      "maxDuration": 10
     }
   },
   "rewrites": [
+    { "source": "/play", "destination": "/index.html" },
     { "source": "/analyze", "destination": "/index.html" },
     { "source": "/learn", "destination": "/index.html" },
     { "source": "/puzzles", "destination": "/index.html" }
