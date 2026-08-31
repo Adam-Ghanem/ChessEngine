@@ -3,6 +3,7 @@
  */
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
+import { Link } from "wouter";
 import {
   BarChart3,
   ChevronLeft,
@@ -126,11 +127,11 @@ export default function Home() {
     <main className="app-shell chessiq-shell">
       <div className="analysis-product-shell">
         <header className="app-header product-header">
-          <BrandMark />
+          <Link href="/analyze" className="brand-link" aria-label="Open ChessIQ Analyze"><BrandMark /></Link>
           <nav className="app-nav" aria-label="Primary navigation">
             <button className="nav-item" onClick={() => toast("Play workspace is coming next.")}>Play</button>
-            <button className="nav-item is-active" aria-current="page">Analyze</button>
-            <button className="nav-item" onClick={() => toast("Learning workspace is coming next.")}>Learn</button>
+            <Link className="nav-item is-active" href="/analyze" aria-current="page">Analyze</Link>
+            <Link className="nav-item" href="/learn">Learn</Link>
             <button className="nav-item" onClick={() => toast("Puzzle training is coming next.")}>Puzzles</button>
           </nav>
           <div className="header-actions">
@@ -155,14 +156,8 @@ export default function Home() {
             <p>Navigate the game, inspect the engine line, and turn each critical position into something you can learn from.</p>
           </div>
           <div className="analysis-hero-meta" aria-label="Current analysis status">
-            <div>
-              <span>Position</span>
-              <strong>{currentPly}/{moves.length}</strong>
-            </div>
-            <div>
-              <span>Opening</span>
-              <strong>{opening}</strong>
-            </div>
+            <div><span>Position</span><strong>{currentPly}/{moves.length}</strong></div>
+            <div><span>Opening</span><strong>{opening}</strong></div>
             <div className={isAnalyzing ? "engine-status is-live" : "engine-status"}>
               <span>Engine</span>
               <strong>{isAnalyzing ? "Calculating" : liveAnalysis ? `Live · d${liveAnalysis.depth}` : "Ready"}</strong>
@@ -174,10 +169,7 @@ export default function Home() {
           <section className="analysis-main-column">
             <section className="analysis-board-card">
               <header className="analysis-card-header">
-                <div>
-                  <span className="analysis-label">Current position</span>
-                  <h2>{title}</h2>
-                </div>
+                <div><span className="analysis-label">Current position</span><h2>{title}</h2></div>
                 <div className="mode-switch" role="group" aria-label="Analysis detail mode">
                   <button className={mode === "beginner" ? "is-active" : ""} onClick={() => setMode("beginner")}>Beginner</button>
                   <button className={mode === "advanced" ? "is-active" : ""} onClick={() => setMode("advanced")}>Advanced</button>
@@ -214,39 +206,24 @@ export default function Home() {
 
               {reviewIndex !== null && (
                 <div className="analysis-review-inline">
-                  <GameReviewCard
-                    key={reviewIndex}
-                    move={moves[reviewIndex]}
-                    onClose={() => setReviewIndex(null)}
-                    onNext={showNextReview}
-                    onShare={shareReview}
-                  />
+                  <GameReviewCard key={reviewIndex} move={moves[reviewIndex]} onClose={() => setReviewIndex(null)} onNext={showNextReview} onShare={shareReview} />
                 </div>
               )}
             </section>
 
             <section className="analysis-moves-card">
               <div className="analysis-section-heading">
-                <div><span className="analysis-label">Game timeline</span><h2>Moves</h2></div>
-                <span>{moves.length} ply</span>
+                <div><span className="analysis-label">Game timeline</span><h2>Moves</h2></div><span>{moves.length} ply</span>
               </div>
-              <MoveList
-                moves={moves}
-                activeIndex={activeIndex}
-                onSelect={(index) => selectMove(index, ["BRILLIANT", "GREAT", "BEST", "MISTAKE", "BLUNDER"].includes(moves[index].classification))}
-              />
+              <MoveList moves={moves} activeIndex={activeIndex} onSelect={(index) => selectMove(index, ["BRILLIANT", "GREAT", "BEST", "MISTAKE", "BLUNDER"].includes(moves[index].classification))} />
             </section>
           </section>
 
           <aside className="analysis-side-stack">
             <section className="analysis-command-card">
-              <div className="analysis-section-heading">
-                <div><span className="analysis-label">Engine review</span><h2>Analyze</h2></div>
-                <Gauge size={19} />
-              </div>
+              <div className="analysis-section-heading"><div><span className="analysis-label">Engine review</span><h2>Analyze</h2></div><Gauge size={19} /></div>
               <button className="primary-action analysis-primary-action" onClick={startAnalysis} disabled={isAnalyzing}>
-                <BarChart3 size={17} />
-                {isAnalyzing ? "Calculating…" : liveAnalysis ? "Analyze again" : "Analyze position"}
+                <BarChart3 size={17} />{isAnalyzing ? "Calculating…" : liveAnalysis ? "Analyze again" : "Analyze position"}
               </button>
               {analysisError && <p className="analysis-inline-error" role="alert">{analysisError}</p>}
               <div className="analysis-quick-actions">
@@ -259,39 +236,24 @@ export default function Home() {
             <AnalysisPanel move={currentMove} mode={mode} isAnalyzing={isAnalyzing} liveAnalysis={liveAnalysis} />
 
             <section className="analysis-insight-card" aria-labelledby="explanation-heading">
-              <div className="analysis-section-heading compact">
-                <div><span className="analysis-label">ChessIQ insight</span><h2 id="explanation-heading">Why this move matters</h2></div>
-                <Target size={18} />
-              </div>
-              <div className="analysis-insight-title">
-                <ClassificationBadge classification={currentMove.classification} />
-                <strong>{currentMove.fullMove}{currentMove.side === "black" ? "…" : "."} {currentMove.san}</strong>
-              </div>
+              <div className="analysis-section-heading compact"><div><span className="analysis-label">ChessIQ insight</span><h2 id="explanation-heading">Why this move matters</h2></div><Target size={18} /></div>
+              <div className="analysis-insight-title"><ClassificationBadge classification={currentMove.classification} /><strong>{currentMove.fullMove}{currentMove.side === "black" ? "…" : "."} {currentMove.san}</strong></div>
               <p>{liveAnalysis ? `Live ChessEngine search at depth ${liveAnalysis.depth}. Principal variation: ${liveAnalysis.principalVariation || "not returned"}.` : currentMove.explanation}</p>
               <div className="analysis-best-move"><span>Best move</span><strong>{liveBestMove}</strong></div>
-              {activeMoment?.practiceIndex !== undefined && (
-                <button className="inline-try-again" onClick={() => startTryAgain(activeMoment.practiceIndex!)}><RotateCcw size={13} /> Try again from here</button>
-              )}
+              {activeMoment?.practiceIndex !== undefined && <button className="inline-try-again" onClick={() => startTryAgain(activeMoment.practiceIndex!)}><RotateCcw size={13} /> Try again from here</button>}
             </section>
 
             <AnalysisThread move={currentMove} />
             <CriticalMoments moves={moves} moments={criticalMoments} activeIndex={activeIndex} onSelect={selectMove} onTryAgain={startTryAgain} />
 
             <section className="analysis-graph-card">
-              <div className="analysis-section-heading compact">
-                <div><span className="analysis-label">Evaluation</span><h2>Game trend</h2></div>
-                <span>{modeLabel}</span>
-              </div>
+              <div className="analysis-section-heading compact"><div><span className="analysis-label">Evaluation</span><h2>Game trend</h2></div><span>{modeLabel}</span></div>
               <EvaluationGraph moves={moves} activeIndex={activeIndex} onSelect={selectMove} />
             </section>
           </aside>
         </div>
 
-        <footer className="chessiq-footer product-footer">
-          <BrandMark compact />
-          <p>Play. Analyze. Learn. Improve.</p>
-          <span>ChessIQ analysis workspace</span>
-        </footer>
+        <footer className="chessiq-footer product-footer"><BrandMark compact /><p>Play. Analyze. Learn. Improve.</p><span>ChessIQ analysis workspace</span></footer>
       </div>
 
       <Sheet open={practiceIndex !== null} onOpenChange={(open) => !open && closePractice()}>
@@ -300,9 +262,7 @@ export default function Home() {
             <p className="eyebrow">ChessIQ practice</p>
             <SheetTitle>Try the position again.</SheetTitle>
             <SheetDescription>
-              {practiceMove
-                ? `Reset to move ${practiceMove.fullMove}${practiceMove.side === "black" ? "…" : "."}. Find the stronger continuation before revealing the engine line.`
-                : "Find the better continuation."}
+              {practiceMove ? `Reset to move ${practiceMove.fullMove}${practiceMove.side === "black" ? "…" : "."}. Find the stronger continuation before revealing the engine line.` : "Find the better continuation."}
             </SheetDescription>
           </SheetHeader>
           <div className="practice-position"><span>POSITION RESET</span><strong>{practiceMove?.fen.split(" ")[0]}</strong></div>
