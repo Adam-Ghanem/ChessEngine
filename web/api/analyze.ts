@@ -3,6 +3,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { normalizeDepth, parseUciInfo } from "../shared/engineProtocol";
 
+const SMOKE_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+
 type AnalysisResult = {
   bestMove: string;
   scoreCp: number;
@@ -80,18 +82,32 @@ async function analyze(fen: string, requestedDepth: number): Promise<AnalysisRes
 export default async function handler(request: any, response: any) {
   response.setHeader("Cache-Control", "no-store");
 
-  if (request.method !== "GET" && request.method !== "POST") {
-    response.setHeader("Allow", "GET, POST");
+  if (request.method === "GET") {
+    const smoke = Array.isArray(request.query?.smoke) ? request.query.smoke[0] : request.query?.smoke;
+    if (smoke !== "1") {
+      response.setHeader("Allow", "POST");
+      return response.status(405).json({ error: "Use POST for position analysis" });
+    }
+
+    try {
+      const result = await analyze(SMOKE_FEN, 1);
+      return response.status(200).json({ ...result, smoke: true });
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "ChessEngine smoke test failed";
+      return response.status(500).json({ error: message, smoke: true });
+    }
+  }
+
+  if (request.method !== "POST") {
+    response.setHeader("Allow", "POST");
     return response.status(405).json({ error: "Method not allowed" });
   }
 
-  const input = request.method === "GET" ? request.query ?? {} : request.body ?? {};
-  const fenValue = Array.isArray(input.fen) ? input.fen[0] : input.fen;
-  const depthValue = Array.isArray(input.depth) ? input.depth[0] : input.depth;
-  if (!isSafeFen(fenValue)) return response.status(400).json({ error: "A valid single-line FEN is required" });
+  const body = request.body ?? {};
+  if (!isSafeFen(body.fen)) return response.status(400).json({ error: "A valid single-line FEN is required" });
 
   try {
-    const result = await analyze(fenValue, Number(depthValue ?? 4));
+    const result = await analyze(body.fen, Number(body.depth ?? 4));
     return response.status(200).json(result);
   } catch (error) {
     const message = error instanceof Error ? error.message : "ChessEngine analysis failed";
