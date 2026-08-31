@@ -3,23 +3,24 @@ import { describe, expect, it } from "vitest";
 import { productRoutes } from "./lib/productRoutes";
 
 describe("ChessIQ production product navigation", () => {
-  it("routes Play, Analyze, Learn, Puzzles, and Progress through the real web product shell", () => {
+  it("routes Play, Games, Analyze, Learn, Puzzles, and Progress through the real web product shell", () => {
     const app = readFileSync(new URL("./App.tsx", import.meta.url), "utf8");
     const header = readFileSync(new URL("./components/ProductHeader.tsx", import.meta.url), "utf8");
 
     expect(app).toContain('<Route path="/" component={Play} />');
     expect(app).toContain('path="/play"');
+    expect(app).toContain('path="/games"');
     expect(app).toContain('path="/analyze"');
     expect(app).toContain('path="/learn"');
     expect(app).toContain('path="/puzzles"');
     expect(app).toContain('path="/progress"');
-    expect(productRoutes.map(route => route.href)).toEqual(["/play", "/analyze", "/learn", "/puzzles", "/progress"]);
+    expect(productRoutes.map(route => route.href)).toEqual(["/play", "/games", "/analyze", "/learn", "/puzzles", "/progress"]);
     expect(header).toContain("productRoutes.map");
     expect(header).toContain('href={href}');
   });
 
   it("uses the shared real-navigation header on every production surface", () => {
-    const pages = ["Analyze", "Play", "Learn", "Puzzles", "Progress"];
+    const pages = ["Analyze", "Play", "Games", "Learn", "Puzzles", "Progress"];
     for (const page of pages) {
       const source = readFileSync(new URL(`./pages/${page}.tsx`, import.meta.url), "utf8");
       expect(source).toContain("ProductHeader");
@@ -61,6 +62,7 @@ describe("ChessIQ production product navigation", () => {
     const vercel = readFileSync(new URL("../../vercel.json", import.meta.url), "utf8");
 
     expect(vercel).toContain('"source": "/play"');
+    expect(vercel).toContain('"source": "/games"');
     expect(vercel).toContain('"source": "/analyze"');
     expect(vercel).toContain('"source": "/review"');
     expect(vercel).toContain('"source": "/learn"');
