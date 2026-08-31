@@ -24,6 +24,16 @@ describe("production Play workspace", () => {
     expect(engine).toContain('command == "play"');
   });
 
+  it("lets the user play White against the first-party ChessEngine", () => {
+    const play = readFileSync(new URL("./pages/Play.tsx", import.meta.url), "utf8");
+    expect(play).toContain("analyzePosition");
+    expect(play).toContain('type PlayMode = "local" | "computer"');
+    expect(play).toContain("Play ChessIQ");
+    expect(play).toContain("ChessIQ is thinking");
+    expect(play).toContain("applyComputerReply");
+    expect(play).not.toContain("Stockfish");
+  });
+
   it("exposes a production runtime smoke check for packaged legal moves", () => {
     const api = readFileSync(new URL("../../api/play.ts", import.meta.url), "utf8");
     expect(api).toContain('request.method === "GET"');
