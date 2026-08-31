@@ -21,6 +21,13 @@ describe("productRoutes", () => {
     expect(source).toContain('className="mobile-product-nav"');
     expect(source).toContain('aria-label="Mobile ChessIQ product navigation"');
   });
+
+  it("never serves the legacy review screen from /review", () => {
+    const source = readFileSync(new URL("../App.tsx", import.meta.url), "utf8");
+
+    expect(source).toContain('<Route path="/review" component={AnalyzePage} />');
+    expect(source).not.toContain('import Home from "./pages/Home"');
+  });
 });
 
 describe("Play workspace", () => {
