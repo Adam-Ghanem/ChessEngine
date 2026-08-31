@@ -6,6 +6,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import Analyze from "./pages/Analyze";
 import Home from "./pages/Home";
 import Learn from "./pages/Learn";
 import Play from "./pages/Play";
@@ -17,7 +18,8 @@ function Router() {
     <Switch>
       <Route path="/" component={Home} />
       <Route path="/play" component={Play} />
-      <Route path="/analyze" component={Home} />
+      <Route path="/analyze" component={Analyze} />
+      <Route path="/review" component={Home} />
       <Route path="/learn" component={Learn} />
       <Route path="/puzzles" component={Puzzles} />
       <Route path="/404" component={NotFound} />
