@@ -40,8 +40,8 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Production layout contract
-        run: pnpm exec vitest run client/src/mobileLayout.test.ts
+      - name: Production UI contracts
+        run: pnpm exec vitest run client/src/mobileLayout.test.ts client/src/productionRedesign.test.ts
 
       - name: TypeScript check
         run: pnpm run check
