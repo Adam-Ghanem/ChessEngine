@@ -1,5 +1,6 @@
 export const productRoutes = [
   { href: "/play", label: "Play" },
+  { href: "/games", label: "Games" },
   { href: "/analyze", label: "Analyze" },
   { href: "/learn", label: "Learn" },
   { href: "/puzzles", label: "Puzzles" },
