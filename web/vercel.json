@@ -20,6 +20,7 @@
     { "source": "/review", "destination": "/index.html" },
     { "source": "/learn", "destination": "/index.html" },
     { "source": "/puzzles", "destination": "/index.html" },
-    { "source": "/progress", "destination": "/index.html" }
+    { "source": "/progress", "destination": "/index.html" },
+    { "source": "/coach", "destination": "/index.html" }
   ]
 }
