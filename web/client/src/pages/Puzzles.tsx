@@ -108,7 +108,7 @@ export default function Puzzles() {
         <header className="app-header product-header">
           <Link href="/analyze" className="brand-link" aria-label="Open ChessIQ Analyze"><BrandMark /></Link>
           <nav className="app-nav" aria-label="Primary navigation">
-            <span className="nav-item is-disabled" aria-disabled="true">Play</span>
+            <Link className="nav-item" href="/play">Play</Link>
             <Link className="nav-item" href="/analyze">Analyze</Link>
             <Link className="nav-item" href="/learn">Learn</Link>
             <Link className="nav-item is-active" href="/puzzles" aria-current="page">Puzzles</Link>
