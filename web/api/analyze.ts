@@ -1,7 +1,10 @@
 import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const SMOKE_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 type AnalysisResult = {
@@ -44,7 +47,7 @@ function isSafeFen(value: unknown): value is string {
 
 async function analyze(fen: string, requestedDepth: number): Promise<AnalysisResult> {
   const depth = normalizeDepth(requestedDepth);
-  const enginePath = path.join(process.cwd(), "api", "bin", "ChessEngine");
+  const enginePath = path.join(__dirname, "bin", "ChessEngine");
   if (!fs.existsSync(enginePath)) {
     throw new Error("ChessEngine binary is unavailable in this deployment");
   }
