@@ -26,3 +26,15 @@ describe("Play workspace", () => {
     expect(source).toContain("Recent games");
   });
 });
+
+describe("Analyze workspace", () => {
+  it("presents real ChessEngine analysis as the flagship workflow", () => {
+    const source = readFileSync(new URL("../pages/AnalyzePage.tsx", import.meta.url), "utf8");
+
+    expect(source).not.toContain("Ask the engine about a real saved position.");
+    expect(source).toContain('className="analysis-cockpit"');
+    expect(source).toContain("Engine analysis");
+    expect(source).toContain("Import PGN");
+    expect(source).toContain("Your games");
+  });
+});
