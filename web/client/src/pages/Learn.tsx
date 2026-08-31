@@ -95,7 +95,7 @@ export default function Learn() {
             <BrandMark />
           </Link>
           <nav className="app-nav" aria-label="Primary navigation">
-            <button className="nav-item" onClick={() => toast("Play workspace is the next production surface.")}>Play</button>
+            <Link className="nav-item" href="/play">Play</Link>
             <Link className="nav-item" href="/analyze">Analyze</Link>
             <Link className="nav-item is-active" href="/learn" aria-current="page">Learn</Link>
             <Link className="nav-item" href="/puzzles">Puzzles</Link>
