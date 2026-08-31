@@ -2,11 +2,12 @@ import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
 describe("production FEN Analyze workspace", () => {
-  it("routes Analyze to a dedicated position-driven workspace and keeps Review separate", () => {
+  it("routes Analyze and the legacy Review URL to the position-driven workspace", () => {
     const app = readFileSync(new URL("./App.tsx", import.meta.url), "utf8");
     expect(app).toContain('import Analyze from "./pages/Analyze"');
     expect(app).toContain('<Route path="/analyze" component={Analyze} />');
-    expect(app).toContain('<Route path="/review" component={Home} />');
+    expect(app).toContain('<Route path="/review" component={Analyze} />');
+    expect(app).not.toContain('import Home from "./pages/Home"');
   });
 
   it("analyzes a user-loaded FEN with the production ChessEngine client", () => {
