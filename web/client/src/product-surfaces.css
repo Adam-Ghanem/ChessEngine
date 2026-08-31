@@ -65,18 +65,28 @@
 .puzzle-stage-header p { margin: 0; color: var(--muted-foreground); }
 .puzzle-solved-chip { display: inline-flex; gap: 6px; align-items: center; padding: 8px 11px; border-radius: 999px; background: color-mix(in srgb, var(--primary) 12%, transparent); color: var(--primary); font-size: .8rem; font-weight: 800; white-space: nowrap; }
 .puzzle-board-wrap { width: min(100%, 650px); margin: 24px auto; }
-.puzzle-board-wrap .board-hint { display: none; }
 .puzzle-answer-panel { border-top: 1px solid var(--border); padding-top: 22px; }
-.puzzle-choices { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-.puzzle-choices button { min-height: 48px; border: 1px solid var(--border); border-radius: 13px; background: var(--muted); color: inherit; font-weight: 800; }
-.puzzle-choices button:hover { border-color: color-mix(in srgb, var(--primary) 45%, var(--border)); }
-.puzzle-choices button:focus-visible, .puzzle-queue-list button:focus-visible, .puzzle-reset:focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; }
-.puzzle-choices button.is-correct { color: var(--primary); border-color: color-mix(in srgb, var(--primary) 58%, var(--border)); background: color-mix(in srgb, var(--primary) 12%, transparent); }
-.puzzle-choices button.is-incorrect { border-color: color-mix(in srgb, #ef4444 58%, var(--border)); background: color-mix(in srgb, #ef4444 10%, transparent); }
 .puzzle-feedback { margin-top: 14px; padding: 14px 16px; border: 1px solid var(--border); border-radius: 14px; background: var(--muted); }
 .puzzle-feedback p { margin: 4px 0 0; color: var(--muted-foreground); line-height: 1.5; }
 .puzzle-feedback.is-success { border-color: color-mix(in srgb, var(--primary) 42%, var(--border)); background: color-mix(in srgb, var(--primary) 7%, transparent); }
-.puzzle-next-row { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; }
-.nav-item.is-disabled { opacity: .45; cursor: not-allowed; }
-@media (max-width: 900px) { .learn-layout { grid-template-columns: 1fr; } .learn-grid { grid-template-columns: repeat(3, minmax(220px, 1fr)); overflow-x: auto; padding-bottom: 12px; } .puzzles-layout { grid-template-columns: 1fr; } .puzzle-queue-list { grid-template-columns: repeat(3, minmax(220px, 1fr)); overflow-x: auto; padding-bottom: 8px; } }
-@media (max-width: 720px) { .learn-hero, .puzzles-hero { align-items: stretch; flex-direction: column; padding-top: 26px; } .learn-hero-stat { min-width: 0; } .learn-grid, .puzzle-queue-list { grid-template-columns: 1fr; overflow: visible; } .lesson-workspace-header, .puzzle-stage-header { flex-direction: column; } .lesson-actions, .puzzle-next-row { flex-direction: column-reverse; align-items: stretch; } .lesson-secondary, .lesson-primary { width: 100%; } .puzzles-stats { width: 100%; } .puzzles-stats > div { min-width: 0; } .puzzle-choices { grid-template-columns: 1fr; } .puzzle-stage { padding-inline: 12px; } }
+.puzzle-next-row { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+.puzzle-queue-list button:focus-visible, .puzzle-reset:focus-visible { outline: 2px solid var(--ring); outline-offset: 3px; }
+@media (max-width: 1030px) {
+  .learn-hero, .puzzles-hero { align-items: stretch; flex-direction: column; padding-top: 30px; }
+  .learn-hero-stat { min-width: 0; }
+  .learn-layout { grid-template-columns: 1fr; }
+  .learn-grid { grid-template-columns: 1fr; overflow: visible; }
+  .puzzles-layout { grid-template-columns: 1fr; }
+  .puzzle-stage { order: 1; }
+  .puzzle-queue { order: 2; }
+  .puzzle-queue-list { grid-template-columns: 1fr; overflow: visible; }
+  .puzzles-stats { width: 100%; }
+  .puzzles-stats > div { min-width: 0; }
+}
+@media (max-width: 720px) {
+  .learn-hero, .puzzles-hero { padding-top: 26px; }
+  .lesson-workspace-header, .puzzle-stage-header { flex-direction: column; }
+  .lesson-actions, .puzzle-next-row { flex-direction: column-reverse; align-items: stretch; }
+  .lesson-secondary, .lesson-primary { width: 100%; }
+  .puzzle-stage { padding-inline: 12px; }
+}

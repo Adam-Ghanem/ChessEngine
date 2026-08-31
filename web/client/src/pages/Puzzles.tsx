@@ -1,11 +1,12 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CheckCircle2, Flame, Lightbulb, RotateCcw, Sparkles, Target, Trophy } from "lucide-react";
 import { Link } from "wouter";
 import { toast } from "sonner";
 import { BrandMark } from "@/components/BrandMark";
-import { ChessBoard } from "@/components/ChessBoard";
-import { useTheme } from "@/contexts/ThemeContext";
-import { Moon, Sun } from "lucide-react";
+import { LegalChessBoard } from "@/components/LegalChessBoard";
+import { ProductHeader } from "@/components/ProductHeader";
+import { fetchLegalMoves, playMove } from "@/engine/playEngine";
+import { evaluatePuzzleMove } from "@/engine/puzzleState";
 
 type Puzzle = {
   id: string;
@@ -14,10 +15,11 @@ type Puzzle = {
   difficulty: "Starter" | "Intermediate" | "Advanced";
   fen: string;
   prompt: string;
-  choices: string[];
-  answer: string;
+  solution: string[];
   explanation: string;
 };
+
+type PuzzleFeedback = "idle" | "incorrect" | "progress" | "solved";
 
 const puzzles: Puzzle[] = [
   {
@@ -26,9 +28,8 @@ const puzzles: Puzzle[] = [
     theme: "Mate in one",
     difficulty: "Starter",
     fen: "6k1/5ppp/8/8/8/8/5PPP/3R2K1 w - - 0 1",
-    prompt: "White to move. Find the forcing finish.",
-    choices: ["Rd8#", "h3", "f3"],
-    answer: "Rd8#",
+    prompt: "White to move. Find the forcing finish on the board.",
+    solution: ["d1d8"],
     explanation: "Rd8# seals the eighth rank. Black has no flight square and no piece can interpose.",
   },
   {
@@ -37,9 +38,8 @@ const puzzles: Puzzle[] = [
     theme: "Double attack",
     difficulty: "Intermediate",
     fen: "4k3/8/8/3q4/4N3/8/8/4K3 w - - 0 1",
-    prompt: "White to move. Which jump wins the queen with check?",
-    choices: ["Nf6+", "Nc3", "Ng5"],
-    answer: "Nf6+",
+    prompt: "White to move. Find the knight jump that checks the king and attacks the queen.",
+    solution: ["e4f6"],
     explanation: "Nf6+ attacks the king and queen at the same time, forcing the king to respond before the queen can move.",
   },
   {
@@ -49,8 +49,7 @@ const puzzles: Puzzle[] = [
     difficulty: "Advanced",
     fen: "4r1k1/5ppp/8/8/2B5/8/5PPP/4R1K1 w - - 0 1",
     prompt: "White to move. Win the exchange with the cleanest forcing move.",
-    choices: ["Rxe8+", "Bb5", "Kf1"],
-    answer: "Rxe8+",
+    solution: ["e1e8"],
     explanation: "Rxe8+ removes the rook with tempo. The check forces the reply and converts the tactical advantage immediately.",
   },
 ];
@@ -67,37 +66,94 @@ function loadSolved() {
 }
 
 export default function Puzzles() {
-  const { theme, toggleTheme } = useTheme();
   const [activeIndex, setActiveIndex] = useState(0);
-  const [selected, setSelected] = useState<string | null>(null);
   const [solved, setSolved] = useState<string[]>(loadSolved);
+  const [fen, setFen] = useState(puzzles[0].fen);
+  const [legalMoves, setLegalMoves] = useState<string[]>([]);
+  const [attemptIndex, setAttemptIndex] = useState(0);
+  const [feedback, setFeedback] = useState<PuzzleFeedback>("idle");
+  const [busy, setBusy] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const puzzle = puzzles[activeIndex];
   const isSolved = solved.includes(puzzle.id);
   const solvedCount = solved.length;
   const streak = useMemo(() => puzzles.reduce((count, item) => count + (solved.includes(item.id) ? 1 : 0), 0), [solved]);
 
-  function choose(move: string) {
-    setSelected(move);
-    if (move === puzzle.answer) {
-      if (!solved.includes(puzzle.id)) {
-        const next = [...solved, puzzle.id];
-        setSolved(next);
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
-      }
-      toast.success("Puzzle solved.");
+  useEffect(() => {
+    let cancelled = false;
+    setFen(puzzle.fen);
+    setAttemptIndex(0);
+    setFeedback("idle");
+    setError(null);
+    setBusy(true);
+    fetchLegalMoves(puzzle.fen)
+      .then(result => { if (!cancelled) setLegalMoves(result.legalMoves); })
+      .catch(cause => { if (!cancelled) setError(cause instanceof Error ? cause.message : "Unable to load puzzle position"); })
+      .finally(() => { if (!cancelled) setBusy(false); });
+    return () => { cancelled = true; };
+  }, [puzzle.id, puzzle.fen]);
+
+  function persistSolved() {
+    if (solved.includes(puzzle.id)) return;
+    const next = [...solved, puzzle.id];
+    setSolved(next);
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+  }
+
+  async function handlePuzzleMove(move: string) {
+    if (busy || feedback === "solved") return;
+    const evaluation = evaluatePuzzleMove(puzzle.solution, attemptIndex, move);
+    if (!evaluation.accepted) {
+      setFeedback("incorrect");
+      toast.error("That move is legal, but it is not the tactical solution.");
       return;
     }
-    toast.error("Not quite. Look for the forcing move.");
+
+    setBusy(true);
+    setError(null);
+    try {
+      const result = await playMove(fen, move);
+      setFen(result.fen);
+      setLegalMoves(result.legalMoves);
+      setAttemptIndex(evaluation.nextIndex);
+      if (evaluation.solved) {
+        persistSolved();
+        setFeedback("solved");
+        toast.success("Puzzle solved on the board.");
+      } else {
+        setFeedback("progress");
+      }
+    } catch (cause) {
+      const message = cause instanceof Error ? cause.message : "Puzzle move failed";
+      setError(message);
+      toast.error(message);
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function restartPuzzle() {
+    setFen(puzzle.fen);
+    setAttemptIndex(0);
+    setFeedback("idle");
+    setError(null);
+    setBusy(true);
+    try {
+      const result = await fetchLegalMoves(puzzle.fen);
+      setLegalMoves(result.legalMoves);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : "Unable to reload puzzle position");
+    } finally {
+      setBusy(false);
+    }
   }
 
   function selectPuzzle(index: number) {
     setActiveIndex(index);
-    setSelected(null);
   }
 
   function resetProgress() {
     setSolved([]);
-    setSelected(null);
     localStorage.removeItem(STORAGE_KEY);
     toast("Puzzle progress reset.");
   }
@@ -105,27 +161,13 @@ export default function Puzzles() {
   return (
     <main className="app-shell chessiq-shell">
       <div className="puzzles-product-shell">
-        <header className="app-header product-header">
-          <Link href="/analyze" className="brand-link" aria-label="Open ChessIQ Analyze"><BrandMark /></Link>
-          <nav className="app-nav" aria-label="Primary navigation">
-            <Link className="nav-item" href="/play">Play</Link>
-            <Link className="nav-item" href="/analyze">Analyze</Link>
-            <Link className="nav-item" href="/learn">Learn</Link>
-            <Link className="nav-item is-active" href="/puzzles" aria-current="page">Puzzles</Link>
-          </nav>
-          <div className="header-actions">
-            <button className="theme-toggle" aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`} onClick={toggleTheme}>
-              {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
-              <span>{theme === "dark" ? "Light" : "Dark"}</span>
-            </button>
-          </div>
-        </header>
+        <ProductHeader activePath="/puzzles" />
 
         <section className="puzzles-hero">
           <div>
             <div className="analysis-hero-kicker"><Sparkles size={14} /> ChessIQ Training</div>
             <h1>Calculate before you move.</h1>
-            <p>Short tactical positions with immediate feedback, saved progress, and a focused premium training flow.</p>
+            <p>Every move is made on the board and checked through the same first-party ChessEngine legality path used by Play.</p>
           </div>
           <div className="puzzles-stats" aria-label="Puzzle training progress">
             <div><Trophy size={16} /><span>Solved</span><strong>{solvedCount}/{puzzles.length}</strong></div>
@@ -154,38 +196,35 @@ export default function Puzzles() {
             </header>
 
             <div className="puzzle-board-wrap">
-              <ChessBoard
-                fen={puzzle.fen}
-                lastMove={{ from: "a1", to: "a1" }}
-                engineArrow={{ from: "a1", to: "a1" }}
+              <LegalChessBoard
+                fen={fen}
+                legalMoves={legalMoves}
+                disabled={busy || feedback === "solved"}
+                onMove={handlePuzzleMove}
+                ariaLabel={`${puzzle.title} puzzle board`}
               />
             </div>
 
             <div className="puzzle-answer-panel">
-              <div className="analysis-section-heading compact"><div><span className="analysis-label">Candidate moves</span><h2>Choose your move</h2></div><Lightbulb size={18} /></div>
-              <div className="puzzle-choices" role="group" aria-label="Candidate moves">
-                {puzzle.choices.map((move) => {
-                  const chosen = selected === move;
-                  const correct = chosen && move === puzzle.answer;
-                  const incorrect = chosen && move !== puzzle.answer;
-                  return <button key={move} className={`${correct ? "is-correct" : ""} ${incorrect ? "is-incorrect" : ""}`} aria-pressed={chosen} onClick={() => choose(move)}>{move}</button>;
-                })}
-              </div>
-              {selected && (
-                <div className={selected === puzzle.answer ? "puzzle-feedback is-success" : "puzzle-feedback"} role="status" aria-live="polite">
-                  <strong>{selected === puzzle.answer ? "Correct." : "Keep calculating."}</strong>
-                  <p>{selected === puzzle.answer ? puzzle.explanation : "Checks, captures, and threats come first. Try another candidate."}</p>
+              <div className="analysis-section-heading compact"><div><span className="analysis-label">Board attempt</span><h2>Find the move</h2></div><Lightbulb size={18} /></div>
+              <p className="sidebar-note">Select a piece, then play one of its engine-verified legal destinations. ChessIQ checks the UCI move against the curated solution line.</p>
+              {error && <div className="puzzle-feedback" role="alert"><strong>Engine error.</strong><p>{error}</p></div>}
+              {feedback !== "idle" && !error && (
+                <div className={feedback === "solved" ? "puzzle-feedback is-success" : "puzzle-feedback"} role="status" aria-live="polite">
+                  <strong>{feedback === "solved" ? "Correct." : feedback === "progress" ? "Correct — continue the line." : "Keep calculating."}</strong>
+                  <p>{feedback === "solved" ? puzzle.explanation : feedback === "incorrect" ? "That move is legal, but it is not the tactical solution. The position has not changed." : "Play the next move in the solution line."}</p>
                 </div>
               )}
               <div className="puzzle-next-row">
+                <button type="button" className="lesson-secondary" onClick={restartPuzzle} disabled={busy}><RotateCcw size={15} /> Reset position</button>
                 <Link href="/learn" className="lesson-secondary">Study the concept</Link>
-                <button className="lesson-primary primary-action" disabled={!isSolved || activeIndex === puzzles.length - 1} onClick={() => selectPuzzle(Math.min(activeIndex + 1, puzzles.length - 1))}>Next puzzle</button>
+                <button className="lesson-primary primary-action" disabled={feedback !== "solved" || activeIndex === puzzles.length - 1} onClick={() => selectPuzzle(Math.min(activeIndex + 1, puzzles.length - 1))}>Next puzzle</button>
               </div>
             </div>
           </section>
         </div>
 
-        <footer className="chessiq-footer product-footer"><BrandMark compact /><p>Play. Analyze. Learn. Improve.</p><span>ChessIQ puzzle training</span></footer>
+        <footer className="chessiq-footer product-footer"><BrandMark compact /><p>Play. Analyze. Learn. Improve.</p><span>ChessIQ engine-backed puzzle training</span></footer>
       </div>
     </main>
   );
