@@ -4,15 +4,51 @@ on:
   push:
     branches: [main]
     paths:
+      - "web/**"
       - "app/**"
       - ".github/workflows/frontend.yml"
   pull_request:
     branches: [main]
     paths:
+      - "web/**"
       - "app/**"
       - ".github/workflows/frontend.yml"
 
 jobs:
+  production-web:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.4.1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: web/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Production layout contract
+        run: pnpm exec vitest run client/src/mobileLayout.test.ts
+
+      - name: TypeScript check
+        run: pnpm run check
+
+      - name: Production build
+        run: pnpm run build:vercel
+
   app:
     runs-on: ubuntu-latest
     defaults:

@@ -1,0 +1,202 @@
+/* Compact production layout for phones, small tablets, and mobile browsers using a desktop-like viewport. */
+@media (max-width: 1030px) {
+  .chessiq-shell {
+    padding-inline: clamp(12px, 2.5vw, 20px);
+    overflow-x: clip;
+  }
+
+  .app-header {
+    flex-wrap: wrap;
+    align-content: center;
+    gap: 8px 12px;
+    min-height: 0;
+    padding: 10px 0 8px;
+  }
+
+  .brand-lockup {
+    order: 1;
+  }
+
+  .header-engine-state {
+    display: none;
+  }
+
+  .header-actions {
+    order: 2;
+    margin-left: auto;
+  }
+
+  .app-nav {
+    order: 3;
+    width: calc(100% + 24px);
+    margin: 2px -12px -8px;
+    padding: 6px 12px 0;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scrollbar-width: none;
+    border-top: 1px solid var(--iq-border);
+    scroll-snap-type: x proximity;
+  }
+
+  .app-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .nav-item {
+    flex: 0 0 auto;
+    min-height: 40px;
+    padding: 10px 14px;
+    scroll-snap-align: start;
+  }
+
+  .workspace-topline {
+    min-height: 48px;
+    gap: 12px;
+  }
+
+  .crumb-line {
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .crumb-line strong {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .workspace-state {
+    display: none;
+  }
+
+  .analysis-workbench {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "primary"
+      "rail"
+      "graph";
+    gap: 16px;
+    padding-top: 20px;
+  }
+
+  .primary-workspace,
+  .analysis-rail,
+  .evaluation-graph-panel {
+    width: min(100%, 780px);
+    margin-inline: auto;
+  }
+
+  .game-context {
+    align-items: flex-start;
+    gap: 14px;
+  }
+
+  .board-workbench,
+  .move-list-panel {
+    width: 100%;
+    max-width: 780px;
+  }
+
+  .board-review-stage {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .game-review-card {
+    position: relative;
+    top: auto;
+    right: auto;
+    order: -1;
+    width: 100%;
+    grid-template-columns: 42px minmax(0, 1fr);
+  }
+
+  .rail-command-row {
+    position: sticky;
+    top: 0;
+    z-index: 4;
+    background: color-mix(in srgb, var(--iq-surface) 96%, transparent);
+    backdrop-filter: blur(14px);
+  }
+
+  .evaluation-graph-panel {
+    min-width: 0;
+  }
+}
+
+@media (max-width: 560px) {
+  .chessiq-shell {
+    padding-inline: 10px;
+  }
+
+  .brand-wordmark {
+    font-size: 9px;
+  }
+
+  .header-actions {
+    gap: 5px;
+  }
+
+  .theme-toggle {
+    width: 36px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  .theme-toggle span {
+    display: none;
+  }
+
+  .game-context {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .mode-switch {
+    width: max-content;
+  }
+
+  .board-workbench {
+    grid-template-columns: 20px minmax(0, 1fr);
+    gap: 5px;
+  }
+
+  .board-frame {
+    padding: 5px;
+  }
+
+  .transport-strip {
+    align-items: center;
+    gap: 8px;
+  }
+
+  .transport-status {
+    min-width: 0;
+  }
+
+  .transport-controls {
+    flex: 0 0 auto;
+  }
+
+  .review-card-content {
+    padding: 12px;
+  }
+
+  .review-action-row {
+    flex-wrap: wrap;
+  }
+
+  .review-share,
+  .review-next {
+    min-width: 0;
+  }
+
+  .analysis-panel,
+  .analysis-thread,
+  .explanation-panel,
+  .critical-moments-panel,
+  .evaluation-graph-panel {
+    padding-inline: 13px;
+  }
+}
