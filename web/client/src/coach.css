@@ -1,0 +1,173 @@
+.coach-product-shell {
+  min-height: 100vh;
+}
+
+.coach-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1.5fr) minmax(220px, 0.5fr);
+  gap: 24px;
+  align-items: stretch;
+  padding: 34px 0 22px;
+}
+
+.coach-hero h1 {
+  max-width: 780px;
+  margin: 10px 0 12px;
+  font-size: clamp(2rem, 4vw, 3.75rem);
+  line-height: 0.98;
+  letter-spacing: -0.04em;
+}
+
+.coach-hero p,
+.coach-plan p,
+.coach-principles p {
+  color: var(--muted-foreground);
+  line-height: 1.65;
+}
+
+.coach-trust-card,
+.coach-stat-card,
+.coach-plan,
+.coach-principles {
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--card) 92%, transparent);
+  box-shadow: 0 18px 60px rgba(15, 23, 42, 0.08);
+}
+
+.coach-trust-card {
+  display: flex;
+  min-height: 170px;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 8px;
+  border-radius: 24px;
+  padding: 24px;
+}
+
+.coach-trust-card strong {
+  font-size: 1.15rem;
+}
+
+.coach-trust-card span,
+.coach-stat-card small {
+  color: var(--muted-foreground);
+}
+
+.coach-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin: 10px 0 18px;
+}
+
+.coach-stat-card {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 8px 12px;
+  border-radius: 20px;
+  padding: 20px;
+}
+
+.coach-stat-card strong {
+  grid-column: 1 / -1;
+  font-size: 2rem;
+  line-height: 1;
+}
+
+.coach-stat-card small {
+  grid-column: 1 / -1;
+}
+
+.coach-plan {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  gap: 18px;
+  align-items: center;
+  border-radius: 24px;
+  padding: 24px;
+}
+
+.coach-plan-icon {
+  display: grid;
+  width: 52px;
+  height: 52px;
+  place-items: center;
+  border-radius: 16px;
+  background: var(--secondary);
+}
+
+.coach-plan-copy > span {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--primary);
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.coach-plan h2,
+.coach-principles h2 {
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+
+.coach-plan p {
+  margin: 8px 0 0;
+}
+
+.coach-principles {
+  margin-top: 18px;
+  border-radius: 22px;
+  padding: 22px;
+}
+
+.coach-principles > div:first-child {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.coach-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.coach-links a {
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  padding: 9px 13px;
+  font-weight: 700;
+}
+
+@media (max-width: 900px) {
+  .coach-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .coach-trust-card {
+    min-height: 130px;
+  }
+}
+
+@media (max-width: 720px) {
+  .coach-hero {
+    padding-top: 22px;
+  }
+
+  .coach-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .coach-plan {
+    grid-template-columns: auto 1fr;
+  }
+
+  .coach-plan .primary-action {
+    grid-column: 1 / -1;
+    width: 100%;
+    justify-content: center;
+  }
+}

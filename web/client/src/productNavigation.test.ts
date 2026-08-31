@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { productRoutes } from "./lib/productRoutes";
 
 describe("ChessIQ production product navigation", () => {
-  it("routes Play, Games, Analyze, Learn, Puzzles, and Progress through the real web product shell", () => {
+  it("routes Play, Games, Analyze, Learn, Puzzles, Progress, and Coach through the real web product shell", () => {
     const app = readFileSync(new URL("./App.tsx", import.meta.url), "utf8");
     const header = readFileSync(new URL("./components/ProductHeader.tsx", import.meta.url), "utf8");
 
@@ -14,13 +14,14 @@ describe("ChessIQ production product navigation", () => {
     expect(app).toContain('path="/learn"');
     expect(app).toContain('path="/puzzles"');
     expect(app).toContain('path="/progress"');
-    expect(productRoutes.map(route => route.href)).toEqual(["/play", "/games", "/analyze", "/learn", "/puzzles", "/progress"]);
+    expect(app).toContain('path="/coach"');
+    expect(productRoutes.map(route => route.href)).toEqual(["/play", "/games", "/analyze", "/learn", "/puzzles", "/progress", "/coach"]);
     expect(header).toContain("productRoutes.map");
     expect(header).toContain('href={href}');
   });
 
   it("uses the shared real-navigation header on every production surface", () => {
-    const pages = ["Analyze", "Play", "Games", "Learn", "Puzzles", "Progress"];
+    const pages = ["Analyze", "Play", "Games", "Learn", "Puzzles", "Progress", "Coach"];
     for (const page of pages) {
       const source = readFileSync(new URL(`./pages/${page}.tsx`, import.meta.url), "utf8");
       expect(source).toContain("ProductHeader");
@@ -58,6 +59,20 @@ describe("ChessIQ production product navigation", () => {
     expect(css).toContain(".puzzle-feedback");
   });
 
+  it("ships an evidence-based Coach workspace without fabricated metrics", () => {
+    const coach = readFileSync(new URL("./pages/Coach.tsx", import.meta.url), "utf8");
+    const css = readFileSync(new URL("./coach.css", import.meta.url), "utf8");
+
+    expect(coach).toContain("ChessIQ Coach");
+    expect(coach).toContain("readGameHistory");
+    expect(coach).toContain("chessiq.learn.progress");
+    expect(coach).toContain("chessiq-puzzles-solved-v1");
+    expect(coach).toContain('aria-label="Recommended training plan"');
+    expect(coach).not.toMatch(/rating|win rate|accuracy/i);
+    expect(css).toContain(".coach-grid");
+    expect(css).toContain("@media (max-width: 720px)");
+  });
+
   it("makes client-side product routes directly addressable on Vercel", () => {
     const vercel = readFileSync(new URL("../../vercel.json", import.meta.url), "utf8");
 
@@ -68,6 +83,7 @@ describe("ChessIQ production product navigation", () => {
     expect(vercel).toContain('"source": "/learn"');
     expect(vercel).toContain('"source": "/puzzles"');
     expect(vercel).toContain('"source": "/progress"');
+    expect(vercel).toContain('"source": "/coach"');
     expect(vercel).toContain('"destination": "/index.html"');
   });
 });

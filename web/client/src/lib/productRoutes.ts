@@ -5,6 +5,7 @@ export const productRoutes = [
   { href: "/learn", label: "Learn" },
   { href: "/puzzles", label: "Puzzles" },
   { href: "/progress", label: "Progress" },
+  { href: "/coach", label: "Coach" },
 ] as const;
 
 export type ProductPath = (typeof productRoutes)[number]["href"];
