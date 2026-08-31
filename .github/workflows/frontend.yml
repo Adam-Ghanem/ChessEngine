@@ -38,6 +38,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Build ChessEngine test binary
+        run: pnpm run build:engine
+
       - name: Unit tests
         run: pnpm test
 
