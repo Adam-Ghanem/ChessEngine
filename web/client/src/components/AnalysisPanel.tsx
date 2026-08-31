@@ -3,21 +3,14 @@
  */
 import { ChevronDown, Cpu, Gauge, Network, ScanLine } from "lucide-react";
 import { IQPulse } from "@/components/IQPulse";
+import type { ServerEngineAnalysis } from "@/engine/serverEngine";
 import type { AnalysisMode, AnalysisMove, EngineLine } from "@/types/analysis";
-
-export type LiveEngineAnalysis = {
-  bestMove: string;
-  scoreCp: number;
-  depth: number;
-  principalVariation: string;
-  engine: string;
-};
 
 interface AnalysisPanelProps {
   move: AnalysisMove;
   mode: AnalysisMode;
   isAnalyzing: boolean;
-  liveAnalysis?: LiveEngineAnalysis | null;
+  liveAnalysis?: ServerEngineAnalysis | null;
 }
 
 function scoreLabel(score: number) {
