@@ -14,8 +14,8 @@ describe("production Play workspace", () => {
   it("uses the first-party ChessEngine as the legal-move authority", () => {
     const play = readFileSync(new URL("./pages/Play.tsx", import.meta.url), "utf8");
     const client = readFileSync(new URL("./engine/playEngine.ts", import.meta.url), "utf8");
-    const api = readFileSync(new URL("../../../api/play.ts", import.meta.url), "utf8");
-    const engine = readFileSync(new URL("../../../../app/engine/src/main.cpp", import.meta.url), "utf8");
+    const api = readFileSync(new URL("../../api/play.ts", import.meta.url), "utf8");
+    const engine = readFileSync(new URL("../../../app/engine/src/main.cpp", import.meta.url), "utf8");
     expect(play).toContain("fetchLegalMoves");
     expect(play).toContain("playMove");
     expect(client).toContain('fetch("/api/play"');
