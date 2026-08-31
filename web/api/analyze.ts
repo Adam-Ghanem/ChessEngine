@@ -1,7 +1,6 @@
 import { spawn } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
-import { normalizeDepth, parseUciInfo } from "../shared/engineProtocol";
 
 const SMOKE_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
@@ -12,6 +11,29 @@ type AnalysisResult = {
   principalVariation: string;
   engine: string;
 };
+
+type ParsedUciInfo = {
+  depth: number;
+  scoreCp: number;
+  principalVariation: string;
+};
+
+function normalizeDepth(requestedDepth: number) {
+  if (!Number.isFinite(requestedDepth)) return 4;
+  return Math.max(1, Math.min(8, Math.floor(requestedDepth)));
+}
+
+function parseUciInfo(line: string): ParsedUciInfo {
+  const depth = Number(line.match(/\bdepth\s+(\d+)/)?.[1] ?? 0);
+  const scoreMatch = line.match(/\bscore\s+(cp|mate)\s+(-?\d+)/);
+  const scoreCp = scoreMatch
+    ? scoreMatch[1] === "mate"
+      ? Math.sign(Number(scoreMatch[2])) * 10_000
+      : Number(scoreMatch[2])
+    : 0;
+  const principalVariation = line.match(/\bpv\s+(.+)$/)?.[1] ?? "";
+  return { depth, scoreCp, principalVariation };
+}
 
 function isSafeFen(value: unknown): value is string {
   if (typeof value !== "string") return false;
