@@ -1,38 +1,16 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { ArrowLeft, Bot, RotateCcw, ShieldCheck, Sparkles, Swords, Users } from "lucide-react";
 import { Link } from "wouter";
 import { toast } from "sonner";
-import { ChessPiece, type ChessPieceKind } from "@/components/ChessPiece";
+import { LegalChessBoard } from "@/components/LegalChessBoard";
 import { ProductHeader } from "@/components/ProductHeader";
 import { fetchLegalMoves, playMove, type PlayEngineStatus } from "@/engine/playEngine";
-import { moveTargets, sideToMove, statusLabel } from "@/engine/playState";
+import { sideToMove, statusLabel } from "@/engine/playState";
 import { analyzePosition } from "@/engine/serverEngine";
-import type { PieceColor } from "@/types/analysis";
 import "@/play.css";
 
 const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-const files = ["a", "b", "c", "d", "e", "f", "g", "h"];
-const ranks = [8, 7, 6, 5, 4, 3, 2, 1];
-type BoardPiece = { color: PieceColor; kind: ChessPieceKind };
 type PlayMode = "local" | "computer";
-
-function decodeFen(fen: string) {
-  const board = new Map<string, BoardPiece>();
-  fen.split(" ")[0].split("/").forEach((row, rowIndex) => {
-    let fileIndex = 0;
-    for (const token of row) {
-      if (/\d/.test(token)) fileIndex += Number(token);
-      else {
-        board.set(`${files[fileIndex]}${ranks[rowIndex]}`, {
-          color: token === token.toUpperCase() ? "white" : "black",
-          kind: token.toUpperCase() as ChessPieceKind,
-        });
-        fileIndex += 1;
-      }
-    }
-  });
-  return board;
-}
 
 function isTerminal(status: PlayEngineStatus) {
   return status === "checkmate" || status === "stalemate" || status === "draw";
@@ -49,16 +27,13 @@ export default function Play() {
   const [fen, setFen] = useState(START_FEN);
   const [legalMoves, setLegalMoves] = useState<string[]>([]);
   const [status, setStatus] = useState<PlayEngineStatus>("ongoing");
-  const [selected, setSelected] = useState<string | null>(null);
   const [history, setHistory] = useState<string[]>([START_FEN]);
   const [moves, setMoves] = useState<string[]>([]);
   const [busy, setBusy] = useState(true);
   const [computerThinking, setComputerThinking] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const board = useMemo(() => decodeFen(fen), [fen]);
   const turn = sideToMove(fen);
-  const targets = useMemo(() => selected ? moveTargets(legalMoves, selected) : [], [legalMoves, selected]);
   const terminal = isTerminal(status);
 
   useEffect(() => {
@@ -96,25 +71,8 @@ export default function Play() {
     }
   }
 
-  async function chooseSquare(square: string) {
+  async function handleBoardMove(uci: string) {
     if (busy || computerThinking || terminal || (mode === "computer" && turn !== "white")) return;
-    const piece = board.get(square);
-    if (!selected) {
-      if (piece?.color === turn && legalMoves.some(move => move.startsWith(square))) setSelected(square);
-      return;
-    }
-    if (piece?.color === turn) {
-      setSelected(legalMoves.some(move => move.startsWith(square)) ? square : null);
-      return;
-    }
-    if (!targets.includes(square)) {
-      setSelected(null);
-      return;
-    }
-
-    const movingPiece = board.get(selected);
-    const promotion = movingPiece?.kind === "P" && (square.endsWith("1") || square.endsWith("8")) ? "q" : "";
-    const uci = `${selected}${square}${promotion}`;
     setBusy(true);
     setError(null);
     try {
@@ -124,7 +82,6 @@ export default function Play() {
       setStatus(result.status);
       setHistory(current => [...current, result.fen]);
       setMoves(current => [...current, uci]);
-      setSelected(null);
       if (isTerminal(result.status)) {
         announceTerminal(result.status);
       } else if (mode === "computer") {
@@ -145,7 +102,6 @@ export default function Play() {
     setStatus("ongoing");
     setHistory([START_FEN]);
     setMoves([]);
-    setSelected(null);
     setError(null);
     setComputerThinking(false);
     if (fen === START_FEN) {
@@ -169,7 +125,6 @@ export default function Play() {
     setFen(nextHistory[nextHistory.length - 1]);
     setStatus("ongoing");
     setMoves(current => current.slice(0, Math.max(0, current.length - pliesToUndo)));
-    setSelected(null);
   }
 
   const statusText = computerThinking
@@ -203,20 +158,12 @@ export default function Play() {
 
         <section className="play-layout">
           <div className="play-board-card">
-            <div className="play-board" role="grid" aria-label="Playable chess board">
-              {ranks.map((rank, row) => files.map((file, column) => {
-                const square = `${file}${rank}`;
-                const piece = board.get(square);
-                const isSelected = square === selected;
-                const isTarget = targets.includes(square);
-                return <button key={square} type="button" role="gridcell" className={`play-square ${(row + column) % 2 === 0 ? "is-light" : "is-dark"} ${isSelected ? "is-selected" : ""} ${isTarget ? "is-target" : ""}`} onClick={() => chooseSquare(square)} aria-label={piece ? `${piece.color} ${piece.kind} on ${square}` : `Empty ${square}`} aria-pressed={isSelected} disabled={computerThinking || terminal}>
-                  {piece && <ChessPiece color={piece.color} kind={piece.kind} />}
-                  {isTarget && <span className="play-target" aria-hidden="true" />}
-                  {column === 0 && <span className="rank-label">{rank}</span>}
-                  {row === 7 && <span className="file-label">{file}</span>}
-                </button>;
-              }))}
-            </div>
+            <LegalChessBoard
+              fen={fen}
+              legalMoves={legalMoves}
+              disabled={busy || computerThinking || terminal || (mode === "computer" && turn !== "white")}
+              onMove={handleBoardMove}
+            />
             {error && <p className="play-error" role="alert">{error}</p>}
             <div className="play-board-actions">
               <button type="button" onClick={undoMove} disabled={history.length <= 1 || busy || computerThinking}><ArrowLeft size={15} /> Undo</button>
