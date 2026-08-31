@@ -8,5 +8,15 @@
       "includeFiles": "api/bin/ChessEngine",
       "maxDuration": 15
     }
-  }
+  },
+  "rewrites": [
+    {
+      "source": "/analyze",
+      "destination": "/index.html"
+    },
+    {
+      "source": "/learn",
+      "destination": "/index.html"
+    }
+  ]
 }
