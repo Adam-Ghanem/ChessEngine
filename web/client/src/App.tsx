@@ -10,6 +10,7 @@ import Analyze from "./pages/Analyze";
 import Learn from "./pages/Learn";
 import Play from "./pages/Play";
 import Puzzles from "./pages/Puzzles";
+import Progress from "./pages/Progress";
 import NotFound from "./pages/NotFound";
 
 function Router() {
@@ -21,6 +22,7 @@ function Router() {
       <Route path="/review" component={Analyze} />
       <Route path="/learn" component={Learn} />
       <Route path="/puzzles" component={Puzzles} />
+      <Route path="/progress" component={Progress} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
