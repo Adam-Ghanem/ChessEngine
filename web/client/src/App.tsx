@@ -7,6 +7,7 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Analyze from "./pages/Analyze";
+import Coach from "./pages/Coach";
 import Games from "./pages/Games";
 import Learn from "./pages/Learn";
 import Play from "./pages/Play";
@@ -25,6 +26,7 @@ function Router() {
       <Route path="/learn" component={Learn} />
       <Route path="/puzzles" component={Puzzles} />
       <Route path="/progress" component={Progress} />
+      <Route path="/coach" component={Coach} />
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
     </Switch>
