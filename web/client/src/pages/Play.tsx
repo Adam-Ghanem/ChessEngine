@@ -7,10 +7,15 @@ import { ProductHeader } from "@/components/ProductHeader";
 import { fetchLegalMoves, playMove, type PlayEngineStatus } from "@/engine/playEngine";
 import { sideToMove, statusLabel } from "@/engine/playState";
 import { analyzePosition } from "@/engine/serverEngine";
+import { saveGameSnapshot } from "@/lib/gameHistory";
 import "@/play.css";
 
 const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 type PlayMode = "local" | "computer";
+
+function createGameId() {
+  return `game-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+}
 
 function isTerminal(status: PlayEngineStatus) {
   return status === "checkmate" || status === "stalemate" || status === "draw";
@@ -24,6 +29,7 @@ function announceTerminal(status: PlayEngineStatus) {
 
 export default function Play() {
   const [mode, setMode] = useState<PlayMode>("computer");
+  const [gameId, setGameId] = useState(createGameId);
   const [fen, setFen] = useState(START_FEN);
   const [legalMoves, setLegalMoves] = useState<string[]>([]);
   const [status, setStatus] = useState<PlayEngineStatus>("ongoing");
@@ -51,6 +57,11 @@ export default function Play() {
       .finally(() => { if (!cancelled) setBusy(false); });
     return () => { cancelled = true; };
   }, [fen]);
+
+  useEffect(() => {
+    if (!moves.length) return;
+    saveGameSnapshot({ id: gameId, mode, status, fen, moves, updatedAt: new Date().toISOString() });
+  }, [fen, gameId, mode, moves, status]);
 
   async function applyComputerReply(positionFen: string, availableMoves: string[]) {
     if (!availableMoves.length) return;
@@ -98,6 +109,7 @@ export default function Play() {
 
   function resetGame(nextMode: PlayMode = mode) {
     setMode(nextMode);
+    setGameId(createGameId());
     setFen(START_FEN);
     setStatus("ongoing");
     setHistory([START_FEN]);
