@@ -7,9 +7,12 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
+type PlayStatus = "ongoing" | "check" | "checkmate" | "stalemate" | "draw";
+
 type PlayResult = {
   fen: string;
   legalMoves: string[];
+  status: PlayStatus;
   engine: string;
 };
 
@@ -53,16 +56,19 @@ async function queryEngine(fen: string, move?: string): Promise<PlayResult> {
       if (/^illegalmove\b/m.test(stdout)) return finish(new Error("ChessEngine rejected that move"));
       const playedFen = stdout.match(/^playok\s+(.+)$/m)?.[1]?.trim();
       const legalLine = [...stdout.matchAll(/^legalmoves(?:\s+(.*))?$/gm)].at(-1)?.[1]?.trim() ?? "";
+      const statusMatch = [...stdout.matchAll(/^status\s+(ongoing|check|checkmate|stalemate|draw)$/gm)].at(-1)?.[1] as PlayStatus | undefined;
+      if (!statusMatch) return finish(new Error("ChessEngine did not report game status"));
       finish(undefined, {
         fen: playedFen || fen,
         legalMoves: legalLine ? legalLine.split(/\s+/).filter(Boolean) : [],
+        status: statusMatch,
         engine: "ChessEngine 0.3",
       });
     });
 
     const commands = [`position fen ${fen.trim()}`];
     if (move) commands.push(`play ${move}`);
-    commands.push("legalmoves", "quit");
+    commands.push("legalmoves", "status", "quit");
     engineProcess.stdin.end(`${commands.join("\n")}\n`);
   });
 }
