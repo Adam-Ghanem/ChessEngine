@@ -25,4 +25,12 @@ describe("ChessIQ production product navigation", () => {
     expect(css).toContain(".learn-grid");
     expect(css).toContain("@media (max-width: 720px)");
   });
+
+  it("makes client-side product routes directly addressable on Vercel", () => {
+    const vercel = readFileSync(new URL("../../vercel.json", import.meta.url), "utf8");
+
+    expect(vercel).toContain('"source": "/analyze"');
+    expect(vercel).toContain('"source": "/learn"');
+    expect(vercel).toContain('"destination": "/index.html"');
+  });
 });
