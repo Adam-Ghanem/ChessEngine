@@ -23,4 +23,11 @@ describe("production Play workspace", () => {
     expect(engine).toContain('command == "legalmoves"');
     expect(engine).toContain('command == "play"');
   });
+
+  it("exposes a production runtime smoke check for packaged legal moves", () => {
+    const api = readFileSync(new URL("../../api/play.ts", import.meta.url), "utf8");
+    expect(api).toContain('request.method === "GET"');
+    expect(api).toContain('smoke !== "1"');
+    expect(api).toContain('smoke: true');
+  });
 });
