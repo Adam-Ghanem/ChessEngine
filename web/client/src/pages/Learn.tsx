@@ -98,7 +98,7 @@ export default function Learn() {
             <button className="nav-item" onClick={() => toast("Play workspace is the next production surface.")}>Play</button>
             <Link className="nav-item" href="/analyze">Analyze</Link>
             <Link className="nav-item is-active" href="/learn" aria-current="page">Learn</Link>
-            <button className="nav-item" onClick={() => toast("Puzzle training is the next production surface.")}>Puzzles</button>
+            <Link className="nav-item" href="/puzzles">Puzzles</Link>
           </nav>
           <div className="header-actions">
             <button
