@@ -14,6 +14,13 @@ describe("productRoutes", () => {
       { href: "/coach", label: "Coach" },
     ]);
   });
+
+  it("keeps product navigation reachable on mobile", () => {
+    const source = readFileSync(new URL("../components/ProductHeader.tsx", import.meta.url), "utf8");
+
+    expect(source).toContain('className="mobile-product-nav"');
+    expect(source).toContain('aria-label="Mobile ChessIQ product navigation"');
+  });
 });
 
 describe("Play workspace", () => {
