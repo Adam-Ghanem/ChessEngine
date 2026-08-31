@@ -15,6 +15,7 @@
   },
   "rewrites": [
     { "source": "/play", "destination": "/index.html" },
+    { "source": "/games", "destination": "/index.html" },
     { "source": "/analyze", "destination": "/index.html" },
     { "source": "/review", "destination": "/index.html" },
     { "source": "/learn", "destination": "/index.html" },
