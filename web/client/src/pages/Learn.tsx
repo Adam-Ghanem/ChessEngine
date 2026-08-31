@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
-import { BookOpenCheck, CheckCircle2, Clock3, Moon, RotateCcw, Sparkles, Sun, Target } from "lucide-react";
+import { BookOpenCheck, CheckCircle2, Clock3, RotateCcw, Sparkles, Target } from "lucide-react";
 import { Link } from "wouter";
 import { toast } from "sonner";
 import { BrandMark } from "@/components/BrandMark";
-import { useTheme } from "@/contexts/ThemeContext";
+import { ProductHeader } from "@/components/ProductHeader";
 
 type Lesson = {
   key: string;
@@ -63,7 +63,6 @@ function loadLessonProgress(): Record<string, number> {
 }
 
 export default function Learn() {
-  const { theme, toggleTheme } = useTheme();
   const [selectedKey, setSelectedKey] = useState(lessons[0].key);
   const [lessonProgress, setLessonProgress] = useState<Record<string, number>>(loadLessonProgress);
   const selectedLesson = useMemo(() => lessons.find((lesson) => lesson.key === selectedKey) ?? lessons[0], [selectedKey]);
@@ -90,27 +89,7 @@ export default function Learn() {
   return (
     <main className="app-shell chessiq-shell">
       <div className="analysis-product-shell learn-product-shell">
-        <header className="app-header product-header">
-          <Link href="/analyze" className="brand-link" aria-label="Open ChessIQ Analyze">
-            <BrandMark />
-          </Link>
-          <nav className="app-nav" aria-label="Primary navigation">
-            <Link className="nav-item" href="/play">Play</Link>
-            <Link className="nav-item" href="/analyze">Analyze</Link>
-            <Link className="nav-item is-active" href="/learn" aria-current="page">Learn</Link>
-            <Link className="nav-item" href="/puzzles">Puzzles</Link>
-          </nav>
-          <div className="header-actions">
-            <button
-              className="theme-toggle"
-              aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
-              onClick={toggleTheme}
-            >
-              {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}
-              <span>{theme === "dark" ? "Light" : "Dark"}</span>
-            </button>
-          </div>
-        </header>
+        <ProductHeader activePath="/learn" />
 
         <section className="learn-hero">
           <div>
