@@ -1,0 +1,392 @@
+/* ChessIQ premium product layer.
+ * Kept separate from the legacy showcase/review styles so product-page work can evolve
+ * without coupling board workflows to the historical component gallery CSS.
+ */
+
+.play-page,
+.analyze-page {
+  max-width: 1540px;
+  padding-top: 34px;
+}
+
+.page-commandbar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 28px;
+  align-items: end;
+  margin-bottom: 24px;
+  padding: 0 2px 22px;
+  border-bottom: 1px solid var(--iq-border);
+}
+
+.page-commandbar > div:first-child {
+  max-width: 780px;
+}
+
+.page-commandbar h1 {
+  max-width: 760px;
+  margin: 5px 0 8px;
+  font-size: clamp(34px, 4.2vw, 64px);
+  line-height: .98;
+  letter-spacing: -.055em;
+}
+
+.page-commandbar > div:first-child > p:last-child {
+  max-width: 660px;
+  margin: 0;
+  color: var(--iq-text-soft);
+  font-size: 13px;
+  line-height: 1.62;
+}
+
+.page-status-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 36px;
+  padding: 0 12px;
+  border: 1px solid var(--iq-border-strong);
+  color: var(--iq-text-soft);
+  background: color-mix(in srgb, var(--iq-surface) 92%, transparent);
+  font: 600 9px/1 "JetBrains Mono", monospace;
+  letter-spacing: .04em;
+  white-space: nowrap;
+}
+
+.play-cockpit {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 360px);
+  gap: 24px;
+  align-items: start;
+}
+
+.board-cockpit {
+  min-width: 0;
+  padding: 16px;
+  border: 1px solid var(--iq-border-strong);
+  background:
+    linear-gradient(180deg, color-mix(in srgb, var(--iq-surface-raised) 88%, transparent), color-mix(in srgb, var(--iq-surface) 96%, transparent));
+  box-shadow: var(--shadow-2);
+}
+
+.board-session-strip,
+.board-command-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+
+.board-session-strip {
+  min-height: 54px;
+  margin-bottom: 14px;
+  padding: 0 2px;
+}
+
+.board-session-strip > div:first-child,
+.session-state {
+  display: grid;
+  gap: 5px;
+}
+
+.session-kicker,
+.session-state small,
+.board-command-footer,
+.rail-muted {
+  color: var(--iq-text-faint);
+  font: 9px/1.3 "JetBrains Mono", monospace;
+}
+
+.session-kicker {
+  text-transform: uppercase;
+  letter-spacing: .09em;
+}
+
+.board-session-strip strong {
+  color: var(--iq-text);
+  font-size: 13px;
+}
+
+.session-state {
+  grid-template-columns: auto auto;
+  align-items: center;
+  justify-content: end;
+  text-align: right;
+}
+
+.session-state small {
+  grid-column: 1 / -1;
+}
+
+.board-canvas {
+  max-width: 900px;
+  margin: 0 auto;
+  padding: 10px;
+  background: #202622;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .06), var(--shadow-2);
+}
+
+.board-canvas .play-board-frame {
+  padding: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.board-command-footer {
+  min-height: 44px;
+  padding-top: 13px;
+}
+
+.board-command-footer span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.board-command-footer span:first-child {
+  color: var(--iq-teal);
+}
+
+.board-empty-state {
+  min-height: 440px;
+  align-content: center;
+  justify-items: center;
+  max-width: none;
+  text-align: center;
+  box-shadow: none;
+}
+
+.board-empty-state h2 {
+  margin: 0;
+}
+
+.play-control-rail {
+  position: sticky;
+  top: 18px;
+  display: grid;
+  gap: 14px;
+}
+
+.rail-section {
+  padding: 18px;
+  border: 1px solid var(--iq-border-strong);
+  background: color-mix(in srgb, var(--iq-surface) 95%, transparent);
+  box-shadow: var(--shadow-1);
+}
+
+.rail-section-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.rail-section-heading > svg {
+  color: var(--iq-violet-bright);
+}
+
+.rail-section h2 {
+  margin: 4px 0 0;
+  font-size: 18px;
+  letter-spacing: -.025em;
+}
+
+.rail-section > p {
+  margin: 10px 0 0;
+  color: var(--iq-text-soft);
+  font-size: 11px;
+  line-height: 1.55;
+}
+
+.game-mode-grid {
+  display: grid;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.game-mode-card {
+  display: grid;
+  grid-template-columns: 34px minmax(0, 1fr);
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+  min-height: 58px;
+  padding: 10px 12px;
+  border: 1px solid var(--iq-border-strong);
+  color: var(--iq-text);
+  background: var(--iq-surface-raised);
+  text-align: left;
+  cursor: pointer;
+  transition: transform var(--motion-micro) var(--ease-iq-out), border-color var(--motion-fast) var(--ease-iq-out), background var(--motion-fast) var(--ease-iq-out);
+}
+
+.game-mode-card > svg {
+  color: var(--iq-violet-bright);
+}
+
+.game-mode-card span {
+  display: grid;
+  gap: 4px;
+}
+
+.game-mode-card strong {
+  font-size: 11px;
+}
+
+.game-mode-card small {
+  color: var(--iq-text-faint);
+  font: 8px/1.3 "JetBrains Mono", monospace;
+}
+
+.game-mode-card:hover:not(:disabled),
+.game-mode-card:focus-visible {
+  border-color: var(--iq-violet-bright);
+  background: var(--iq-violet-soft);
+}
+
+.game-mode-card:active:not(:disabled) {
+  transform: scale(.985);
+}
+
+.game-mode-card:disabled {
+  cursor: progress;
+  opacity: .58;
+}
+
+.game-mode-engine {
+  border-color: color-mix(in srgb, var(--iq-teal) 48%, var(--iq-border));
+}
+
+.game-mode-engine > svg {
+  color: var(--iq-teal);
+}
+
+.recent-games-section {
+  max-height: min(460px, calc(100vh - 410px));
+  overflow: auto;
+}
+
+.premium-game-list {
+  margin-top: 13px;
+}
+
+.premium-game-list > button {
+  min-height: 50px;
+  padding: 10px 11px;
+  border-left-width: 1px;
+  transition: border-color var(--motion-fast) var(--ease-iq-out), background var(--motion-fast) var(--ease-iq-out), transform var(--motion-micro) var(--ease-iq-out);
+}
+
+.premium-game-list > button:hover {
+  border-color: var(--iq-border-strong);
+  background: var(--iq-surface-raised);
+}
+
+.premium-game-list > button.is-active {
+  border-left: 3px solid var(--iq-violet-bright);
+}
+
+.premium-auth-gate {
+  max-width: 620px;
+  padding: 32px;
+  background:
+    radial-gradient(circle at 85% 10%, var(--iq-violet-soft), transparent 34%),
+    color-mix(in srgb, var(--iq-surface) 94%, transparent);
+}
+
+.premium-auth-gate h2 {
+  font-size: 28px;
+  letter-spacing: -.035em;
+}
+
+@media (max-width: 1120px) {
+  .play-cockpit {
+    grid-template-columns: minmax(0, 1fr) 300px;
+    gap: 18px;
+  }
+
+  .board-cockpit {
+    padding: 12px;
+  }
+}
+
+@media (max-width: 900px) {
+  .play-cockpit {
+    grid-template-columns: 1fr;
+  }
+
+  .play-control-rail {
+    position: static;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .recent-games-section {
+    max-height: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .play-page,
+  .analyze-page {
+    padding-top: 22px;
+  }
+
+  .page-commandbar {
+    grid-template-columns: 1fr;
+    gap: 15px;
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+  }
+
+  .page-commandbar h1 {
+    font-size: 36px;
+  }
+
+  .page-status-chip {
+    width: max-content;
+  }
+
+  .board-cockpit {
+    padding: 8px;
+  }
+
+  .board-session-strip {
+    align-items: start;
+    min-height: auto;
+    padding: 5px 2px 0;
+  }
+
+  .session-state small {
+    display: none;
+  }
+
+  .board-canvas {
+    padding: 5px;
+  }
+
+  .board-command-footer {
+    min-height: 40px;
+    padding: 10px 2px 0;
+  }
+
+  .board-command-footer span:first-child {
+    display: none;
+  }
+
+  .board-command-footer span:last-child {
+    margin-left: auto;
+  }
+
+  .play-control-rail {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+
+  .rail-section {
+    padding: 15px;
+  }
+
+  .game-mode-card {
+    min-height: 60px;
+  }
+}
