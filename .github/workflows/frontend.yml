@@ -48,7 +48,23 @@ jobs:
         run: pnpm run check
 
       - name: Accessibility checks
-        run: pnpm run test:accessibility
+        run: |
+          pnpm dev > /tmp/chessiq-dev.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          ready=0
+          for attempt in {1..30}; do
+            if curl --fail --silent http://127.0.0.1:3000/play > /dev/null; then
+              ready=1
+              break
+            fi
+            sleep 1
+          done
+          if [ "$ready" -ne 1 ]; then
+            cat /tmp/chessiq-dev.log
+            exit 1
+          fi
+          pnpm run test:accessibility
 
       - name: Production build
         run: pnpm run build:vercel
