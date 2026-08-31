@@ -1,0 +1,86 @@
+.mobile-product-nav {
+  display: none;
+}
+
+@media (max-width: 720px) {
+  .product-header {
+    height: 62px;
+    padding: 0 14px;
+    gap: 10px;
+  }
+
+  .product-header .brand-link {
+    min-width: 0;
+  }
+
+  .product-header .header-actions {
+    margin-left: auto;
+    gap: 6px;
+  }
+
+  .product-header .theme-toggle {
+    width: 36px;
+    min-width: 36px;
+    padding: 0;
+    justify-content: center;
+  }
+
+  .product-header .theme-toggle span,
+  .product-header .account-state {
+    display: none;
+  }
+
+  .product-header .account-button {
+    min-height: 36px;
+    padding: 0 10px;
+    font-size: 9px;
+  }
+
+  .mobile-product-nav {
+    position: sticky;
+    top: 0;
+    z-index: 30;
+    display: flex;
+    gap: 6px;
+    width: 100%;
+    overflow-x: auto;
+    padding: 8px 14px;
+    border-bottom: 1px solid var(--iq-border);
+    background: color-mix(in srgb, var(--iq-page) 94%, transparent);
+    backdrop-filter: blur(18px);
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+
+  .mobile-product-nav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .mobile-nav-item {
+    flex: 0 0 auto;
+    min-height: 36px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 12px;
+    border: 1px solid transparent;
+    color: var(--iq-text-faint);
+    background: transparent;
+    font: 600 9px/1 "JetBrains Mono", monospace;
+    text-decoration: none;
+    transition: color var(--motion-fast) var(--ease-iq-out), border-color var(--motion-fast) var(--ease-iq-out), background var(--motion-fast) var(--ease-iq-out);
+  }
+
+  .mobile-nav-item:hover,
+  .mobile-nav-item:focus-visible {
+    color: var(--iq-text);
+    border-color: var(--iq-border-strong);
+    background: var(--iq-surface-soft);
+  }
+
+  .mobile-nav-item.is-active {
+    color: var(--iq-text);
+    border-color: color-mix(in srgb, var(--iq-violet-bright) 55%, var(--iq-border));
+    background: var(--iq-violet-soft);
+  }
+}
