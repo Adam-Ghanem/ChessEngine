@@ -132,7 +132,7 @@ export default function Home() {
             <button className="nav-item" onClick={() => toast("Play workspace is coming next.")}>Play</button>
             <Link className="nav-item is-active" href="/analyze" aria-current="page">Analyze</Link>
             <Link className="nav-item" href="/learn">Learn</Link>
-            <button className="nav-item" onClick={() => toast("Puzzle training is coming next.")}>Puzzles</button>
+            <Link className="nav-item" href="/puzzles">Puzzles</Link>
           </nav>
           <div className="header-actions">
             <button className="icon-button" aria-label="Open ChessIQ settings" onClick={() => toast("Settings panel is coming next.")}>
