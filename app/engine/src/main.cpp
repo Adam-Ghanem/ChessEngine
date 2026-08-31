@@ -28,6 +28,14 @@ bool playUciMove(Position& position, const std::string& uci) {
     return false;
 }
 
+void printLegalMoves(const Position& position) {
+    std::cout << "legalmoves";
+    for (const Move& move : generateLegalMoves(position)) {
+        std::cout << ' ' << move.toUci();
+    }
+    std::cout << '\n' << std::flush;
+}
+
 void printUciInfo(const SearchResult& result) {
     std::cout << "info depth " << result.depth
               << " score " << Engine::scoreToUci(result.score)
@@ -40,7 +48,7 @@ void runBench(Engine& engine, int depth) {
     struct BenchPosition { const char* name; const char* fen; };
     static constexpr BenchPosition suite[] = {
         {"startpos", "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1"},
-        {"kiwipete", "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1"},
+        {"kiwipete", "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N1PN2/PPPQ1PPP/R3K2R w KQkq - 0 1"},
         {"tactical", "r1bq1rk1/ppp2ppp/2n1pn2/8/2B5/2N1PN2/PPPQ1PPP/2RR2K1 w - - 0 1"},
         {"endgame", "8/8/8/3k4/8/3K4/3P4/8 w - - 0 1"}
     };
@@ -130,6 +138,18 @@ void runUci() {
                 }
             } catch (const std::exception& ex) {
                 std::cout << "info string invalid position: " << ex.what() << '\n' << std::flush;
+            }
+        } else if (command == "legalmoves") {
+            stopSearch();
+            printLegalMoves(position);
+        } else if (command == "play") {
+            stopSearch();
+            std::string uci;
+            in >> uci;
+            if (!uci.empty() && playUciMove(position, uci)) {
+                std::cout << "playok " << position.toFEN() << '\n' << std::flush;
+            } else {
+                std::cout << "illegalmove " << uci << '\n' << std::flush;
             }
         } else if (command == "go") {
             stopSearch();
