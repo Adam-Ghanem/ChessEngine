@@ -3,15 +3,14 @@ import { describe, expect, it } from "vitest";
 
 describe("production mobile analysis layout", () => {
   it("keeps the production workspace readable in compact viewports", () => {
-    const css = readFileSync(new URL("./index.css", import.meta.url), "utf8");
-    const reviewCss = readFileSync(new URL("./game-review.css", import.meta.url), "utf8");
+    const entry = readFileSync(new URL("./main.tsx", import.meta.url), "utf8");
+    const css = readFileSync(new URL("./production-mobile.css", import.meta.url), "utf8");
 
-    expect(css).toContain("@media (max-width:1030px)");
-    expect(css).toContain("grid-template-areas:\"primary\" \"rail\" \"graph\"");
-    expect(css).toContain(".app-header { flex-wrap:wrap;");
-    expect(css).toContain(".app-nav { order:3;");
-    expect(css).toContain("overflow-x:auto");
-    expect(reviewCss).toContain("@media (max-width:1030px)");
-    expect(reviewCss).toContain(".game-review-card { position:relative;");
+    expect(entry).toContain('import "./production-mobile.css"');
+    expect(css).toContain("@media (max-width: 1030px)");
+    expect(css).toMatch(/\.app-header\s*\{[^}]*flex-wrap:\s*wrap/s);
+    expect(css).toMatch(/\.app-nav\s*\{[^}]*order:\s*3[^}]*overflow-x:\s*auto/s);
+    expect(css).toMatch(/\.analysis-workbench\s*\{[^}]*grid-template-columns:\s*1fr[^}]*"primary"\s*"rail"\s*"graph"/s);
+    expect(css).toMatch(/\.game-review-card\s*\{[^}]*position:\s*relative/s);
   });
 });
