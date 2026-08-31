@@ -1,10 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
-import { ArrowLeft, Bot, Moon, RotateCcw, ShieldCheck, Sparkles, Sun, Swords, Users } from "lucide-react";
+import { ArrowLeft, Bot, RotateCcw, ShieldCheck, Sparkles, Swords, Users } from "lucide-react";
 import { Link } from "wouter";
 import { toast } from "sonner";
-import { BrandMark } from "@/components/BrandMark";
 import { ChessPiece, type ChessPieceKind } from "@/components/ChessPiece";
-import { useTheme } from "@/contexts/ThemeContext";
+import { ProductHeader } from "@/components/ProductHeader";
 import { fetchLegalMoves, playMove } from "@/engine/playEngine";
 import { analyzePosition } from "@/engine/serverEngine";
 import type { PieceColor } from "@/types/analysis";
@@ -39,7 +38,6 @@ function sideToMove(fen: string): PieceColor {
 }
 
 export default function Play() {
-  const { theme, toggleTheme } = useTheme();
   const [mode, setMode] = useState<PlayMode>("computer");
   const [fen, setFen] = useState(START_FEN);
   const [legalMoves, setLegalMoves] = useState<string[]>([]);
@@ -163,20 +161,7 @@ export default function Play() {
   return (
     <main className="app-shell chessiq-shell">
       <div className="analysis-product-shell play-product-shell">
-        <header className="app-header product-header">
-          <Link href="/analyze" className="brand-link" aria-label="Open ChessIQ Analyze"><BrandMark /></Link>
-          <nav className="app-nav" aria-label="Primary navigation">
-            <Link className="nav-item is-active" href="/play" aria-current="page">Play</Link>
-            <Link className="nav-item" href="/analyze">Analyze</Link>
-            <Link className="nav-item" href="/learn">Learn</Link>
-            <Link className="nav-item" href="/puzzles">Puzzles</Link>
-          </nav>
-          <div className="header-actions">
-            <button className="theme-toggle" aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`} onClick={toggleTheme}>
-              {theme === "dark" ? <Sun size={16} /> : <Moon size={16} />}<span>{theme === "dark" ? "Light" : "Dark"}</span>
-            </button>
-          </div>
-        </header>
+        <ProductHeader activePath="/play" />
 
         <section className="play-hero">
           <div><div className="analysis-hero-kicker"><Sparkles size={14} /> ChessIQ Play</div><h1>Play real chess. Challenge your own engine.</h1><p>Choose a local board or play White against the same first-party C++ ChessEngine that powers ChessIQ analysis.</p></div>
