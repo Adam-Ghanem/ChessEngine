@@ -18,6 +18,16 @@ describe("ChessIQ production product navigation", () => {
     expect(learn).not.toContain("Puzzle training is the next production surface.");
   });
 
+  it("keeps Play reachable from every production learning surface", () => {
+    const learn = readFileSync(new URL("./pages/Learn.tsx", import.meta.url), "utf8");
+    const puzzles = readFileSync(new URL("./pages/Puzzles.tsx", import.meta.url), "utf8");
+
+    expect(learn).toContain('href="/play"');
+    expect(learn).not.toContain("Play workspace is the next production surface.");
+    expect(puzzles).toContain('href="/play"');
+    expect(puzzles).not.toContain('aria-disabled="true">Play');
+  });
+
   it("ships an interactive Learn workspace instead of a placeholder", () => {
     const learn = readFileSync(new URL("./pages/Learn.tsx", import.meta.url), "utf8");
     const entry = readFileSync(new URL("./main.tsx", import.meta.url), "utf8");
