@@ -8,6 +8,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Home from "./pages/Home";
 import Learn from "./pages/Learn";
+import Play from "./pages/Play";
 import Puzzles from "./pages/Puzzles";
 import NotFound from "./pages/NotFound";
 
@@ -15,6 +16,7 @@ function Router() {
   return (
     <Switch>
       <Route path="/" component={Home} />
+      <Route path="/play" component={Play} />
       <Route path="/analyze" component={Home} />
       <Route path="/learn" component={Learn} />
       <Route path="/puzzles" component={Puzzles} />
