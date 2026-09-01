@@ -7,6 +7,7 @@ import { ProductHeader } from "@/components/ProductHeader";
 import { fetchLegalMoves, playMove, type PlayEngineStatus } from "@/engine/playEngine";
 import { sideToMove, statusLabel } from "@/engine/playState";
 import { analyzePosition } from "@/engine/serverEngine";
+import { analysisHrefForFen } from "@/lib/analysisRoute";
 import { saveGameSnapshot } from "@/lib/gameHistory";
 import "@/play.css";
 
@@ -264,7 +265,7 @@ export default function Play() {
               <button type="button" onClick={undoMove} disabled={history.length <= 1 || busy || computerThinking}><ArrowLeft size={15} /> Undo</button>
               <button type="button" onClick={() => resetGame()} disabled={busy || computerThinking}><RotateCcw size={15} /> New game</button>
             </div>
-            <Link href="/analyze" className="primary-action play-analyze-link">Open Analyze</Link>
+            <Link href={analysisHrefForFen(fen)} className="primary-action play-analyze-link">Open Analyze</Link>
             {timedOut && <div className="game-timeout-note"><Flag size={14} /> Time control: 10 minutes</div>}
           </aside>
         </section>
