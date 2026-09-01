@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft, Bot, RotateCcw, ShieldCheck, Sparkles, Swords, Users } from "lucide-react";
+import { ArrowLeft, Bot, CircleDot, Flag, RotateCcw, ShieldCheck, Swords, Users } from "lucide-react";
 import { Link } from "wouter";
 import { toast } from "sonner";
 import { LegalChessBoard } from "@/components/LegalChessBoard";
@@ -11,7 +11,9 @@ import { saveGameSnapshot } from "@/lib/gameHistory";
 import "@/play.css";
 
 const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+const INITIAL_CLOCK_SECONDS = 10 * 60;
 type PlayMode = "local" | "computer";
+type TimedOutSide = "white" | "black" | null;
 
 function createGameId() {
   return `game-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -27,6 +29,12 @@ function announceTerminal(status: PlayEngineStatus) {
   else if (status === "draw") toast("Draw. Game over.");
 }
 
+function formatClock(seconds: number) {
+  const safe = Math.max(0, seconds);
+  const minutes = Math.floor(safe / 60);
+  return `${minutes}:${String(safe % 60).padStart(2, "0")}`;
+}
+
 export default function Play() {
   const [mode, setMode] = useState<PlayMode>("computer");
   const [gameId, setGameId] = useState(createGameId);
@@ -38,10 +46,15 @@ export default function Play() {
   const [busy, setBusy] = useState(true);
   const [computerThinking, setComputerThinking] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [whiteSeconds, setWhiteSeconds] = useState(INITIAL_CLOCK_SECONDS);
+  const [blackSeconds, setBlackSeconds] = useState(INITIAL_CLOCK_SECONDS);
+  const [timedOut, setTimedOut] = useState<TimedOutSide>(null);
 
   const turn = sideToMove(fen);
-  const terminal = isTerminal(status);
+  const engineTerminal = isTerminal(status);
+  const terminal = engineTerminal || timedOut !== null;
   const lastMove = moves.length ? moves[moves.length - 1] : null;
+  const clockRunning = moves.length > 0 && !terminal && (!busy || computerThinking);
 
   useEffect(() => {
     let cancelled = false;
@@ -63,6 +76,26 @@ export default function Play() {
     if (!moves.length) return;
     saveGameSnapshot({ id: gameId, mode, status, fen, moves, updatedAt: new Date().toISOString() });
   }, [fen, gameId, mode, moves, status]);
+
+  useEffect(() => {
+    if (!clockRunning) return;
+    const timer = window.setInterval(() => {
+      if (turn === "white") setWhiteSeconds(current => Math.max(0, current - 1));
+      else setBlackSeconds(current => Math.max(0, current - 1));
+    }, 1000);
+    return () => window.clearInterval(timer);
+  }, [clockRunning, turn]);
+
+  useEffect(() => {
+    if (timedOut || engineTerminal || !moves.length) return;
+    if (whiteSeconds === 0) {
+      setTimedOut("white");
+      toast("White ran out of time. Black wins.");
+    } else if (blackSeconds === 0) {
+      setTimedOut("black");
+      toast("Black ran out of time. White wins.");
+    }
+  }, [blackSeconds, engineTerminal, moves.length, timedOut, whiteSeconds]);
 
   async function applyComputerReply(positionFen: string, availableMoves: string[]) {
     if (!availableMoves.length) return;
@@ -117,6 +150,9 @@ export default function Play() {
     setMoves([]);
     setError(null);
     setComputerThinking(false);
+    setWhiteSeconds(INITIAL_CLOCK_SECONDS);
+    setBlackSeconds(INITIAL_CLOCK_SECONDS);
+    setTimedOut(null);
     if (fen === START_FEN) {
       setBusy(true);
       fetchLegalMoves(START_FEN)
@@ -137,58 +173,99 @@ export default function Play() {
     setHistory(nextHistory);
     setFen(nextHistory[nextHistory.length - 1]);
     setStatus("ongoing");
+    setTimedOut(null);
     setMoves(current => current.slice(0, Math.max(0, current.length - pliesToUndo)));
   }
 
-  const statusText = computerThinking
-    ? "ChessIQ is thinking"
-    : busy
-      ? "Checking position"
-      : terminal
-        ? statusLabel(status, turn)
-        : mode === "computer" && turn === "black"
-          ? status === "check" ? "ChessIQ to move · Check" : "ChessIQ to move"
-          : statusLabel(status, turn);
+  const statusText = timedOut
+    ? `${timedOut === "white" ? "White" : "Black"} ran out of time`
+    : computerThinking
+      ? "ChessIQ is thinking"
+      : busy
+        ? "Checking position"
+        : engineTerminal
+          ? statusLabel(status, turn)
+          : mode === "computer" && turn === "black"
+            ? status === "check" ? "ChessIQ to move · Check" : "ChessIQ to move"
+            : statusLabel(status, turn);
+
+  const blackName = mode === "computer" ? "ChessIQ" : "Black";
+  const blackDetail = mode === "computer" ? "ChessEngine 0.3" : "Local player";
+  const whiteName = mode === "computer" ? "You" : "White";
+  const whiteDetail = mode === "computer" ? "Playing White" : "Local player";
 
   return (
     <main className="app-shell chessiq-shell">
       <div className="analysis-product-shell play-product-shell">
         <ProductHeader activePath="/play" />
 
-        <section className="play-hero">
-          <div><div className="analysis-hero-kicker"><Sparkles size={14} /> ChessIQ Play</div><h1>Play real chess. Challenge your own engine.</h1><p>Choose a local board or play White against the same first-party C++ ChessEngine that powers ChessIQ analysis.</p></div>
-          <div className="play-status" aria-live="polite"><span>{statusText}</span><strong>{terminal ? "Game finished" : `${legalMoves.length} legal moves`}</strong></div>
-        </section>
+        <section className="play-game-room" aria-label="Chess game room">
+          <div className="play-board-stage">
+            <div className={`play-player-bar ${turn === "black" && !terminal ? "is-active" : ""}`}>
+              <div className="play-player-identity">
+                <span className="play-player-avatar"><Bot size={19} /></span>
+                <span><strong>{blackName}</strong><small>{blackDetail}</small></span>
+              </div>
+              <div className="play-clock" aria-label={`${blackName} clock`}>{formatClock(blackSeconds)}</div>
+            </div>
 
-        <section className="play-mode-switcher" aria-label="Play mode">
-          <button type="button" className={mode === "computer" ? "is-active" : ""} aria-pressed={mode === "computer"} onClick={() => resetGame("computer")} disabled={busy || computerThinking}>
-            <Bot size={17} /><span><strong>Play ChessIQ</strong><small>You are White · Engine replies</small></span>
-          </button>
-          <button type="button" className={mode === "local" ? "is-active" : ""} aria-pressed={mode === "local"} onClick={() => resetGame("local")} disabled={busy || computerThinking}>
-            <Users size={17} /><span><strong>Local board</strong><small>Two players · One device</small></span>
-          </button>
-        </section>
+            <div className="play-board-card">
+              <LegalChessBoard
+                fen={fen}
+                legalMoves={legalMoves}
+                lastMove={lastMove}
+                disabled={busy || computerThinking || terminal || (mode === "computer" && turn !== "white")}
+                onMove={handleBoardMove}
+              />
+              {error && <p className="play-error" role="alert">{error}</p>}
+            </div>
 
-        <section className="play-layout">
-          <div className="play-board-card">
-            <LegalChessBoard
-              fen={fen}
-              legalMoves={legalMoves}
-              lastMove={lastMove}
-              disabled={busy || computerThinking || terminal || (mode === "computer" && turn !== "white")}
-              onMove={handleBoardMove}
-            />
-            {error && <p className="play-error" role="alert">{error}</p>}
-            <div className="play-board-actions">
-              <button type="button" onClick={undoMove} disabled={history.length <= 1 || busy || computerThinking}><ArrowLeft size={15} /> Undo</button>
-              <button type="button" onClick={() => resetGame()} disabled={busy || computerThinking}><RotateCcw size={15} /> New game</button>
+            <div className={`play-player-bar ${turn === "white" && !terminal ? "is-active" : ""}`}>
+              <div className="play-player-identity">
+                <span className="play-player-avatar is-user"><Users size={19} /></span>
+                <span><strong>{whiteName}</strong><small>{whiteDetail}</small></span>
+              </div>
+              <div className="play-clock" aria-label={`${whiteName} clock`}>{formatClock(whiteSeconds)}</div>
             </div>
           </div>
 
-          <aside className="play-rail" aria-label="Game details">
-            <div className="play-rail-card"><span className="analysis-label">Rules authority</span><h2><ShieldCheck size={18} /> ChessEngine 0.3</h2><p>Every candidate move and game status is accepted only when the first-party engine reports it. In ChessIQ mode, that same engine calculates Black's reply.</p></div>
-            <div className="play-rail-card"><span className="analysis-label">Move list</span><h2><Swords size={18} /> {mode === "computer" ? "vs ChessIQ" : "Local game"}</h2><div className="play-move-list">{moves.length ? moves.map((move, index) => <span key={`${move}-${index}`}>{index + 1}. {move}</span>) : <p>No moves yet. Select a piece to begin.</p>}</div></div>
+          <aside className="game-panel" aria-label="Game panel">
+            <div className="game-panel-status" aria-live="polite">
+              <span><CircleDot size={13} /> {terminal ? "Game finished" : "Live game"}</span>
+              <strong>{statusText}</strong>
+              <small>{terminal ? "Start a new game to continue." : `${legalMoves.length} legal moves available`}</small>
+            </div>
+
+            <div className="play-mode-switcher" aria-label="Play mode">
+              <button type="button" className={mode === "computer" ? "is-active" : ""} aria-pressed={mode === "computer"} onClick={() => resetGame("computer")} disabled={busy || computerThinking}>
+                <Bot size={16} /><span><strong>ChessIQ</strong><small>vs engine</small></span>
+              </button>
+              <button type="button" className={mode === "local" ? "is-active" : ""} aria-pressed={mode === "local"} onClick={() => resetGame("local")} disabled={busy || computerThinking}>
+                <Users size={16} /><span><strong>Local</strong><small>two players</small></span>
+              </button>
+            </div>
+
+            <div className="game-panel-section game-moves-section">
+              <div className="game-panel-heading"><span>Move list</span><Swords size={16} /></div>
+              <div className="play-move-list">
+                {moves.length ? Array.from({ length: Math.ceil(moves.length / 2) }, (_, index) => (
+                  <div className="play-move-row" key={index}>
+                    <span className="move-number">{index + 1}.</span>
+                    <span>{moves[index * 2]}</span>
+                    <span>{moves[index * 2 + 1] ?? ""}</span>
+                  </div>
+                )) : <p>No moves yet. Select a piece to begin.</p>}
+              </div>
+            </div>
+
+            <div className="game-panel-engine"><ShieldCheck size={15} /><span>Moves verified by first-party ChessEngine</span></div>
+
+            <div className="game-panel-actions">
+              <button type="button" onClick={undoMove} disabled={history.length <= 1 || busy || computerThinking}><ArrowLeft size={15} /> Undo</button>
+              <button type="button" onClick={() => resetGame()} disabled={busy || computerThinking}><RotateCcw size={15} /> New game</button>
+            </div>
             <Link href="/analyze" className="primary-action play-analyze-link">Open Analyze</Link>
+            {timedOut && <div className="game-timeout-note"><Flag size={14} /> Time control: 10 minutes</div>}
           </aside>
         </section>
       </div>
