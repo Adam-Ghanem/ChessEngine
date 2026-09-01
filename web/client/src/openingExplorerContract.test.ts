@@ -18,6 +18,17 @@ describe("ChessIQ opening explorer production foundation", () => {
     expect(existsSync(new URL("./openings.css", import.meta.url))).toBe(true);
   });
 
+  it("provides ECO A-E volume navigation that scales toward the full A00-E99 catalog", () => {
+    const explorer = readFileSync(new URL("./pages/Openings.tsx", import.meta.url), "utf8");
+    const data = readFileSync(new URL("./data/openings.ts", import.meta.url), "utf8");
+
+    expect(data).toContain("export const ecoVolumes");
+    expect(data).toContain("filterOpeningFamiliesByEcoVolume");
+    expect(explorer).toContain('aria-label="Filter openings by ECO volume"');
+    expect(explorer).toContain("ecoVolumes.map");
+    expect(explorer).toContain("All ECO");
+  });
+
   it("provides a directly addressable board-first detail workspace for every opening family", () => {
     const app = readFileSync(new URL("./App.tsx", import.meta.url), "utf8");
     const explorer = readFileSync(new URL("./pages/Openings.tsx", import.meta.url), "utf8");
