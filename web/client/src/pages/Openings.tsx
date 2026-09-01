@@ -3,12 +3,22 @@ import { ArrowLeft, ArrowRight, BookOpen, Search, Sparkles, Target } from "lucid
 import { Link } from "wouter";
 import { BrandMark } from "@/components/BrandMark";
 import { ProductHeader } from "@/components/ProductHeader";
-import { openingFamilies, searchOpeningFamilies } from "@/data/openings";
+import {
+  ecoVolumes,
+  filterOpeningFamiliesByEcoVolume,
+  openingFamilies,
+  searchOpeningFamilies,
+  type EcoVolume,
+} from "@/data/openings";
 import "../openings.css";
 
 export default function Openings() {
   const [query, setQuery] = useState("");
-  const results = useMemo(() => searchOpeningFamilies(query), [query]);
+  const [ecoVolume, setEcoVolume] = useState<EcoVolume | "all">("all");
+  const results = useMemo(
+    () => filterOpeningFamiliesByEcoVolume(searchOpeningFamilies(query), ecoVolume),
+    [query, ecoVolume],
+  );
 
   return (
     <main className="app-shell chessiq-shell">
@@ -44,6 +54,31 @@ export default function Openings() {
           <span className="openings-result-count" aria-live="polite">{results.length} result{results.length === 1 ? "" : "s"}</span>
         </section>
 
+        <nav className="openings-eco-filters" aria-label="Filter openings by ECO volume">
+          <button
+            type="button"
+            className={ecoVolume === "all" ? "is-active" : ""}
+            aria-pressed={ecoVolume === "all"}
+            onClick={() => setEcoVolume("all")}
+          >
+            <strong>All ECO</strong>
+            <span>A00–E99</span>
+          </button>
+          {ecoVolumes.map((volume) => (
+            <button
+              type="button"
+              key={volume.id}
+              className={ecoVolume === volume.id ? "is-active" : ""}
+              aria-pressed={ecoVolume === volume.id}
+              onClick={() => setEcoVolume(volume.id)}
+            >
+              <strong>{volume.id}</strong>
+              <span>{volume.range}</span>
+              <small>{volume.label}</small>
+            </button>
+          ))}
+        </nav>
+
         {results.length ? (
           <section className="openings-grid" aria-label="Opening families">
             {results.map((opening) => (
@@ -75,9 +110,9 @@ export default function Openings() {
         ) : (
           <section className="openings-empty" aria-labelledby="openings-empty-title">
             <Target size={24} />
-            <h2 id="openings-empty-title">No opening family matches that search.</h2>
-            <p>Try an ECO code, a family name, an alias, or the first moves of the line.</p>
-            <button type="button" onClick={() => setQuery("")}>Clear search</button>
+            <h2 id="openings-empty-title">No opening family matches these filters.</h2>
+            <p>Try another ECO volume, an ECO code, a family name, an alias, or the first moves of the line.</p>
+            <button type="button" onClick={() => { setQuery(""); setEcoVolume("all"); }}>Clear filters</button>
           </section>
         )}
 

@@ -10,6 +10,16 @@ export type OpeningFamily = {
   blackPlan: string;
 };
 
+export type EcoVolume = "A" | "B" | "C" | "D" | "E";
+
+export const ecoVolumes: Array<{ id: EcoVolume; label: string; range: string }> = [
+  { id: "A", label: "Flank & irregular", range: "A00–A99" },
+  { id: "B", label: "Semi-open e4", range: "B00–B99" },
+  { id: "C", label: "Open & French", range: "C00–C99" },
+  { id: "D", label: "Closed & semi-closed", range: "D00–D99" },
+  { id: "E", label: "Indian systems", range: "E00–E99" },
+];
+
 export const openingFamilies: OpeningFamily[] = [
   {
     id: "italian-game",
@@ -205,4 +215,9 @@ export function searchOpeningFamilies(query: string) {
     const searchable = [opening.eco, opening.name, opening.moves, ...opening.aliases].map(normalize).join(" ");
     return searchable.includes(needle);
   });
+}
+
+export function filterOpeningFamiliesByEcoVolume(openings: OpeningFamily[], volume: EcoVolume | "all") {
+  if (volume === "all") return openings;
+  return openings.filter((opening) => opening.eco.startsWith(volume));
 }
