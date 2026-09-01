@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Moon, Sun } from "lucide-react";
+import { BarChart3, BookOpen, Bot, Gamepad2, Home, LibraryBig, Moon, Puzzle, Search, Sun } from "lucide-react";
 import { Link } from "wouter";
 import { BrandMark } from "@/components/BrandMark";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -7,6 +7,17 @@ import { productRoutes, type ProductPath } from "@/lib/productRoutes";
 
 type ProductHeaderProps = {
   activePath: ProductPath;
+};
+
+const routeIcons: Record<ProductPath, typeof Home> = {
+  "/": Home,
+  "/play": Gamepad2,
+  "/puzzles": Puzzle,
+  "/learn": BookOpen,
+  "/games": LibraryBig,
+  "/analyze": Search,
+  "/coach": Bot,
+  "/progress": BarChart3,
 };
 
 export function ProductHeader({ activePath }: ProductHeaderProps) {
@@ -30,27 +41,33 @@ export function ProductHeader({ activePath }: ProductHeaderProps) {
   return (
     <>
       <a className="skip-link" href="#main-content">Skip to main content</a>
-      <header className="app-header product-header">
-        <Link href="/play" className="brand-link" aria-label="Open ChessIQ Play">
+      <header className="app-header product-header product-sidebar">
+        <Link href="/" className="brand-link premium-brand-link" aria-label="Open ChessIQ Home">
           <BrandMark />
         </Link>
-        <nav ref={navRef} className="app-nav" aria-label="Primary navigation">
+        <nav ref={navRef} className="app-nav premium-sidebar-nav" aria-label="Primary navigation">
           {productRoutes.map(({ href, label }) => {
             const isActive = activePath === href;
+            const Icon = routeIcons[href];
             return (
               <Link
                 key={href}
                 ref={isActive ? activeLinkRef : undefined}
-                className={`nav-item ${isActive ? "is-active" : ""}`}
+                className={`nav-item premium-nav-item ${isActive ? "is-active" : ""}`}
                 href={href}
                 aria-current={isActive ? "page" : undefined}
               >
-                {label}
+                <span className="sidebar-nav-icon" aria-hidden="true"><Icon size={18} /></span>
+                <span>{label}</span>
               </Link>
             );
           })}
         </nav>
-        <div className="header-actions">
+        <div className="premium-sidebar-meta" aria-label="ChessIQ product status">
+          <span className="premium-badge">Premium workspace</span>
+          <small>First-party ChessEngine</small>
+        </div>
+        <div className="header-actions premium-sidebar-actions">
           <button
             className="theme-toggle"
             aria-label={`Switch to ${theme === "dark" ? "light" : "dark"} mode`}
