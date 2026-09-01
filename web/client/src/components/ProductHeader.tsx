@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { Moon, Sun } from "lucide-react";
 import { Link } from "wouter";
 import { BrandMark } from "@/components/BrandMark";
@@ -10,23 +11,42 @@ type ProductHeaderProps = {
 
 export function ProductHeader({ activePath }: ProductHeaderProps) {
   const { theme, toggleTheme } = useTheme();
+  const navRef = useRef<HTMLElement>(null);
+  const activeLinkRef = useRef<HTMLAnchorElement>(null);
+
+  useEffect(() => {
+    const nav = navRef.current;
+    const activeLink = activeLinkRef.current;
+    if (!nav || !activeLink || nav.scrollWidth <= nav.clientWidth) return;
+
+    const reduceMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)").matches ?? false;
+    activeLink.scrollIntoView({
+      behavior: reduceMotion ? "auto" : "smooth",
+      block: "nearest",
+      inline: "center",
+    });
+  }, [activePath]);
 
   return (
     <header className="app-header product-header">
       <Link href="/play" className="brand-link" aria-label="Open ChessIQ Play">
         <BrandMark />
       </Link>
-      <nav className="app-nav" aria-label="Primary navigation">
-        {productRoutes.map(({ href, label }) => (
-          <Link
-            key={href}
-            className={`nav-item ${activePath === href ? "is-active" : ""}`}
-            href={href}
-            aria-current={activePath === href ? "page" : undefined}
-          >
-            {label}
-          </Link>
-        ))}
+      <nav ref={navRef} className="app-nav" aria-label="Primary navigation">
+        {productRoutes.map(({ href, label }) => {
+          const isActive = activePath === href;
+          return (
+            <Link
+              key={href}
+              ref={isActive ? activeLinkRef : undefined}
+              className={`nav-item ${isActive ? "is-active" : ""}`}
+              href={href}
+              aria-current={isActive ? "page" : undefined}
+            >
+              {label}
+            </Link>
+          );
+        })}
       </nav>
       <div className="header-actions">
         <button

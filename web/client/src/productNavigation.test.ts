@@ -20,6 +20,15 @@ describe("ChessIQ production product navigation", () => {
     expect(header).toContain('href={href}');
   });
 
+  it("keeps the active product visible inside the horizontally scrollable mobile navigation", () => {
+    const header = readFileSync(new URL("./components/ProductHeader.tsx", import.meta.url), "utf8");
+
+    expect(header).toContain("activeLinkRef");
+    expect(header).toContain("scrollIntoView");
+    expect(header).toContain('inline: "center"');
+    expect(header).toContain('block: "nearest"');
+  });
+
   it("uses the shared real-navigation header on every production surface", () => {
     const pages = ["Analyze", "Play", "Games", "Learn", "Puzzles", "Progress", "Coach"];
     for (const page of pages) {
