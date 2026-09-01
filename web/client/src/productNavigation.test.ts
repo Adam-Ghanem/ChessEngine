@@ -31,12 +31,14 @@ describe("ChessIQ production product navigation", () => {
 
   it("lets keyboard users skip the shared navigation to the product workspace", () => {
     const header = readFileSync(new URL("./components/ProductHeader.tsx", import.meta.url), "utf8");
-    const css = readFileSync(new URL("./production-redesign.css", import.meta.url), "utf8");
+    const entry = readFileSync(new URL("./main.tsx", import.meta.url), "utf8");
+    const css = readFileSync(new URL("./accessibility.css", import.meta.url), "utf8");
 
     expect(header).toContain('href="#main-content"');
     expect(header).toContain('className="skip-link"');
     expect(header).toContain('id="main-content"');
     expect(header).toContain('tabIndex={-1}');
+    expect(entry).toContain('import "./accessibility.css"');
     expect(css).toContain(".skip-link");
     expect(css).toContain(".skip-link:focus-visible");
   });
