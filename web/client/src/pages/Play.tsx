@@ -199,7 +199,7 @@ export default function Play() {
       <div className="analysis-product-shell play-product-shell">
         <ProductHeader activePath="/play" />
 
-        <section className="play-game-room" aria-label="Chess game room">
+        <section className="play-game-room play-layout" aria-label="Chess game room">
           <div className="play-board-stage">
             <div className={`play-player-bar ${turn === "black" && !terminal ? "is-active" : ""}`}>
               <div className="play-player-identity">
@@ -229,7 +229,7 @@ export default function Play() {
             </div>
           </div>
 
-          <aside className="game-panel" aria-label="Game panel">
+          <aside className="game-panel play-rail" aria-label="Game panel">
             <div className="game-panel-status" aria-live="polite">
               <span><CircleDot size={13} /> {terminal ? "Game finished" : "Live game"}</span>
               <strong>{statusText}</strong>
@@ -238,7 +238,7 @@ export default function Play() {
 
             <div className="play-mode-switcher" aria-label="Play mode">
               <button type="button" className={mode === "computer" ? "is-active" : ""} aria-pressed={mode === "computer"} onClick={() => resetGame("computer")} disabled={busy || computerThinking}>
-                <Bot size={16} /><span><strong>ChessIQ</strong><small>vs engine</small></span>
+                <Bot size={16} /><span><strong>Play ChessIQ</strong><small>vs engine</small></span>
               </button>
               <button type="button" className={mode === "local" ? "is-active" : ""} aria-pressed={mode === "local"} onClick={() => resetGame("local")} disabled={busy || computerThinking}>
                 <Users size={16} /><span><strong>Local</strong><small>two players</small></span>
