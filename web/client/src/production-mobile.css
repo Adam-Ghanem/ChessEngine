@@ -13,18 +13,9 @@
     padding: 10px 0 8px;
   }
 
-  .brand-lockup {
-    order: 1;
-  }
-
-  .header-engine-state {
-    display: none;
-  }
-
-  .header-actions {
-    order: 2;
-    margin-left: auto;
-  }
+  .brand-lockup { order: 1; }
+  .header-engine-state { display: none; }
+  .header-actions { order: 2; margin-left: auto; }
 
   .app-nav {
     order: 3;
@@ -37,71 +28,28 @@
     border-top: 1px solid var(--iq-border);
     scroll-snap-type: x proximity;
   }
+  .app-nav::-webkit-scrollbar { display: none; }
+  .nav-item { flex: 0 0 auto; min-height: 40px; padding: 10px 14px; scroll-snap-align: start; }
 
-  .app-nav::-webkit-scrollbar {
-    display: none;
-  }
-
-  .nav-item {
-    flex: 0 0 auto;
-    min-height: 40px;
-    padding: 10px 14px;
-    scroll-snap-align: start;
-  }
-
-  .workspace-topline {
-    min-height: 48px;
-    gap: 12px;
-  }
-
-  .crumb-line {
-    min-width: 0;
-    overflow: hidden;
-  }
-
-  .crumb-line strong {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .workspace-state {
-    display: none;
-  }
+  .workspace-topline { min-height: 48px; gap: 12px; }
+  .crumb-line { min-width: 0; overflow: hidden; }
+  .crumb-line strong { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .workspace-state { display: none; }
 
   .analysis-workbench {
     grid-template-columns: 1fr;
-    grid-template-areas:
-      "primary"
-      "rail"
-      "graph";
+    grid-template-areas: "primary" "rail" "graph";
     gap: 16px;
     padding-top: 20px;
   }
 
   .primary-workspace,
   .analysis-rail,
-  .evaluation-graph-panel {
-    width: min(100%, 780px);
-    margin-inline: auto;
-  }
+  .evaluation-graph-panel { width: min(100%, 780px); margin-inline: auto; }
 
-  .game-context {
-    align-items: flex-start;
-    gap: 14px;
-  }
-
-  .board-workbench,
-  .move-list-panel {
-    width: 100%;
-    max-width: 780px;
-  }
-
-  .board-review-stage {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
+  .game-context { align-items: flex-start; gap: 14px; }
+  .board-workbench, .move-list-panel { width: 100%; max-width: 780px; }
+  .board-review-stage { display: flex; flex-direction: column; gap: 12px; }
 
   .game-review-card {
     position: relative;
@@ -119,84 +67,58 @@
     background: color-mix(in srgb, var(--iq-surface) 96%, transparent);
     backdrop-filter: blur(14px);
   }
-
-  .evaluation-graph-panel {
-    min-width: 0;
-  }
+  .evaluation-graph-panel { min-width: 0; }
 }
 
 @media (max-width: 560px) {
-  .chessiq-shell {
-    padding-inline: 10px;
-  }
-
-  .brand-wordmark {
-    font-size: 9px;
-  }
-
-  .header-actions {
-    gap: 5px;
-  }
-
-  .theme-toggle {
-    width: 36px;
-    padding: 0;
-    justify-content: center;
-  }
-
-  .theme-toggle span {
-    display: none;
-  }
-
-  .game-context {
-    display: grid;
-    grid-template-columns: 1fr;
-  }
-
-  .mode-switch {
-    width: max-content;
-  }
+  .chessiq-shell { padding-inline: 10px; }
+  .brand-wordmark { font-size: 9px; }
+  .header-actions { gap: 5px; }
+  .theme-toggle { width: 36px; padding: 0; justify-content: center; }
+  .theme-toggle span { display: none; }
+  .game-context { display: grid; grid-template-columns: 1fr; }
+  .mode-switch { width: max-content; }
 
   .board-workbench {
     grid-template-columns: 20px minmax(0, 1fr);
     gap: 5px;
   }
 
+  /* Keep the playable surface geometrically square on narrow viewports.
+   * Explicit rows prevent button intrinsic content from stretching grid tracks. */
   .board-frame {
+    width: 100%;
+    min-width: 0;
     padding: 5px;
   }
 
-  .transport-strip {
-    align-items: center;
-    gap: 8px;
+  .chessboard {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1 / 1;
+    grid-template-columns: repeat(8, minmax(0, 1fr));
+    grid-template-rows: repeat(8, minmax(0, 1fr));
   }
 
-  .transport-status {
+  .board-square {
+    width: 100%;
+    height: 100%;
     min-width: 0;
+    min-height: 0;
+    aspect-ratio: auto;
+    overflow: hidden;
   }
 
-  .transport-controls {
-    flex: 0 0 auto;
-  }
-
-  .review-card-content {
-    padding: 12px;
-  }
-
-  .review-action-row {
-    flex-wrap: wrap;
-  }
-
-  .review-share,
-  .review-next {
-    min-width: 0;
-  }
+  .transport-strip { align-items: center; gap: 8px; }
+  .transport-status { min-width: 0; }
+  .transport-controls { flex: 0 0 auto; }
+  .review-card-content { padding: 12px; }
+  .review-action-row { flex-wrap: wrap; }
+  .review-share, .review-next { min-width: 0; }
 
   .analysis-panel,
   .analysis-thread,
   .explanation-panel,
   .critical-moments-panel,
-  .evaluation-graph-panel {
-    padding-inline: 13px;
-  }
+  .evaluation-graph-panel { padding-inline: 13px; }
 }
