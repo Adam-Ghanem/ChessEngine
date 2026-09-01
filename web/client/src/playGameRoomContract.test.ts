@@ -19,6 +19,18 @@ describe("ChessIQ Play game room", () => {
     expect(css).toContain(".game-panel");
   });
 
+  it("uses the approved cream, olive, navy, and warm-gold Play palette", () => {
+    const css = readFileSync(new URL("./play.css", import.meta.url), "utf8");
+
+    expect(css).toContain("--play-room-bg:#090d14");
+    expect(css).toContain("--play-surface:#111722");
+    expect(css).toContain("--play-gold:#d7a84f");
+    expect(css).toContain("--play-board-light:#eee7d5");
+    expect(css).toContain("--play-board-dark:#73805f");
+    expect(css).toContain("background:var(--play-board-light)");
+    expect(css).toContain("background:var(--play-board-dark)");
+  });
+
   it("keeps the game room responsive with a full-width mobile board and panel below", () => {
     const css = readFileSync(new URL("./play.css", import.meta.url), "utf8");
 
