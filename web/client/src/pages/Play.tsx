@@ -41,6 +41,7 @@ export default function Play() {
 
   const turn = sideToMove(fen);
   const terminal = isTerminal(status);
+  const lastMove = moves.length ? moves[moves.length - 1] : null;
 
   useEffect(() => {
     let cancelled = false;
@@ -173,6 +174,7 @@ export default function Play() {
             <LegalChessBoard
               fen={fen}
               legalMoves={legalMoves}
+              lastMove={lastMove}
               disabled={busy || computerThinking || terminal || (mode === "computer" && turn !== "white")}
               onMove={handleBoardMove}
             />
