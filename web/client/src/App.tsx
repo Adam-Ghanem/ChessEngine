@@ -8,6 +8,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Analyze from "./pages/Analyze";
 import Coach from "./pages/Coach";
+import Dashboard from "./pages/Dashboard";
 import Games from "./pages/Games";
 import Learn from "./pages/Learn";
 import Play from "./pages/Play";
@@ -18,7 +19,7 @@ import NotFound from "./pages/NotFound";
 function Router() {
   return (
     <Switch>
-      <Route path="/" component={Play} />
+      <Route path="/" component={Dashboard} />
       <Route path="/play" component={Play} />
       <Route path="/games" component={Games} />
       <Route path="/analyze" component={Analyze} />
