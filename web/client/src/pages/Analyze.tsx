@@ -6,13 +6,18 @@ import { ChessBoard } from "@/components/ChessBoard";
 import { ProductHeader } from "@/components/ProductHeader";
 import { analyzePosition, type ServerEngineAnalysis } from "@/engine/serverEngine";
 import { validateFenShape } from "@/engine/fen";
+import { initialAnalysisFenFromSearch } from "@/lib/analysisRoute";
 import "@/fen-analyze.css";
 
 const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 export default function Analyze() {
-  const [draftFen, setDraftFen] = useState(START_FEN);
-  const [loadedFen, setLoadedFen] = useState(START_FEN);
+  const initialFen = useMemo(
+    () => initialAnalysisFenFromSearch(typeof window === "undefined" ? "" : window.location.search, START_FEN),
+    [],
+  );
+  const [draftFen, setDraftFen] = useState(initialFen);
+  const [loadedFen, setLoadedFen] = useState(initialFen);
   const [depth, setDepth] = useState(6);
   const [analysis, setAnalysis] = useState<ServerEngineAnalysis | null>(null);
   const [loading, setLoading] = useState(false);
