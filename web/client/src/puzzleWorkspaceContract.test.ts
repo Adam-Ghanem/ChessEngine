@@ -16,4 +16,13 @@ describe("production interactive Puzzles workspace", () => {
     expect(puzzles).toContain('solution: ["e4f6"]');
     expect(puzzles).toContain('solution: ["e1e8"]');
   });
+
+  it("reports real remaining progress and advances to the next unsolved puzzle", () => {
+    const puzzles = readFileSync(new URL("./pages/Puzzles.tsx", import.meta.url), "utf8");
+    expect(puzzles).toContain("const remainingCount = puzzles.length - solvedCount");
+    expect(puzzles).toContain("function findNextUnsolvedIndex");
+    expect(puzzles).toContain("Remaining");
+    expect(puzzles).not.toContain("<span>Streak</span>");
+    expect(puzzles).toContain("nextUnsolvedIndex");
+  });
 });
