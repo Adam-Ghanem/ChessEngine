@@ -1,40 +1,24 @@
 :root,
 :root[data-theme="dark"] {
   --iq-logo-blue: #146cff;
-  --iq-logo-knight: #f5f7ff;
 }
 
 :root[data-theme="light"] {
   --iq-logo-blue: #146cff;
-  --iq-logo-knight: #111827;
 }
 
 .brand-lockup {
   gap: 9px;
 }
 
-.brand-logo-svg {
-  width: 42px;
-  height: 42px;
-  overflow: visible;
+.brand-logo-image {
+  width: 44px;
+  height: 50px;
+  object-fit: contain;
+  object-position: center;
   flex: 0 0 auto;
+  user-select: none;
   filter: drop-shadow(0 5px 12px rgba(20, 108, 255, .16));
-}
-
-.brand-logo-q {
-  fill: none;
-  stroke: var(--iq-logo-blue);
-  stroke-width: 5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
-.brand-logo-knight {
-  fill: var(--iq-logo-knight);
-}
-
-.brand-logo-eye {
-  fill: var(--iq-logo-blue);
 }
 
 .brand-wordmark {
@@ -59,9 +43,9 @@
     gap: 0;
   }
 
-  .brand-logo-svg {
-    width: 36px;
-    height: 36px;
+  .brand-logo-image {
+    width: 40px;
+    height: 44px;
   }
 
   .brand-wordmark {
