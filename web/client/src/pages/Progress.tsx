@@ -1,7 +1,8 @@
-import { Activity, BookOpenCheck, CheckCircle2, Flame, Puzzle, Sparkles, Target, Trophy } from "lucide-react";
+import { Activity, BookOpenCheck, CheckCircle2, Flame, Puzzle, Sparkles, Swords, Target, Trophy } from "lucide-react";
 import { Link } from "wouter";
 import { BrandMark } from "@/components/BrandMark";
 import { ProductHeader } from "@/components/ProductHeader";
+import { readGameHistory } from "@/lib/gameHistory";
 import "../progress.css";
 
 const LEARN_STORAGE_KEY = "chessiq.learn.progress";
@@ -13,11 +14,13 @@ type ProgressSnapshot = {
   learnCheckpoints: number;
   completedLessons: number;
   solvedPuzzles: number;
+  savedGames: number;
+  movesPlayed: number;
 };
 
 function readProgress(): ProgressSnapshot {
   if (typeof window === "undefined") {
-    return { learnCheckpoints: 0, completedLessons: 0, solvedPuzzles: 0 };
+    return { learnCheckpoints: 0, completedLessons: 0, solvedPuzzles: 0, savedGames: 0, movesPlayed: 0 };
   }
 
   let learnCheckpoints = 0;
@@ -44,7 +47,11 @@ function readProgress(): ProgressSnapshot {
     // Corrupt browser data should never prevent Progress from rendering.
   }
 
-  return { learnCheckpoints, completedLessons, solvedPuzzles };
+  const games = readGameHistory(window.localStorage);
+  const savedGames = games.length;
+  const movesPlayed = games.reduce((total, game) => total + game.moves.length, 0);
+
+  return { learnCheckpoints, completedLessons, solvedPuzzles, savedGames, movesPlayed };
 }
 
 function percentage(value: number, total: number) {
@@ -57,11 +64,13 @@ export default function Progress() {
   const puzzlePercent = percentage(snapshot.solvedPuzzles, TOTAL_PUZZLES);
   const overallPercent = Math.round((learnPercent + puzzlePercent) / 2);
 
-  const nextStep = snapshot.solvedPuzzles < TOTAL_PUZZLES
-    ? { href: "/puzzles", label: "Continue Puzzles", detail: "Build calculation consistency with the next unsolved tactical position." }
-    : snapshot.learnCheckpoints < TOTAL_LEARN_CHECKPOINTS
-      ? { href: "/learn", label: "Continue Learn", detail: "Finish the remaining checkpoints and turn the concepts into repeatable habits." }
-      : { href: "/analyze", label: "Open Analyze", detail: "Your current training set is complete. Put the habits to work on a real position." };
+  const nextStep = snapshot.savedGames === 0
+    ? { href: "/play", label: "Play a Game", detail: "Create your first saved game so ChessIQ can connect training with real board activity." }
+    : snapshot.solvedPuzzles < TOTAL_PUZZLES
+      ? { href: "/puzzles", label: "Continue Puzzles", detail: "Build calculation consistency with the next unsolved tactical position." }
+      : snapshot.learnCheckpoints < TOTAL_LEARN_CHECKPOINTS
+        ? { href: "/learn", label: "Continue Learn", detail: "Finish the remaining checkpoints and turn the concepts into repeatable habits." }
+        : { href: "/analyze", label: "Open Analyze", detail: "Your current training set is complete. Put the habits to work on a real position." };
 
   return (
     <main className="app-shell chessiq-shell">
@@ -72,7 +81,7 @@ export default function Progress() {
           <div>
             <div className="analysis-hero-kicker"><Sparkles size={14} /> ChessIQ Progress</div>
             <h1>See the work compound.</h1>
-            <p>One honest view of the training completed on this device—no invented rating, streak, or performance data.</p>
+            <p>One honest view of the activity saved on this device—no invented rating, streak, or performance data.</p>
           </div>
           <div className="progress-score" aria-label={`Overall training completion ${overallPercent}%`}>
             <span>Training completion</span>
@@ -98,6 +107,15 @@ export default function Progress() {
             <p>positions solved</p>
             <div className="progress-meter" aria-label={`Puzzle progress ${puzzlePercent}%`}><span style={{ width: `${puzzlePercent}%` }} /></div>
             <small>Engine-legal tactical attempts</small>
+          </article>
+
+          <article className="progress-card">
+            <div className="progress-card-icon"><Swords size={20} /></div>
+            <span className="analysis-label">Games</span>
+            <strong>{snapshot.savedGames}</strong>
+            <p>Games played</p>
+            <div className="progress-activity" aria-label={`${snapshot.movesPlayed} saved moves played`}><span>{snapshot.movesPlayed}</span> saved moves</div>
+            <small>Counted only from real Play sessions stored in this browser</small>
           </article>
 
           <article className="progress-card progress-card-total">
