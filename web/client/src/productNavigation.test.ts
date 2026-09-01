@@ -3,11 +3,11 @@ import { describe, expect, it } from "vitest";
 import { productRoutes } from "./lib/productRoutes";
 
 describe("ChessIQ production product navigation", () => {
-  it("routes Play, Games, Analyze, Learn, Puzzles, Progress, and Coach through the real web product shell", () => {
+  it("routes Home, Play, Games, Analyze, Learn, Puzzles, Progress, and Coach through the real web product shell", () => {
     const app = readFileSync(new URL("./App.tsx", import.meta.url), "utf8");
     const header = readFileSync(new URL("./components/ProductHeader.tsx", import.meta.url), "utf8");
 
-    expect(app).toContain('<Route path="/" component={Play} />');
+    expect(app).toContain('<Route path="/" component={Dashboard} />');
     expect(app).toContain('path="/play"');
     expect(app).toContain('path="/games"');
     expect(app).toContain('path="/analyze"');
@@ -15,7 +15,7 @@ describe("ChessIQ production product navigation", () => {
     expect(app).toContain('path="/puzzles"');
     expect(app).toContain('path="/progress"');
     expect(app).toContain('path="/coach"');
-    expect(productRoutes.map(route => route.href)).toEqual(["/play", "/games", "/analyze", "/learn", "/puzzles", "/progress", "/coach"]);
+    expect(productRoutes.map(route => route.href)).toEqual(["/", "/play", "/puzzles", "/learn", "/games", "/analyze", "/coach", "/progress"]);
     expect(header).toContain("productRoutes.map");
     expect(header).toContain('href={href}');
   });
@@ -44,7 +44,7 @@ describe("ChessIQ production product navigation", () => {
   });
 
   it("uses the shared real-navigation header on every production surface", () => {
-    const pages = ["Analyze", "Play", "Games", "Learn", "Puzzles", "Progress", "Coach"];
+    const pages = ["Dashboard", "Analyze", "Play", "Games", "Learn", "Puzzles", "Progress", "Coach"];
     for (const page of pages) {
       const source = readFileSync(new URL(`./pages/${page}.tsx`, import.meta.url), "utf8");
       expect(source).toContain("ProductHeader");
