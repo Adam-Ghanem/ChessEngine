@@ -22,11 +22,11 @@ describe("production mobile product layout", () => {
   it("gives the Play board a square full-bleed mobile presentation", () => {
     const css = readFileSync(new URL("./play.css", import.meta.url), "utf8");
 
-    expect(css).toMatch(/\.play-board\{[^}]*aspect-ratio:1/s);
+    expect(css).toMatch(/\.play-board\{[^}]*aspect-ratio:1[^}]*grid-template-columns:repeat\(8,minmax\(0,1fr\)\)[^}]*grid-template-rows:repeat\(8,minmax\(0,1fr\)\)/s);
     expect(css).toMatch(/@media\(max-width:640px\).*?\.play-board-card\{[^}]*width:100dvw[^}]*margin-inline:calc\(50% - 50dvw\)[^}]*padding:0[^}]*border:0/s);
     expect(css).toMatch(/@media\(max-width:640px\).*?\.play-board\{[^}]*width:100%[^}]*max-width:none[^}]*border-radius:0[^}]*border:0/s);
-    expect(css).toMatch(/\.play-square\.is-light\s+(?:\.rank-label,\.play-square\.is-light\s+)?\.file-label|\.play-square\.is-light\s+\.rank-label/s);
-    expect(css).toMatch(/\.play-square\.is-dark\s+(?:\.rank-label,\.play-square\.is-dark\s+)?\.file-label|\.play-square\.is-dark\s+\.rank-label/s);
+    expect(css).toMatch(/\.play-square\.is-light\s+\.rank-label,\.play-square\.is-light\s+\.file-label\{[^}]*color:/s);
+    expect(css).toMatch(/\.play-square\.is-dark\s+\.rank-label,\.play-square\.is-dark\s+\.file-label\{[^}]*color:/s);
   });
 
   it("makes Analyze single-column at the 1030px production breakpoint", () => {
