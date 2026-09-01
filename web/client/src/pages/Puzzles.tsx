@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { CheckCircle2, Flame, Lightbulb, RotateCcw, Sparkles, Target, Trophy } from "lucide-react";
+import { CheckCircle2, Lightbulb, RotateCcw, Sparkles, Target, Trophy } from "lucide-react";
 import { Link } from "wouter";
 import { toast } from "sonner";
 import { BrandMark } from "@/components/BrandMark";
@@ -65,6 +65,14 @@ function loadSolved() {
   }
 }
 
+function findNextUnsolvedIndex(currentIndex: number, solvedIds: string[]) {
+  for (let offset = 1; offset < puzzles.length; offset += 1) {
+    const candidateIndex = (currentIndex + offset) % puzzles.length;
+    if (!solvedIds.includes(puzzles[candidateIndex].id)) return candidateIndex;
+  }
+  return null;
+}
+
 export default function Puzzles() {
   const [activeIndex, setActiveIndex] = useState(0);
   const [solved, setSolved] = useState<string[]>(loadSolved);
@@ -77,7 +85,8 @@ export default function Puzzles() {
   const puzzle = puzzles[activeIndex];
   const isSolved = solved.includes(puzzle.id);
   const solvedCount = solved.length;
-  const streak = useMemo(() => puzzles.reduce((count, item) => count + (solved.includes(item.id) ? 1 : 0), 0), [solved]);
+  const remainingCount = puzzles.length - solvedCount;
+  const nextUnsolvedIndex = useMemo(() => findNextUnsolvedIndex(activeIndex, solved), [activeIndex, solved]);
 
   useEffect(() => {
     let cancelled = false;
@@ -158,6 +167,11 @@ export default function Puzzles() {
     toast("Puzzle progress reset.");
   }
 
+  function openNextUnsolvedPuzzle() {
+    if (nextUnsolvedIndex === null) return;
+    selectPuzzle(nextUnsolvedIndex);
+  }
+
   return (
     <main className="app-shell chessiq-shell">
       <div className="puzzles-product-shell">
@@ -171,7 +185,7 @@ export default function Puzzles() {
           </div>
           <div className="puzzles-stats" aria-label="Puzzle training progress">
             <div><Trophy size={16} /><span>Solved</span><strong>{solvedCount}/{puzzles.length}</strong></div>
-            <div><Flame size={16} /><span>Streak</span><strong>{streak}</strong></div>
+            <div><Target size={16} /><span>Remaining</span><strong>{remainingCount}</strong></div>
           </div>
         </section>
 
@@ -218,7 +232,7 @@ export default function Puzzles() {
               <div className="puzzle-next-row">
                 <button type="button" className="lesson-secondary" onClick={restartPuzzle} disabled={busy}><RotateCcw size={15} /> Reset position</button>
                 <Link href="/learn" className="lesson-secondary">Study the concept</Link>
-                <button className="lesson-primary primary-action" disabled={feedback !== "solved" || activeIndex === puzzles.length - 1} onClick={() => selectPuzzle(Math.min(activeIndex + 1, puzzles.length - 1))}>Next puzzle</button>
+                <button className="lesson-primary primary-action" disabled={feedback !== "solved" || nextUnsolvedIndex === null} onClick={openNextUnsolvedPuzzle}>{nextUnsolvedIndex === null && solvedCount === puzzles.length ? "Set complete" : "Next puzzle"}</button>
               </div>
             </div>
           </section>
