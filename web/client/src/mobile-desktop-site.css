@@ -1,0 +1,82 @@
+/*
+ * Overflow guard for phones using a desktop-like CSS viewport.
+ * Loaded last so the shared <=1030px mobile composition wins over later desktop selectors.
+ */
+@media (max-width: 1030px) {
+  .chessiq-shell,
+  .analysis-product-shell,
+  .play-product-shell {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .analysis-product-shell {
+    width: 100%;
+  }
+
+  .product-header {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .product-header .brand-link,
+  .product-header .brand-lockup {
+    min-width: 0;
+    flex: 0 0 auto;
+  }
+
+  .brand-wordmark {
+    display: none;
+  }
+
+  .brand-logo-svg {
+    width: 36px;
+    height: 36px;
+  }
+
+  .product-header .app-nav {
+    width: calc(100% + 28px);
+    min-width: 0;
+    max-width: none;
+    margin: 2px -14px -8px;
+    padding-inline: 14px;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+
+  .product-header .nav-item {
+    min-width: max-content;
+    min-height: 42px;
+    padding: 10px 13px;
+  }
+
+  .play-hero,
+  .play-hero > div,
+  .play-mode-switcher,
+  .play-layout,
+  .play-board-card,
+  .play-rail {
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .play-hero > div {
+    width: 100%;
+  }
+
+  .play-hero h1 {
+    max-width: 100%;
+    font-size: clamp(2rem, 5vw, 3rem);
+    overflow-wrap: anywhere;
+  }
+
+  .play-hero p {
+    max-width: 100%;
+    overflow-wrap: anywhere;
+  }
+
+  .play-status {
+    width: 100%;
+    min-width: 0;
+  }
+}
