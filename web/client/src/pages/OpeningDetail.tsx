@@ -46,11 +46,12 @@ export default function OpeningDetail() {
     );
   }
 
-  const sans = sanMoves(opening.moves);
+  const activeOpening = opening;
+  const sans = sanMoves(activeOpening.moves);
   const currentFen = positions[currentPly] ?? START_FEN;
-  const lastMove = currentPly > 0 ? opening.uci[currentPly - 1] : null;
+  const lastMove = currentPly > 0 ? activeOpening.uci[currentPly - 1] : null;
   const atStart = currentPly === 0;
-  const atEnd = currentPly === opening.uci.length;
+  const atEnd = currentPly === activeOpening.uci.length;
 
   async function nextMove() {
     if (busy || atEnd) return;
@@ -62,7 +63,7 @@ export default function OpeningDetail() {
     setBusy(true);
     setError(null);
     try {
-      const result = await playMove(currentFen, opening.uci[currentPly]);
+      const result = await playMove(currentFen, activeOpening.uci[currentPly]);
       setPositions((current) => [...current, result.fen]);
       setCurrentPly((value) => value + 1);
     } catch (cause) {
@@ -92,21 +93,21 @@ export default function OpeningDetail() {
         <section className="opening-detail-hero">
           <div>
             <Link href="/learn/openings" className="openings-back"><ArrowLeft size={15} /> Opening Explorer</Link>
-            <div className="analysis-hero-kicker"><Sparkles size={14} /> {opening.eco} · Opening study</div>
-            <h1>{opening.name}</h1>
-            <p>{opening.character}</p>
+            <div className="analysis-hero-kicker"><Sparkles size={14} /> {activeOpening.eco} · Opening study</div>
+            <h1>{activeOpening.name}</h1>
+            <p>{activeOpening.character}</p>
           </div>
           <Link href={analysisHrefForFen(currentFen)} className="opening-analyze-action">
             <Search size={16} /> Analyze this position <ArrowRight size={15} />
           </Link>
         </section>
 
-        <section className="opening-detail-layout" aria-label={`${opening.name} study workspace`}>
+        <section className="opening-detail-layout" aria-label={`${activeOpening.name} study workspace`}>
           <div className="opening-board-column">
             <div className="opening-board-card">
               <div className="opening-board-meta">
-                <div><span className="analysis-label">Board position</span><strong>{currentPly === 0 ? "Starting position" : `After ${sans[currentPly - 1] ?? opening.uci[currentPly - 1]}`}</strong></div>
-                <span>{currentPly}/{opening.uci.length} plies</span>
+                <div><span className="analysis-label">Board position</span><strong>{currentPly === 0 ? "Starting position" : `After ${sans[currentPly - 1] ?? activeOpening.uci[currentPly - 1]}`}</strong></div>
+                <span>{currentPly}/{activeOpening.uci.length} plies</span>
               </div>
               <LegalChessBoard
                 fen={currentFen}
@@ -114,7 +115,7 @@ export default function OpeningDetail() {
                 disabled
                 onMove={() => undefined}
                 lastMove={lastMove}
-                ariaLabel={`${opening.name} opening board after ${currentPly} plies`}
+                ariaLabel={`${activeOpening.name} opening board after ${currentPly} plies`}
               />
               <div className="opening-board-controls" aria-label="Opening move navigation">
                 <button type="button" onClick={previousMove} disabled={busy || atStart}><ChevronLeft size={17} /> Previous</button>
@@ -125,7 +126,7 @@ export default function OpeningDetail() {
               {error && <div className="opening-replay-error" role="alert"><strong>ChessEngine could not replay the line.</strong><span>{error}</span></div>}
             </div>
 
-            <div className="opening-move-timeline" aria-label={`${opening.name} move timeline`}>
+            <div className="opening-move-timeline" aria-label={`${activeOpening.name} move timeline`}>
               <button type="button" className={currentPly === 0 ? "is-active" : ""} onClick={() => jumpToPly(0)}>Start</button>
               {sans.map((move, index) => {
                 const ply = index + 1;
@@ -133,7 +134,7 @@ export default function OpeningDetail() {
                 return (
                   <button
                     type="button"
-                    key={`${opening.id}-${ply}`}
+                    key={`${activeOpening.id}-${ply}`}
                     className={currentPly === ply ? "is-active" : ""}
                     disabled={!available || busy}
                     onClick={() => jumpToPly(ply)}
@@ -146,22 +147,22 @@ export default function OpeningDetail() {
             </div>
           </div>
 
-          <aside className="opening-study-rail" aria-label={`${opening.name} plans`}>
+          <aside className="opening-study-rail" aria-label={`${activeOpening.name} plans`}>
             <section>
               <span className="analysis-label">Canonical line</span>
-              <code>{opening.moves}</code>
+              <code>{activeOpening.moves}</code>
             </section>
             <section>
               <span className="analysis-label">White plan</span>
-              <p>{opening.whitePlan}</p>
+              <p>{activeOpening.whitePlan}</p>
             </section>
             <section>
               <span className="analysis-label">Black plan</span>
-              <p>{opening.blackPlan}</p>
+              <p>{activeOpening.blackPlan}</p>
             </section>
             <section>
               <span className="analysis-label">Related names</span>
-              <div className="opening-detail-aliases">{opening.aliases.map((alias) => <span key={alias}>{alias}</span>)}</div>
+              <div className="opening-detail-aliases">{activeOpening.aliases.map((alias) => <span key={alias}>{alias}</span>)}</div>
             </section>
           </aside>
         </section>
