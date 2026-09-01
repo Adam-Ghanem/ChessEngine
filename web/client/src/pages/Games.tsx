@@ -4,6 +4,7 @@ import { Link } from "wouter";
 import { toast } from "sonner";
 import { BrandMark } from "@/components/BrandMark";
 import { ProductHeader } from "@/components/ProductHeader";
+import { analysisHrefForFen } from "@/lib/analysisRoute";
 import { clearGameHistory, readGameHistory, type StoredGame } from "@/lib/gameHistory";
 import "../games.css";
 
@@ -69,7 +70,7 @@ export default function Games() {
                   <div className="game-history-meta"><Clock3 size={14} /><time dateTime={game.updatedAt}>{new Date(game.updatedAt).toLocaleString()}</time></div>
                   <div className="game-history-actions">
                     <button type="button" onClick={() => copyFen(game.fen)}><Copy size={14} /> Copy FEN</button>
-                    <Link href="/analyze" className="primary-action">Open Analyze</Link>
+                    <Link href={analysisHrefForFen(game.fen)} className="primary-action">Analyze position</Link>
                   </div>
                 </article>
               ))}
