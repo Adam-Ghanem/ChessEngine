@@ -96,6 +96,7 @@ export default function Learn() {
             <div className="analysis-hero-kicker"><Sparkles size={14} /> ChessIQ Learn</div>
             <h1>Turn analysis into habits.</h1>
             <p>Short, focused lessons convert engine feedback into decisions you can repeat over the board.</p>
+            <Link href="/learn/openings" className="primary-action">Explore openings</Link>
           </div>
           <div className="learn-hero-stat" aria-label="Learning progress">
             <span>Completed checkpoints</span>
