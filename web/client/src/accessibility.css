@@ -1,0 +1,30 @@
+/* Shared keyboard accessibility affordances for every ChessIQ product surface. */
+.skip-link {
+  position: fixed;
+  top: 10px;
+  left: 10px;
+  z-index: 100;
+  padding: 10px 14px;
+  border: 1px solid var(--iq-violet-bright);
+  border-radius: 10px;
+  color: var(--iq-text);
+  background: var(--iq-surface-raised);
+  box-shadow: var(--shadow-2);
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+  transform: translateY(calc(-100% - 20px));
+}
+
+.skip-link:focus-visible {
+  transform: translateY(0);
+  outline: 2px solid var(--iq-teal);
+  outline-offset: 2px;
+}
+
+.skip-target {
+  display: block;
+  width: 0;
+  height: 0;
+  scroll-margin-top: 84px;
+}
