@@ -11,6 +11,7 @@ import Coach from "./pages/Coach";
 import Dashboard from "./pages/Dashboard";
 import Games from "./pages/Games";
 import Learn from "./pages/Learn";
+import OpeningDetail from "./pages/OpeningDetail";
 import Openings from "./pages/Openings";
 import Play from "./pages/Play";
 import Puzzles from "./pages/Puzzles";
@@ -25,6 +26,7 @@ function Router() {
       <Route path="/games" component={Games} />
       <Route path="/analyze" component={Analyze} />
       <Route path="/review" component={Analyze} />
+      <Route path="/learn/openings/:id" component={OpeningDetail} />
       <Route path="/learn/openings" component={Openings} />
       <Route path="/learn" component={Learn} />
       <Route path="/puzzles" component={Puzzles} />

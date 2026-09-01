@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { ArrowLeft, BookOpen, Search, Sparkles, Target } from "lucide-react";
+import { ArrowLeft, ArrowRight, BookOpen, Search, Sparkles, Target } from "lucide-react";
 import { Link } from "wouter";
 import { BrandMark } from "@/components/BrandMark";
 import { ProductHeader } from "@/components/ProductHeader";
@@ -20,7 +20,7 @@ export default function Openings() {
             <Link href="/learn" className="openings-back"><ArrowLeft size={15} /> Back to Learn</Link>
             <div className="analysis-hero-kicker"><Sparkles size={14} /> ChessIQ Openings</div>
             <h1>Understand the opening, not just the moves.</h1>
-            <p>Start with the major opening families and learn the structure, plans, and ideas behind the first moves. This foundation is built to expand into the complete ECO tree.</p>
+            <p>Start with the major opening families and learn the structure, plans, and ideas behind the first moves. Open a family to replay its canonical line on the board through the first-party ChessEngine.</p>
           </div>
           <div className="openings-hero-stat" aria-label={`${openingFamilies.length} opening families available`}>
             <span>Opening families</span>
@@ -47,26 +47,29 @@ export default function Openings() {
         {results.length ? (
           <section className="openings-grid" aria-label="Opening families">
             {results.map((opening) => (
-              <article className="opening-card" key={opening.id}>
-                <header>
-                  <span className="opening-icon"><BookOpen size={18} /></span>
-                  <span className="opening-eco">{opening.eco}</span>
-                </header>
-                <h2>{opening.name}</h2>
-                <code>{opening.moves}</code>
-                <p>{opening.character}</p>
-                <div className="opening-plan">
-                  <strong>White plan</strong>
-                  <span>{opening.whitePlan}</span>
-                </div>
-                <div className="opening-plan">
-                  <strong>Black plan</strong>
-                  <span>{opening.blackPlan}</span>
-                </div>
-                <div className="opening-aliases" aria-label={`Related names for ${opening.name}`}>
-                  {opening.aliases.slice(0, 3).map((alias) => <span key={alias}>{alias}</span>)}
-                </div>
-              </article>
+              <Link key={opening.id} href={`/learn/openings/${opening.id}`} className="opening-card-link" aria-label={`Study ${opening.name}`}>
+                <article className="opening-card">
+                  <header>
+                    <span className="opening-icon"><BookOpen size={18} /></span>
+                    <span className="opening-eco">{opening.eco}</span>
+                  </header>
+                  <h2>{opening.name}</h2>
+                  <code>{opening.moves}</code>
+                  <p>{opening.character}</p>
+                  <div className="opening-plan">
+                    <strong>White plan</strong>
+                    <span>{opening.whitePlan}</span>
+                  </div>
+                  <div className="opening-plan">
+                    <strong>Black plan</strong>
+                    <span>{opening.blackPlan}</span>
+                  </div>
+                  <div className="opening-aliases" aria-label={`Related names for ${opening.name}`}>
+                    {opening.aliases.slice(0, 3).map((alias) => <span key={alias}>{alias}</span>)}
+                  </div>
+                  <span className="opening-study-link">Study on board <ArrowRight size={14} /></span>
+                </article>
+              </Link>
             ))}
           </section>
         ) : (
