@@ -29,20 +29,16 @@ describe("ChessIQ production product navigation", () => {
     expect(header).toContain('block: "nearest"');
   });
 
-  it("lets keyboard users skip the shared navigation to every production workspace", () => {
+  it("lets keyboard users skip the shared navigation to the product workspace", () => {
     const header = readFileSync(new URL("./components/ProductHeader.tsx", import.meta.url), "utf8");
     const css = readFileSync(new URL("./production-redesign.css", import.meta.url), "utf8");
-    const pages = ["Analyze", "Play", "Games", "Learn", "Puzzles", "Progress", "Coach"];
 
     expect(header).toContain('href="#main-content"');
     expect(header).toContain('className="skip-link"');
+    expect(header).toContain('id="main-content"');
+    expect(header).toContain('tabIndex={-1}');
     expect(css).toContain(".skip-link");
     expect(css).toContain(".skip-link:focus-visible");
-
-    for (const page of pages) {
-      const source = readFileSync(new URL(`./pages/${page}.tsx`, import.meta.url), "utf8");
-      expect(source).toContain('id="main-content"');
-    }
   });
 
   it("uses the shared real-navigation header on every production surface", () => {
