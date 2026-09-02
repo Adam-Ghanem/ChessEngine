@@ -24,4 +24,14 @@ describe("ChessIQ mobile premium navigation", () => {
     expect(header).toContain('aria-current={isActive ? "page" : undefined}');
     expect(header).toContain('const mobileMoreRoutes: ProductPath[] = ["/learn", "/games", "/coach", "/progress"]');
   });
+
+  it("keeps the mobile More menu dismissible and route-aware", () => {
+    const header = readFileSync(new URL("./components/ProductHeader.tsx", import.meta.url), "utf8");
+
+    expect(header).toContain("const mobileMoreRef = useRef<HTMLDetailsElement>(null)");
+    expect(header).toContain('event.key !== "Escape"');
+    expect(header).toContain("mobileMoreRef.current.open = false");
+    expect(header).toContain("mobileMoreRef.current?.contains(event.target as Node)");
+    expect(header).toContain("onClick={closeMobileMore}");
+  });
 });
