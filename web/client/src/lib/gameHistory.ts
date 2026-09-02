@@ -28,11 +28,24 @@ function isGameTermination(value: unknown): value is GameTermination {
   return value === "checkmate" || value === "stalemate" || value === "draw" || value === "timeout" || value === "resignation";
 }
 
+function isEngineStatus(value: unknown): value is PlayEngineStatus {
+  return value === "ongoing" || value === "check" || value === "checkmate" || value === "stalemate" || value === "draw";
+}
+
 function hasValidOutcome(game: Partial<StoredGame>) {
   if (game.result === undefined && game.termination === undefined) return true;
-  if (!isGameResult(game.result) || !isGameTermination(game.termination)) return false;
-  if (game.termination === "stalemate" || game.termination === "draw") return game.result === "draw";
-  return game.result === "white-win" || game.result === "black-win";
+  if (!isGameResult(game.result) || !isGameTermination(game.termination) || !isEngineStatus(game.status)) return false;
+
+  if (game.termination === "checkmate") {
+    return game.status === "checkmate" && game.result !== "draw";
+  }
+  if (game.termination === "stalemate") {
+    return game.status === "stalemate" && game.result === "draw";
+  }
+  if (game.termination === "draw") {
+    return game.status === "draw" && game.result === "draw";
+  }
+  return (game.status === "ongoing" || game.status === "check") && game.result !== "draw";
 }
 
 function isStoredGame(value: unknown): value is StoredGame {
@@ -40,7 +53,7 @@ function isStoredGame(value: unknown): value is StoredGame {
   const game = value as Partial<StoredGame>;
   return typeof game.id === "string"
     && (game.mode === "computer" || game.mode === "local")
-    && typeof game.status === "string"
+    && isEngineStatus(game.status)
     && typeof game.fen === "string"
     && Array.isArray(game.moves)
     && game.moves.every(move => typeof move === "string")
