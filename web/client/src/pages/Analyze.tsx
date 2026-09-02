@@ -7,18 +7,11 @@ import { ProductHeader } from "@/components/ProductHeader";
 import { analyzePosition, type ServerEngineAnalysis } from "@/engine/serverEngine";
 import { validateFenShape } from "@/engine/fen";
 import { initialAnalysisFenFromSearch, initialAnalysisGameIdFromSearch } from "@/lib/analysisRoute";
-import { readGameHistory, type StoredGame } from "@/lib/gameHistory";
+import { readGameHistory } from "@/lib/gameHistory";
+import { gameOutcomeLabel } from "@/lib/gameOutcome";
 import "@/fen-analyze.css";
 
 const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-
-function gameStatusLabel(game: StoredGame) {
-  if (game.status === "checkmate") return "Checkmate";
-  if (game.status === "stalemate") return "Stalemate";
-  if (game.status === "draw") return "Draw";
-  if (game.status === "check") return "In check";
-  return "In progress";
-}
 
 function moveArrow(move: string | undefined) {
   if (!move || !/^[a-h][1-8][a-h][1-8]/.test(move)) return { from: "a1", to: "a1" };
@@ -132,7 +125,7 @@ export default function Analyze() {
                 </div>
                 <div className="game-review-facts">
                   <div><span>Mode</span><strong>{gameContext.mode === "computer" ? "vs ChessIQ" : "Local board"}</strong></div>
-                  <div><span>Status</span><strong>{gameStatusLabel(gameContext)}</strong></div>
+                  <div><span>Status</span><strong>{gameOutcomeLabel(gameContext)}</strong></div>
                   <div><span>Moves</span><strong>{gameContext.moves.length} ply</strong></div>
                 </div>
                 <div className="game-review-moves">
