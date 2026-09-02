@@ -68,10 +68,11 @@ describe("ChessIQ production product navigation", () => {
 
   it("ships an engine-backed interactive Puzzles workspace with persisted progress", () => {
     const puzzles = readFileSync(new URL("./pages/Puzzles.tsx", import.meta.url), "utf8");
+    const catalog = readFileSync(new URL("./lib/puzzleCatalog.ts", import.meta.url), "utf8");
     const css = readFileSync(new URL("./product-surfaces.css", import.meta.url), "utf8");
 
     expect(puzzles).toContain("ChessIQ Training");
-    expect(puzzles).toContain("chessiq-puzzles-solved-v1");
+    expect(catalog).toContain("chessiq-puzzles-solved-v1");
     expect(puzzles).toContain("LegalChessBoard");
     expect(puzzles).toContain("fetchLegalMoves");
     expect(puzzles).toContain("playMove");

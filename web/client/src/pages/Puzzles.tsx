@@ -7,59 +7,16 @@ import { LegalChessBoard } from "@/components/LegalChessBoard";
 import { ProductHeader } from "@/components/ProductHeader";
 import { fetchLegalMoves, playMove } from "@/engine/playEngine";
 import { evaluatePuzzleMove } from "@/engine/puzzleState";
-
-type Puzzle = {
-  id: string;
-  title: string;
-  theme: string;
-  difficulty: "Starter" | "Intermediate" | "Advanced";
-  fen: string;
-  prompt: string;
-  solution: string[];
-  explanation: string;
-};
+import { PUZZLE_IDS, PUZZLE_STORAGE_KEY, PUZZLES as puzzles } from "@/lib/puzzleCatalog";
 
 type PuzzleFeedback = "idle" | "incorrect" | "progress" | "solved";
 
-const puzzles: Puzzle[] = [
-  {
-    id: "back-rank",
-    title: "Back-rank finish",
-    theme: "Mate in one",
-    difficulty: "Starter",
-    fen: "6k1/5ppp/8/8/8/8/5PPP/3R2K1 w - - 0 1",
-    prompt: "White to move. Find the forcing finish on the board.",
-    solution: ["d1d8"],
-    explanation: "Rd8# seals the eighth rank. Black has no flight square and no piece can interpose.",
-  },
-  {
-    id: "fork",
-    title: "Knight fork",
-    theme: "Double attack",
-    difficulty: "Intermediate",
-    fen: "4k3/8/8/3q4/4N3/8/8/4K3 w - - 0 1",
-    prompt: "White to move. Find the knight jump that checks the king and attacks the queen.",
-    solution: ["e4f6"],
-    explanation: "Nf6+ attacks the king and queen at the same time, forcing the king to respond before the queen can move.",
-  },
-  {
-    id: "remove-defender",
-    title: "Remove the defender",
-    theme: "Tactical conversion",
-    difficulty: "Advanced",
-    fen: "4r1k1/5ppp/8/8/2B5/8/5PPP/4R1K1 w - - 0 1",
-    prompt: "White to move. Win the exchange with the cleanest forcing move.",
-    solution: ["e1e8"],
-    explanation: "Rxe8+ removes the rook with tempo. The check forces the reply and converts the tactical advantage immediately.",
-  },
-];
-
-const STORAGE_KEY = "chessiq-puzzles-solved-v1";
-
 function loadSolved() {
   try {
-    const parsed = JSON.parse(localStorage.getItem(STORAGE_KEY) ?? "[]");
-    return Array.isArray(parsed) ? parsed.filter((item): item is string => typeof item === "string") : [];
+    const parsed = JSON.parse(localStorage.getItem(PUZZLE_STORAGE_KEY) ?? "[]");
+    if (!Array.isArray(parsed)) return [];
+    const valid = parsed.filter((item): item is string => typeof item === "string" && PUZZLE_IDS.has(item));
+    return Array.from(new Set(valid));
   } catch {
     return [];
   }
@@ -106,7 +63,7 @@ export default function Puzzles() {
     if (solved.includes(puzzle.id)) return;
     const next = [...solved, puzzle.id];
     setSolved(next);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    localStorage.setItem(PUZZLE_STORAGE_KEY, JSON.stringify(next));
   }
 
   async function handlePuzzleMove(move: string) {
@@ -163,7 +120,7 @@ export default function Puzzles() {
 
   function resetProgress() {
     setSolved([]);
-    localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(PUZZLE_STORAGE_KEY);
     toast("Puzzle progress reset.");
   }
 
