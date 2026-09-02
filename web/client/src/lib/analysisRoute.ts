@@ -7,8 +7,7 @@ export function analysisHrefForFen(fen: string) {
 }
 
 export function analysisHrefForGame(fen: string, gameId: string) {
-  const params = new URLSearchParams({ fen, game: gameId });
-  return `/analyze?${params.toString()}`;
+  return `/analyze?fen=${encodeURIComponent(fen)}&game=${encodeURIComponent(gameId)}`;
 }
 
 export function initialAnalysisFenFromSearch(search: string, fallbackFen: string) {
