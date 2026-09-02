@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { GAME_HISTORY_KEY, deleteGameHistory, readGameHistory, type StoredGame } from "./gameHistory";
 
-function storageWith(games: StoredGame[]): Storage {
+function storageWith(games: unknown[]): Storage {
   const data = new Map<string, string>([[GAME_HISTORY_KEY, JSON.stringify(games)]]);
   return {
     getItem: (key) => data.get(key) ?? null,
@@ -39,6 +39,22 @@ describe("game history deletion", () => {
     deleteGameHistory("only", storage);
 
     expect(storage.getItem(GAME_HISTORY_KEY)).toBeNull();
+    expect(readGameHistory(storage)).toEqual([]);
+  });
+});
+
+describe("game history outcomes", () => {
+  it("rejects records with unsupported termination metadata instead of trusting corrupted local data", () => {
+    const corrupted = { ...game("bad"), termination: "abandoned", result: "white-win" };
+    const storage = storageWith([corrupted]);
+
+    expect(readGameHistory(storage)).toEqual([]);
+  });
+
+  it("rejects terminal metadata that contradicts the engine terminal status", () => {
+    const corrupted = { ...game("bad-status"), termination: "checkmate", result: "black-win" };
+    const storage = storageWith([corrupted]);
+
     expect(readGameHistory(storage)).toEqual([]);
   });
 });

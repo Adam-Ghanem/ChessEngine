@@ -9,14 +9,16 @@ import { fetchLegalMoves, playMove, type PlayEngineStatus } from "@/engine/playE
 import { sideToMove, statusLabel } from "@/engine/playState";
 import { analyzePosition } from "@/engine/serverEngine";
 import { analysisHrefForFen } from "@/lib/analysisRoute";
-import { saveGameSnapshot } from "@/lib/gameHistory";
+import { saveGameSnapshot, type GameResult, type GameTermination } from "@/lib/gameHistory";
 import "@/play.css";
 import "@/play-difficulty.css";
 
 const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 const INITIAL_CLOCK_SECONDS = 10 * 60;
 type PlayMode = "local" | "computer";
-type TimedOutSide = "white" | "black" | null;
+type PlayerSide = "white" | "black";
+type TimedOutSide = PlayerSide | null;
+type ResignedSide = PlayerSide | null;
 
 function createGameId() {
   return `game-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
@@ -38,6 +40,17 @@ function formatClock(seconds: number) {
   return `${minutes}:${String(safe % 60).padStart(2, "0")}`;
 }
 
+function winnerWhen(sideLost: PlayerSide): GameResult {
+  return sideLost === "white" ? "black-win" : "white-win";
+}
+
+function engineOutcome(status: PlayEngineStatus, turn: PlayerSide): { result?: GameResult; termination?: GameTermination } {
+  if (status === "checkmate") return { result: winnerWhen(turn), termination: "checkmate" };
+  if (status === "stalemate") return { result: "draw", termination: "stalemate" };
+  if (status === "draw") return { result: "draw", termination: "draw" };
+  return {};
+}
+
 export default function Play() {
   const [mode, setMode] = useState<PlayMode>("computer");
   const [difficulty, setDifficulty] = useState(() => {
@@ -56,10 +69,11 @@ export default function Play() {
   const [whiteSeconds, setWhiteSeconds] = useState(INITIAL_CLOCK_SECONDS);
   const [blackSeconds, setBlackSeconds] = useState(INITIAL_CLOCK_SECONDS);
   const [timedOut, setTimedOut] = useState<TimedOutSide>(null);
+  const [resignedSide, setResignedSide] = useState<ResignedSide>(null);
 
   const turn = sideToMove(fen);
   const engineTerminal = isTerminal(status);
-  const terminal = engineTerminal || timedOut !== null;
+  const terminal = engineTerminal || timedOut !== null || resignedSide !== null;
   const lastMove = moves.length ? moves[moves.length - 1] : null;
   const clockRunning = moves.length > 0 && !terminal && (!busy || computerThinking);
 
@@ -81,8 +95,13 @@ export default function Play() {
 
   useEffect(() => {
     if (!moves.length) return;
-    saveGameSnapshot({ id: gameId, mode, status, fen, moves, positions: history, updatedAt: new Date().toISOString() });
-  }, [fen, gameId, history, mode, moves, status]);
+    const outcome = resignedSide
+      ? { result: winnerWhen(resignedSide), termination: "resignation" as const }
+      : timedOut
+        ? { result: winnerWhen(timedOut), termination: "timeout" as const }
+        : engineOutcome(status, turn);
+    saveGameSnapshot({ id: gameId, mode, status, fen, moves, positions: history, ...outcome, updatedAt: new Date().toISOString() });
+  }, [fen, gameId, history, mode, moves, resignedSide, status, timedOut, turn]);
 
   useEffect(() => {
     if (!clockRunning) return;
@@ -94,7 +113,7 @@ export default function Play() {
   }, [clockRunning, turn]);
 
   useEffect(() => {
-    if (timedOut || engineTerminal || !moves.length) return;
+    if (timedOut || resignedSide || engineTerminal || !moves.length) return;
     if (whiteSeconds === 0) {
       setTimedOut("white");
       toast("White ran out of time. Black wins.");
@@ -102,7 +121,7 @@ export default function Play() {
       setTimedOut("black");
       toast("Black ran out of time. White wins.");
     }
-  }, [blackSeconds, engineTerminal, moves.length, timedOut, whiteSeconds]);
+  }, [blackSeconds, engineTerminal, moves.length, resignedSide, timedOut, whiteSeconds]);
 
   async function applyComputerReply(positionFen: string, availableMoves: string[]) {
     if (!availableMoves.length) return;
@@ -160,6 +179,7 @@ export default function Play() {
     setWhiteSeconds(INITIAL_CLOCK_SECONDS);
     setBlackSeconds(INITIAL_CLOCK_SECONDS);
     setTimedOut(null);
+    setResignedSide(null);
     if (fen === START_FEN) {
       setBusy(true);
       fetchLegalMoves(START_FEN)
@@ -180,33 +200,45 @@ export default function Play() {
     toast(`ChessIQ strength set to ${next.label}.`);
   }
 
+  function resignGame() {
+    if (!moves.length || terminal || busy || computerThinking) return;
+    const side: PlayerSide = mode === "computer" ? "white" : turn;
+    const player = side === "white" ? whiteName : blackName;
+    if (!window.confirm(`${player} resigns this game?`)) return;
+    setResignedSide(side);
+    toast(`${player} resigned. ${side === "white" ? blackName : whiteName} wins.`);
+  }
+
   function undoMove() {
-    if (history.length <= 1 || busy || computerThinking) return;
+    if (history.length <= 1 || busy || computerThinking || terminal) return;
     const pliesToUndo = mode === "computer" && turn === "white" && moves.length >= 2 ? 2 : 1;
     const nextHistory = history.slice(0, Math.max(1, history.length - pliesToUndo));
     setHistory(nextHistory);
     setFen(nextHistory[nextHistory.length - 1]);
     setStatus("ongoing");
     setTimedOut(null);
+    setResignedSide(null);
     setMoves(current => current.slice(0, Math.max(0, current.length - pliesToUndo)));
   }
-
-  const statusText = timedOut
-    ? `${timedOut === "white" ? "White" : "Black"} ran out of time`
-    : computerThinking
-      ? "ChessIQ is thinking"
-      : busy
-        ? "Checking position"
-        : engineTerminal
-          ? statusLabel(status, turn)
-          : mode === "computer" && turn === "black"
-            ? status === "check" ? "ChessIQ to move · Check" : "ChessIQ to move"
-            : statusLabel(status, turn);
 
   const blackName = mode === "computer" ? "ChessIQ" : "Black";
   const blackDetail = mode === "computer" ? `ChessEngine 0.3 · ${difficulty.label}` : "Local player";
   const whiteName = mode === "computer" ? "You" : "White";
   const whiteDetail = mode === "computer" ? "Playing White" : "Local player";
+
+  const statusText = resignedSide
+    ? `${resignedSide === "white" ? whiteName : blackName} resigned · ${resignedSide === "white" ? blackName : whiteName} wins`
+    : timedOut
+      ? `${timedOut === "white" ? whiteName : blackName} ran out of time · ${timedOut === "white" ? blackName : whiteName} wins`
+      : computerThinking
+        ? "ChessIQ is thinking"
+        : busy
+          ? "Checking position"
+          : engineTerminal
+            ? statusLabel(status, turn)
+            : mode === "computer" && turn === "black"
+              ? status === "check" ? "ChessIQ to move · Check" : "ChessIQ to move"
+              : statusLabel(status, turn);
 
   return (
     <main className="app-shell chessiq-shell">
@@ -310,8 +342,9 @@ export default function Play() {
             <div className="game-panel-engine"><ShieldCheck size={15} /><span>Moves verified by first-party ChessEngine</span></div>
 
             <div className="game-panel-actions">
-              <button type="button" onClick={undoMove} disabled={history.length <= 1 || busy || computerThinking}><ArrowLeft size={15} /> Undo</button>
+              <button type="button" onClick={undoMove} disabled={history.length <= 1 || busy || computerThinking || terminal}><ArrowLeft size={15} /> Undo</button>
               <button type="button" onClick={() => resetGame()} disabled={busy || computerThinking}><RotateCcw size={15} /> New game</button>
+              <button type="button" className="play-resign-action" onClick={resignGame} disabled={!moves.length || busy || computerThinking || terminal}><Flag size={15} /> Resign</button>
             </div>
             <Link href={analysisHrefForFen(fen)} className="primary-action play-analyze-link">Open Analyze</Link>
             {timedOut && <div className="game-timeout-note"><Flag size={14} /> Time control: 10 minutes</div>}

@@ -8,7 +8,18 @@ import { analysisHrefForGame } from "@/lib/analysisRoute";
 import { clearGameHistory, deleteGameHistory, readGameHistory, type StoredGame } from "@/lib/gameHistory";
 import "../games.css";
 
+function winnerCopy(game: StoredGame) {
+  if (game.result === "white-win") return "White wins";
+  if (game.result === "black-win") return "Black wins";
+  return "Draw";
+}
+
 function statusCopy(game: StoredGame) {
+  if (game.termination === "resignation") return `${winnerCopy(game)} · Resignation`;
+  if (game.termination === "timeout") return `${winnerCopy(game)} · Time`;
+  if (game.termination === "checkmate") return `${winnerCopy(game)} · Checkmate`;
+  if (game.termination === "stalemate") return "Draw · Stalemate";
+  if (game.termination === "draw") return "Draw";
   if (game.status === "checkmate") return "Checkmate";
   if (game.status === "stalemate") return "Stalemate";
   if (game.status === "draw") return "Draw";
@@ -70,7 +81,7 @@ export default function Games() {
                 <article className="game-history-card" key={game.id}>
                   <div className="game-history-card-top">
                     <span className="game-mode"><Gamepad2 size={15} /> {game.mode === "computer" ? "vs ChessIQ" : "Local board"}</span>
-                    <span className={`game-status game-status-${game.status}`}>{statusCopy(game)}</span>
+                    <span className={`game-status game-status-${game.termination ?? game.status}`}>{statusCopy(game)}</span>
                   </div>
                   <strong>{game.moves.length} ply{game.moves.length === 1 ? "" : "s"}</strong>
                   <p>{game.moves.length ? game.moves.slice(-6).join(" · ") : "No recorded moves"}</p>
