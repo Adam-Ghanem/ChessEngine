@@ -1,20 +1,32 @@
 import { useMemo, useState } from "react";
-import { BarChart3, Gauge, Sparkles } from "lucide-react";
+import { BarChart3, Gauge, History, Sparkles, Swords } from "lucide-react";
 import { Link } from "wouter";
 import { toast } from "sonner";
 import { ChessBoard } from "@/components/ChessBoard";
 import { ProductHeader } from "@/components/ProductHeader";
 import { analyzePosition, type ServerEngineAnalysis } from "@/engine/serverEngine";
 import { validateFenShape } from "@/engine/fen";
-import { initialAnalysisFenFromSearch } from "@/lib/analysisRoute";
+import { initialAnalysisFenFromSearch, initialAnalysisGameIdFromSearch } from "@/lib/analysisRoute";
+import { readGameHistory, type StoredGame } from "@/lib/gameHistory";
 import "@/fen-analyze.css";
 
 const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
+function gameStatusLabel(game: StoredGame) {
+  if (game.status === "checkmate") return "Checkmate";
+  if (game.status === "stalemate") return "Stalemate";
+  if (game.status === "draw") return "Draw";
+  if (game.status === "check") return "In check";
+  return "In progress";
+}
+
 export default function Analyze() {
-  const initialFen = useMemo(
-    () => initialAnalysisFenFromSearch(typeof window === "undefined" ? "" : window.location.search, START_FEN),
-    [],
+  const search = typeof window === "undefined" ? "" : window.location.search;
+  const initialFen = useMemo(() => initialAnalysisFenFromSearch(search, START_FEN), [search]);
+  const initialGameId = useMemo(() => initialAnalysisGameIdFromSearch(search), [search]);
+  const gameContext = useMemo(
+    () => initialGameId ? readGameHistory().find(game => game.id === initialGameId) ?? null : null,
+    [initialGameId],
   );
   const [draftFen, setDraftFen] = useState(initialFen);
   const [loadedFen, setLoadedFen] = useState(initialFen);
@@ -63,8 +75,8 @@ export default function Analyze() {
         <section className="analysis-hero fen-analyze-hero">
           <div className="analysis-hero-copy">
             <div className="analysis-hero-kicker"><Sparkles size={14} /> Live ChessEngine</div>
-            <h1>Analyze any position.</h1>
-            <p>Load a FEN and run the first-party ChessEngine directly against that position. No sample score replaces the live result.</p>
+            <h1>{gameContext ? "Review your saved game position." : "Analyze any position."}</h1>
+            <p>{gameContext ? "ChessIQ kept the saved-game context with this position, so the live engine result stays connected to the game you actually played." : "Load a FEN and run the first-party ChessEngine directly against that position. No sample score replaces the live result."}</p>
           </div>
           <div className="analysis-hero-meta" aria-label="Analyze status">
             <div><span>Depth</span><strong>{depth}</strong></div>
@@ -77,7 +89,7 @@ export default function Analyze() {
           <div className="analysis-board-card fen-board-card">
             <div className="analysis-card-header">
               <div><span className="analysis-label">Loaded position</span><h2>Board</h2></div>
-              <Link href="/play" className="fen-review-link">Open Play</Link>
+              <Link href={gameContext ? "/games" : "/play"} className="fen-review-link">{gameContext ? "Back to Games" : "Open Play"}</Link>
             </div>
             <div className="analysis-board-stage">
               <div className="analysis-board-wrap fen-board-wrap">
@@ -87,6 +99,24 @@ export default function Analyze() {
           </div>
 
           <aside className="fen-analyze-rail">
+            {gameContext && (
+              <section className="analysis-command-card game-review-context" aria-labelledby="game-review-context-title">
+                <div className="analysis-section-heading compact">
+                  <div><span className="analysis-label">Saved game</span><h2 id="game-review-context-title">Review context</h2></div>
+                  <History size={18} />
+                </div>
+                <div className="game-review-facts">
+                  <div><span>Mode</span><strong>{gameContext.mode === "computer" ? "vs ChessIQ" : "Local board"}</strong></div>
+                  <div><span>Status</span><strong>{gameStatusLabel(gameContext)}</strong></div>
+                  <div><span>Moves</span><strong>{gameContext.moves.length} ply</strong></div>
+                </div>
+                <div className="game-review-moves">
+                  <span><Swords size={14} /> Recent moves</span>
+                  <p>{gameContext.moves.length ? gameContext.moves.slice(-8).join(" · ") : "No recorded moves"}</p>
+                </div>
+              </section>
+            )}
+
             <section className="analysis-command-card">
               <div className="analysis-section-heading">
                 <div><span className="analysis-label">Position input</span><h2>FEN</h2></div>
@@ -104,7 +134,7 @@ export default function Analyze() {
               <div className="analysis-section-heading compact"><div><span className="analysis-label">Search controls</span><h2>Analyze</h2></div><BarChart3 size={18} /></div>
               <label className="fen-depth-field">
                 <span>Depth</span>
-                <input type="range" min="1" max="10" value={depth} onChange={(event) => setDepth(Number(event.target.value))} />
+                <input type="range" min="1" max="10" value={depth} onChange={(event) => setDepth(Number(event.target.value))} aria-valuetext={`Depth ${depth}`} />
                 <strong>{depth}</strong>
               </label>
               <button className="primary-action analysis-primary-action" type="button" onClick={runAnalysis} disabled={loading}>

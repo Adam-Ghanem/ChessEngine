@@ -4,6 +4,14 @@
 .fen-board-card { min-width: 0; }
 .fen-board-wrap { width: min(100%, 760px); margin: 0 auto; }
 .fen-analyze-rail { display: grid; gap: 18px; }
+.game-review-context { border-color: color-mix(in srgb, var(--primary) 34%, var(--border)); background: linear-gradient(145deg, color-mix(in srgb, var(--primary) 7%, var(--card)), var(--card)); }
+.game-review-facts { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.game-review-facts > div { min-width: 0; padding: 10px 11px; border: 1px solid var(--border); border-radius: 11px; background: color-mix(in srgb, var(--background) 58%, transparent); }
+.game-review-facts span, .game-review-moves > span { display: block; color: var(--muted-foreground); font-size: .7rem; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; }
+.game-review-facts strong { display: block; margin-top: 4px; font-size: .84rem; overflow-wrap: anywhere; }
+.game-review-moves { display: grid; gap: 7px; margin-top: 12px; }
+.game-review-moves > span { display: flex; align-items: center; gap: 6px; }
+.game-review-moves p { margin: 0; padding: 10px 11px; border-radius: 11px; background: color-mix(in srgb, var(--background) 68%, transparent); color: var(--foreground); font: 700 .78rem/1.55 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; overflow-wrap: anywhere; }
 .fen-field, .fen-depth-field { display: grid; gap: 8px; }
 .fen-field > span, .fen-depth-field > span { font-size: .78rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted-foreground); }
 .fen-field textarea { width: 100%; resize: vertical; min-height: 104px; border: 1px solid var(--border); border-radius: 14px; background: color-mix(in srgb, var(--card) 90%, transparent); color: var(--foreground); padding: 13px 14px; font: 500 .9rem/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; outline: none; }
@@ -11,6 +19,7 @@
 .fen-help { margin: 0; color: var(--muted-foreground); font-size: .84rem; line-height: 1.5; }
 .fen-secondary-action, .fen-review-link { min-height: 42px; border-radius: 12px; border: 1px solid var(--border); background: var(--card); color: var(--foreground); display: inline-flex; align-items: center; justify-content: center; padding: 0 14px; font-weight: 700; transition: transform .18s ease, border-color .18s ease, background .18s ease; }
 .fen-secondary-action:hover, .fen-review-link:hover { transform: translateY(-1px); border-color: color-mix(in srgb, var(--primary) 52%, var(--border)); }
+.fen-secondary-action:focus-visible, .fen-review-link:focus-visible { outline: 3px solid color-mix(in srgb, var(--ring) 28%, transparent); outline-offset: 2px; }
 .fen-depth-field { grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; }
 .fen-depth-field > span { grid-column: 1 / -1; }
 .fen-depth-field input { width: 100%; accent-color: var(--primary); }
@@ -21,5 +30,5 @@
 .fen-result-grid strong { display: block; overflow-wrap: anywhere; }
 .fen-pv { grid-column: 1 / -1; }
 @media (max-width: 1030px) { .fen-analyze-layout { grid-template-columns: 1fr; } .fen-analyze-rail { grid-template-columns: 1fr; } .fen-analyze-hero { display: grid; gap: 16px; } .fen-result-card { grid-column: auto; } }
-@media (max-width: 680px) { .fen-analyze-layout, .fen-analyze-rail { display: grid; grid-template-columns: 1fr; gap: 14px; } .fen-result-grid { grid-template-columns: 1fr 1fr; } .fen-pv { grid-column: 1 / -1; } .fen-review-link { width: 100%; } .fen-analyze-shell .analysis-card-header { align-items: stretch; flex-direction: column; gap: 10px; } }
+@media (max-width: 680px) { .fen-analyze-layout, .fen-analyze-rail { display: grid; grid-template-columns: 1fr; gap: 14px; } .game-review-facts { grid-template-columns: 1fr; } .fen-result-grid { grid-template-columns: 1fr 1fr; } .fen-pv { grid-column: 1 / -1; } .fen-review-link { width: 100%; } .fen-analyze-shell .analysis-card-header { align-items: stretch; flex-direction: column; gap: 10px; } }
 @media (prefers-reduced-motion: reduce) { .fen-secondary-action, .fen-review-link { transition: none; } }
