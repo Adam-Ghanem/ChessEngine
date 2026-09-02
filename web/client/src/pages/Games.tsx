@@ -5,7 +5,7 @@ import { toast } from "sonner";
 import { BrandMark } from "@/components/BrandMark";
 import { ProductHeader } from "@/components/ProductHeader";
 import { analysisHrefForGame } from "@/lib/analysisRoute";
-import { clearGameHistory, readGameHistory, type StoredGame } from "@/lib/gameHistory";
+import { clearGameHistory, deleteGameHistory, readGameHistory, type StoredGame } from "@/lib/gameHistory";
 import "../games.css";
 
 function statusCopy(game: StoredGame) {
@@ -26,6 +26,13 @@ export default function Games() {
     } catch {
       toast.error("Unable to copy FEN.");
     }
+  }
+
+  function deleteSavedGame(game: StoredGame) {
+    if (!window.confirm("Delete this saved game from this device? This cannot be undone.")) return;
+    deleteGameHistory(game.id);
+    setGames(current => current.filter(item => item.id !== game.id));
+    toast("Saved game deleted from this device.");
   }
 
   function clearHistory() {
@@ -70,6 +77,7 @@ export default function Games() {
                   <div className="game-history-meta"><Clock3 size={14} /><time dateTime={game.updatedAt}>{new Date(game.updatedAt).toLocaleString()}</time></div>
                   <div className="game-history-actions">
                     <button type="button" onClick={() => copyFen(game.fen)}><Copy size={14} /> Copy FEN</button>
+                    <button type="button" className="game-delete-action" onClick={() => deleteSavedGame(game)} aria-label={`Delete saved game from ${new Date(game.updatedAt).toLocaleString()}`}><Trash2 size={14} /> Delete</button>
                     <Link href={analysisHrefForGame(game.fen, game.id)} className="primary-action">Review in Analyze</Link>
                   </div>
                 </article>
