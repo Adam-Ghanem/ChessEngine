@@ -4,12 +4,14 @@ import { Link } from "wouter";
 import { toast } from "sonner";
 import { LegalChessBoard } from "@/components/LegalChessBoard";
 import { ProductHeader } from "@/components/ProductHeader";
+import { PLAY_DIFFICULTIES, PLAY_DIFFICULTY_STORAGE_KEY, getPlayDifficulty, type PlayDifficultyId } from "@/engine/playDifficulty";
 import { fetchLegalMoves, playMove, type PlayEngineStatus } from "@/engine/playEngine";
 import { sideToMove, statusLabel } from "@/engine/playState";
 import { analyzePosition } from "@/engine/serverEngine";
 import { analysisHrefForFen } from "@/lib/analysisRoute";
 import { saveGameSnapshot } from "@/lib/gameHistory";
 import "@/play.css";
+import "@/play-difficulty.css";
 
 const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 const INITIAL_CLOCK_SECONDS = 10 * 60;
@@ -38,6 +40,10 @@ function formatClock(seconds: number) {
 
 export default function Play() {
   const [mode, setMode] = useState<PlayMode>("computer");
+  const [difficulty, setDifficulty] = useState(() => {
+    if (typeof window === "undefined") return getPlayDifficulty(null);
+    return getPlayDifficulty(window.localStorage.getItem(PLAY_DIFFICULTY_STORAGE_KEY));
+  });
   const [gameId, setGameId] = useState(createGameId);
   const [fen, setFen] = useState(START_FEN);
   const [legalMoves, setLegalMoves] = useState<string[]>([]);
@@ -102,7 +108,7 @@ export default function Play() {
     if (!availableMoves.length) return;
     setComputerThinking(true);
     try {
-      const analysis = await analyzePosition(positionFen, 5);
+      const analysis = await analyzePosition(positionFen, difficulty.depth);
       const engineMove = analysis.bestMove.trim().split(/\s+/)[0];
       if (!availableMoves.includes(engineMove)) throw new Error(`ChessEngine returned an illegal reply: ${engineMove}`);
       const reply = await playMove(positionFen, engineMove);
@@ -167,6 +173,13 @@ export default function Play() {
     toast(nextMode === "computer" ? "New game vs ChessIQ ready." : "New local game ready.");
   }
 
+  function selectDifficulty(id: PlayDifficultyId) {
+    const next = getPlayDifficulty(id);
+    setDifficulty(next);
+    window.localStorage.setItem(PLAY_DIFFICULTY_STORAGE_KEY, next.id);
+    toast(`ChessIQ strength set to ${next.label}.`);
+  }
+
   function undoMove() {
     if (history.length <= 1 || busy || computerThinking) return;
     const pliesToUndo = mode === "computer" && turn === "white" && moves.length >= 2 ? 2 : 1;
@@ -191,7 +204,7 @@ export default function Play() {
             : statusLabel(status, turn);
 
   const blackName = mode === "computer" ? "ChessIQ" : "Black";
-  const blackDetail = mode === "computer" ? "ChessEngine 0.3" : "Local player";
+  const blackDetail = mode === "computer" ? `ChessEngine 0.3 · ${difficulty.label}` : "Local player";
   const whiteName = mode === "computer" ? "You" : "White";
   const whiteDetail = mode === "computer" ? "Playing White" : "Local player";
 
@@ -209,7 +222,7 @@ export default function Play() {
           <div className="play-room-meta" aria-label="Game context">
             <span><Clock3 size={14} /> 10 min</span>
             <span><ShieldCheck size={14} /> First-party ChessEngine</span>
-            <span>{mode === "computer" ? <Bot size={14} /> : <Users size={14} />} {mode === "computer" ? "vs ChessIQ" : "Local game"}</span>
+            <span>{mode === "computer" ? <Bot size={14} /> : <Users size={14} />} {mode === "computer" ? `${difficulty.label} · vs ChessIQ` : "Local game"}</span>
           </div>
         </header>
 
@@ -258,6 +271,28 @@ export default function Play() {
                 <Users size={16} /><span><strong>Local</strong><small>two players</small></span>
               </button>
             </div>
+
+            {mode === "computer" && (
+              <div className="play-difficulty-section">
+                <div className="game-panel-heading"><span>Engine strength</span><Bot size={16} /></div>
+                <div className="play-difficulty-options" role="group" aria-label="ChessIQ engine strength">
+                  {PLAY_DIFFICULTIES.map(level => (
+                    <button
+                      key={level.id}
+                      type="button"
+                      className={difficulty.id === level.id ? "is-active" : ""}
+                      aria-pressed={difficulty.id === level.id}
+                      disabled={computerThinking}
+                      onClick={() => selectDifficulty(level.id)}
+                    >
+                      <strong>{level.label}</strong>
+                      <span>D{level.depth}</span>
+                    </button>
+                  ))}
+                </div>
+                <p>{difficulty.detail}. Choice is saved on this device.</p>
+              </div>
+            )}
 
             <div className="game-panel-section game-moves-section">
               <div className="game-panel-heading"><span>Move list</span><Swords size={16} /></div>
