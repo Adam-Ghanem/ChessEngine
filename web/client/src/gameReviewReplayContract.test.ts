@@ -29,8 +29,9 @@ describe("ChessIQ saved-game replay contract", () => {
     expect(analyzeSource).toContain('event.key === "ArrowRight"');
     expect(analyzeSource).toContain('event.key === "Home"');
     expect(analyzeSource).toContain('event.key === "End"');
-    expect(analyzeSource).toContain('target.tagName === "INPUT"');
-    expect(analyzeSource).toContain('target.tagName === "TEXTAREA"');
+    expect(analyzeSource).toContain('target?.tagName === "INPUT"');
+    expect(analyzeSource).toContain('target?.tagName === "TEXTAREA"');
+    expect(analyzeSource).toContain("target?.isContentEditable");
     expect(analyzeSource).toContain("Keyboard: ←/→ step · Home start · End final");
   });
 });
