@@ -99,11 +99,12 @@ export const PUZZLES: readonly PuzzleDefinition[] = [
     title: "Rook pickup",
     theme: "Forcing capture",
     difficulty: "Intermediate",
-    fen: "4k3/8/8/8/8/8/4R3/4K2r w - - 0 1",
+    fen: "4k3/8/8/8/8/8/4R2r/4K3 w - - 0 1",
     prompt: "White to move. Remove the invading rook immediately.",
     solution: ["e2h2"],
-    explanation: "Rh2 wins the loose rook on h1 along the second rank while keeping the position simple and controlled.",
+    explanation: "Rxh2 removes the loose rook on h2 along the second rank while keeping the position simple and controlled.",
   },
 ] as const;
 
 export const PUZZLE_TOTAL = PUZZLES.length;
+export const PUZZLE_IDS = new Set(PUZZLES.map((puzzle) => puzzle.id));
