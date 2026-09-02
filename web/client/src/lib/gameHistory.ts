@@ -45,6 +45,16 @@ export function saveGameSnapshot(game: StoredGame, storage: StorageLike | null =
   storage.setItem(GAME_HISTORY_KEY, JSON.stringify([game, ...history].slice(0, MAX_GAMES)));
 }
 
+export function deleteGameHistory(gameId: string, storage: StorageLike | null = typeof window === "undefined" ? null : window.localStorage) {
+  if (!storage) return;
+  const history = readGameHistory(storage).filter(item => item.id !== gameId);
+  if (history.length === 0) {
+    storage.removeItem(GAME_HISTORY_KEY);
+    return;
+  }
+  storage.setItem(GAME_HISTORY_KEY, JSON.stringify(history));
+}
+
 export function clearGameHistory(storage: StorageLike | null = typeof window === "undefined" ? null : window.localStorage) {
   storage?.removeItem(GAME_HISTORY_KEY);
 }
