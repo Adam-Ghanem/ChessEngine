@@ -3,12 +3,11 @@ import { Link } from "wouter";
 import { BrandMark } from "@/components/BrandMark";
 import { ProductHeader } from "@/components/ProductHeader";
 import { readGameHistory } from "@/lib/gameHistory";
+import { PUZZLE_IDS, PUZZLE_STORAGE_KEY, PUZZLE_TOTAL } from "@/lib/puzzleCatalog";
 import "../progress.css";
 
 const LEARN_STORAGE_KEY = "chessiq.learn.progress";
-const PUZZLE_STORAGE_KEY = "chessiq-puzzles-solved-v1";
 const TOTAL_LEARN_CHECKPOINTS = 9;
-const TOTAL_PUZZLES = 3;
 
 type ProgressSnapshot = {
   learnCheckpoints: number;
@@ -41,7 +40,8 @@ function readProgress(): ProgressSnapshot {
   try {
     const parsed = JSON.parse(window.localStorage.getItem(PUZZLE_STORAGE_KEY) ?? "[]");
     if (Array.isArray(parsed)) {
-      solvedPuzzles = Math.min(TOTAL_PUZZLES, new Set(parsed.filter((item): item is string => typeof item === "string")).size);
+      const valid = parsed.filter((item): item is string => typeof item === "string" && PUZZLE_IDS.has(item));
+      solvedPuzzles = Math.min(PUZZLE_TOTAL, new Set(valid).size);
     }
   } catch {
     // Corrupt browser data should never prevent Progress from rendering.
@@ -61,12 +61,12 @@ function percentage(value: number, total: number) {
 export default function Progress() {
   const snapshot = readProgress();
   const learnPercent = percentage(snapshot.learnCheckpoints, TOTAL_LEARN_CHECKPOINTS);
-  const puzzlePercent = percentage(snapshot.solvedPuzzles, TOTAL_PUZZLES);
+  const puzzlePercent = percentage(snapshot.solvedPuzzles, PUZZLE_TOTAL);
   const overallPercent = Math.round((learnPercent + puzzlePercent) / 2);
 
   const nextStep = snapshot.savedGames === 0
     ? { href: "/play", label: "Play a Game", detail: "Create your first saved game so ChessIQ can connect training with real board activity." }
-    : snapshot.solvedPuzzles < TOTAL_PUZZLES
+    : snapshot.solvedPuzzles < PUZZLE_TOTAL
       ? { href: "/puzzles", label: "Continue Puzzles", detail: "Build calculation consistency with the next unsolved tactical position." }
       : snapshot.learnCheckpoints < TOTAL_LEARN_CHECKPOINTS
         ? { href: "/learn", label: "Continue Learn", detail: "Finish the remaining checkpoints and turn the concepts into repeatable habits." }
@@ -103,7 +103,7 @@ export default function Progress() {
           <article className="progress-card">
             <div className="progress-card-icon"><Puzzle size={20} /></div>
             <span className="analysis-label">Puzzles</span>
-            <strong>{snapshot.solvedPuzzles}/{TOTAL_PUZZLES}</strong>
+            <strong>{snapshot.solvedPuzzles}/{PUZZLE_TOTAL}</strong>
             <p>positions solved</p>
             <div className="progress-meter" aria-label={`Puzzle progress ${puzzlePercent}%`}><span style={{ width: `${puzzlePercent}%` }} /></div>
             <small>Engine-legal tactical attempts</small>
