@@ -90,7 +90,8 @@ describe("ChessIQ production product navigation", () => {
     expect(coach).toContain("ChessIQ Coach");
     expect(coach).toContain("readGameHistory");
     expect(coach).toContain("chessiq.learn.progress");
-    expect(coach).toContain("chessiq-puzzles-solved-v1");
+    expect(coach).toContain("PUZZLE_STORAGE_KEY");
+    expect(coach).toContain("PUZZLE_IDS");
     expect(coach).toContain('aria-label="Recommended training plan"');
     expect(coach).not.toMatch(/rating|win rate|accuracy/i);
     expect(css).toContain(".coach-grid");
