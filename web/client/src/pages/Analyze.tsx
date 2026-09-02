@@ -145,6 +145,24 @@ export default function Analyze() {
                       <span>Replay position</span>
                       <strong>{replayIndex} / {Math.max(0, replayPositions.length - 1)}</strong>
                     </div>
+                    {gameContext.moves.length > 0 && (
+                      <div className="game-review-move-timeline" role="list" aria-label="Recorded move timeline">
+                        {gameContext.moves.map((move, index) => (
+                          <button
+                            key={`${index}-${move}`}
+                            type="button"
+                            role="listitem"
+                            onClick={() => selectReplayPosition(index + 1)}
+                            aria-label={`Jump to position ${index + 1} after ${move}`}
+                            aria-current={replayIndex === index + 1 ? "step" : undefined}
+                            className={replayIndex === index + 1 ? "is-current" : ""}
+                          >
+                            <span>{index + 1}</span>
+                            <strong>{move}</strong>
+                          </button>
+                        ))}
+                      </div>
+                    )}
                     <div className="game-review-replay-actions">
                       <button type="button" onClick={() => selectReplayPosition(replayIndex - 1)} disabled={replayIndex === 0} aria-label="Previous position"><ChevronLeft size={16} /> Previous</button>
                       <button type="button" onClick={() => selectReplayPosition(replayIndex + 1)} disabled={replayIndex >= replayPositions.length - 1} aria-label="Next position">Next <ChevronRight size={16} /></button>

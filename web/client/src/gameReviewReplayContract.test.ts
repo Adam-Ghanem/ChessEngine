@@ -17,4 +17,10 @@ describe("ChessIQ saved-game replay contract", () => {
     expect(analyzeSource).toContain("Next position");
     expect(analyzeSource).toContain("Back to final position");
   });
+
+  it("lets reviewers jump directly to any recorded ply", () => {
+    expect(analyzeSource).toContain("game-review-move-timeline");
+    expect(analyzeSource).toContain('aria-label={`Jump to position ${index + 1} after ${move}`}');
+    expect(analyzeSource).toContain('aria-current={replayIndex === index + 1 ? "step" : undefined}');
+  });
 });
