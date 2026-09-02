@@ -133,11 +133,27 @@ export default function Analyze() {
                   <p>{gameContext.moves.length ? gameContext.moves.slice(-8).join(" · ") : "No recorded moves"}</p>
                 </div>
                 {replayPositions ? (
-                  <div className="game-review-replay" aria-label="Saved game replay">
+                  <div
+                    className="game-review-replay"
+                    aria-label="Saved game replay"
+                    aria-describedby="game-review-keyboard-hint"
+                    tabIndex={0}
+                    onKeyDown={(event) => {
+                      let nextIndex: number | null = null;
+                      if (event.key === "ArrowLeft") nextIndex = replayIndex - 1;
+                      if (event.key === "ArrowRight") nextIndex = replayIndex + 1;
+                      if (event.key === "Home") nextIndex = 0;
+                      if (event.key === "End") nextIndex = replayPositions.length - 1;
+                      if (nextIndex === null) return;
+                      event.preventDefault();
+                      selectReplayPosition(nextIndex);
+                    }}
+                  >
                     <div className="game-review-replay-status" aria-live="polite">
                       <span>Replay position</span>
                       <strong>{replayIndex} / {Math.max(0, replayPositions.length - 1)}</strong>
                     </div>
+                    <p id="game-review-keyboard-hint" className="game-review-keyboard-hint">Keyboard: ←/→ step · Home start · End final</p>
                     {gameContext.moves.length > 0 && (
                       <div className="game-review-move-timeline" role="list" aria-label="Recorded move timeline">
                         {gameContext.moves.map((move, index) => (
