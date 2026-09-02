@@ -16,7 +16,7 @@ function loadSolved() {
     const parsed = JSON.parse(localStorage.getItem(PUZZLE_STORAGE_KEY) ?? "[]");
     if (!Array.isArray(parsed)) return [];
     const valid = parsed.filter((item): item is string => typeof item === "string" && PUZZLE_IDS.has(item));
-    return [...new Set(valid)];
+    return Array.from(new Set(valid));
   } catch {
     return [];
   }
