@@ -1,4 +1,4 @@
-import { Activity, BarChart3, BookOpen, ChevronRight, Gamepad2, LibraryBig, Puzzle, Search, Sparkles } from "lucide-react";
+import { Activity, BarChart3, BookOpen, ChevronRight, Gamepad2, LibraryBig, Puzzle, Search, ShieldCheck, Sparkles, TrendingUp } from "lucide-react";
 import { Link } from "wouter";
 import { ProductHeader } from "@/components/ProductHeader";
 import { readGameHistory } from "@/lib/gameHistory";
@@ -46,12 +46,20 @@ export default function Dashboard() {
         <ProductHeader activePath="/" />
 
         <section className="premium-dashboard-hero">
-          <div>
+          <div className="premium-hero-copy">
             <span className="premium-eyebrow"><Sparkles size={14} /> ChessIQ workspace</span>
             <h1>Your chess, organized around improvement.</h1>
             <p>Play, review, train, and measure only the activity ChessIQ actually has on this device.</p>
+            <div className="premium-hero-actions" aria-label="Primary ChessIQ actions">
+              <Link href="/play" className="premium-hero-action">Play now <ChevronRight size={17} /></Link>
+              <Link href="/analyze" className="premium-hero-secondary"><Search size={16} /> Analyze a position</Link>
+            </div>
+            <div className="premium-hero-proof" aria-label="ChessIQ product strengths">
+              <span><ShieldCheck size={14} /> First-party engine</span>
+              <span><TrendingUp size={14} /> Real local progress</span>
+              <span><Activity size={14} /> Play-to-analysis handoff</span>
+            </div>
           </div>
-          <Link href="/play" className="premium-hero-action">Play now <ChevronRight size={17} /></Link>
         </section>
 
         <section className="premium-feature-grid" aria-label="ChessIQ product areas">
