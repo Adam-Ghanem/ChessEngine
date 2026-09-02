@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { BarChart3, BookOpen, Bot, Gamepad2, Home, LibraryBig, Moon, Puzzle, Search, Sun } from "lucide-react";
+import { BarChart3, BookOpen, Bot, Gamepad2, Home, LibraryBig, Menu, Moon, Puzzle, Search, Sun } from "lucide-react";
 import { Link } from "wouter";
 import { BrandMark } from "@/components/BrandMark";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -20,10 +20,14 @@ const routeIcons: Record<ProductPath, typeof Home> = {
   "/progress": BarChart3,
 };
 
+const mobilePrimaryRoutes: ProductPath[] = ["/", "/play", "/puzzles", "/analyze"];
+const mobileMoreRoutes: ProductPath[] = ["/learn", "/games", "/coach", "/progress"];
+
 export function ProductHeader({ activePath }: ProductHeaderProps) {
   const { theme, toggleTheme } = useTheme();
   const navRef = useRef<HTMLElement>(null);
   const activeLinkRef = useRef<HTMLAnchorElement>(null);
+  const moreIsActive = mobileMoreRoutes.includes(activePath);
 
   useEffect(() => {
     const nav = navRef.current;
@@ -78,6 +82,50 @@ export function ProductHeader({ activePath }: ProductHeaderProps) {
           </button>
         </div>
       </header>
+
+      <nav className="mobile-bottom-nav" aria-label="Mobile navigation">
+        {mobilePrimaryRoutes.map((href) => {
+          const route = productRoutes.find((candidate) => candidate.href === href)!;
+          const Icon = routeIcons[href];
+          const isActive = activePath === href;
+          return (
+            <Link
+              key={href}
+              href={href}
+              className={`mobile-bottom-link ${isActive ? "is-active" : ""}`}
+              aria-current={isActive ? "page" : undefined}
+            >
+              <Icon size={19} aria-hidden="true" />
+              <span>{route.label}</span>
+            </Link>
+          );
+        })}
+        <details className={`mobile-more ${moreIsActive ? "is-active" : ""}`}>
+          <summary className="mobile-more-button" aria-label="Open more ChessIQ sections">
+            <Menu size={19} aria-hidden="true" />
+            <span>More</span>
+          </summary>
+          <div className="mobile-more-menu">
+            {mobileMoreRoutes.map((href) => {
+              const route = productRoutes.find((candidate) => candidate.href === href)!;
+              const Icon = routeIcons[href];
+              const isActive = activePath === href;
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  className={`mobile-more-link ${isActive ? "is-active" : ""}`}
+                  aria-current={isActive ? "page" : undefined}
+                >
+                  <Icon size={18} aria-hidden="true" />
+                  <span>{route.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </details>
+      </nav>
+
       <span id="main-content" className="skip-target" tabIndex={-1} />
     </>
   );

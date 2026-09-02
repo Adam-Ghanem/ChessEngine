@@ -1,0 +1,196 @@
+@media (min-width: 641px) {
+  .mobile-bottom-nav {
+    display: none;
+  }
+}
+
+@media (max-width: 640px) {
+  .chessiq-shell {
+    padding-bottom: calc(84px + env(safe-area-inset-bottom));
+  }
+
+  .product-sidebar {
+    min-height: 64px !important;
+    padding: 0 14px !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    border-bottom: 1px solid var(--premium-border);
+    background: rgba(8, 13, 20, 0.92);
+    backdrop-filter: blur(18px);
+  }
+
+  .premium-brand-link {
+    padding: 0 !important;
+  }
+
+  .premium-sidebar-nav,
+  .premium-sidebar-meta {
+    display: none !important;
+  }
+
+  .premium-sidebar-actions {
+    margin-left: auto !important;
+  }
+
+  .premium-sidebar-actions .theme-toggle {
+    min-width: 42px;
+    min-height: 42px;
+    padding-inline: 11px;
+  }
+
+  .premium-sidebar-actions .theme-toggle span {
+    display: none;
+  }
+
+  .mobile-bottom-nav {
+    position: fixed;
+    inset: auto 10px max(10px, env(safe-area-inset-bottom)) 10px;
+    z-index: 80;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    align-items: stretch;
+    gap: 4px;
+    min-height: 64px;
+    padding: 7px;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 18px;
+    background: rgba(10, 15, 22, 0.94);
+    box-shadow: 0 18px 48px rgba(0, 0, 0, 0.35);
+    backdrop-filter: blur(22px) saturate(130%);
+  }
+
+  .mobile-bottom-link,
+  .mobile-more-button {
+    position: relative;
+    min-width: 0;
+    min-height: 50px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: 5px 4px;
+    border: 0;
+    border-radius: 12px;
+    color: #8490a1;
+    background: transparent;
+    text-decoration: none;
+    font: inherit;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobile-bottom-link span,
+  .mobile-more-button span {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 10px;
+    font-weight: 750;
+    letter-spacing: 0.01em;
+  }
+
+  .mobile-bottom-link.is-active,
+  .mobile-more.is-active .mobile-more-button,
+  .mobile-more[open] .mobile-more-button {
+    color: var(--premium-gold-bright);
+    background: linear-gradient(180deg, rgba(217, 168, 78, 0.18), rgba(217, 168, 78, 0.08));
+  }
+
+  .mobile-bottom-link.is-active::after,
+  .mobile-more.is-active .mobile-more-button::after {
+    content: "";
+    position: absolute;
+    inset: auto 28% 1px;
+    height: 2px;
+    border-radius: 999px;
+    background: var(--premium-gold-bright);
+  }
+
+  .mobile-bottom-link:focus-visible,
+  .mobile-more-button:focus-visible,
+  .mobile-more-link:focus-visible {
+    outline: 2px solid var(--premium-gold-bright);
+    outline-offset: 2px;
+  }
+
+  .mobile-more {
+    position: relative;
+    min-width: 0;
+  }
+
+  .mobile-more summary {
+    list-style: none;
+  }
+
+  .mobile-more summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .mobile-more-menu {
+    position: absolute;
+    right: -1px;
+    bottom: calc(100% + 11px);
+    width: min(230px, calc(100vw - 34px));
+    display: grid;
+    gap: 5px;
+    padding: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 16px;
+    background: rgba(12, 18, 27, 0.98);
+    box-shadow: 0 18px 50px rgba(0, 0, 0, 0.4);
+    backdrop-filter: blur(20px);
+  }
+
+  .mobile-more:not([open]) .mobile-more-menu {
+    display: none;
+  }
+
+  .mobile-more-link {
+    min-height: 44px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 12px;
+    border-radius: 10px;
+    color: #c4ccd8;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .mobile-more-link:hover,
+  .mobile-more-link.is-active {
+    color: #fff;
+    background: rgba(217, 168, 78, 0.12);
+  }
+
+  .mobile-more-link.is-active svg {
+    color: var(--premium-gold-bright);
+  }
+}
+
+@media (max-width: 380px) {
+  .mobile-bottom-nav {
+    inset-inline: 6px;
+    gap: 2px;
+    padding-inline: 5px;
+  }
+
+  .mobile-bottom-link span,
+  .mobile-more-button span {
+    font-size: 9px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-bottom-link,
+  .mobile-more-button,
+  .mobile-more-link {
+    scroll-behavior: auto;
+    transition: none;
+  }
+}
