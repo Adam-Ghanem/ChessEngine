@@ -23,4 +23,14 @@ describe("ChessIQ saved-game replay contract", () => {
     expect(analyzeSource).toContain('aria-label={`Jump to position ${index + 1} after ${move}`}');
     expect(analyzeSource).toContain('aria-current={replayIndex === index + 1 ? "step" : undefined}');
   });
+
+  it("supports keyboard-first replay navigation without stealing input shortcuts", () => {
+    expect(analyzeSource).toContain('event.key === "ArrowLeft"');
+    expect(analyzeSource).toContain('event.key === "ArrowRight"');
+    expect(analyzeSource).toContain('event.key === "Home"');
+    expect(analyzeSource).toContain('event.key === "End"');
+    expect(analyzeSource).toContain('target.tagName === "INPUT"');
+    expect(analyzeSource).toContain('target.tagName === "TEXTAREA"');
+    expect(analyzeSource).toContain("Keyboard: ←/→ step · Home start · End final");
+  });
 });
