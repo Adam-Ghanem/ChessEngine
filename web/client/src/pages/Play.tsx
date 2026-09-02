@@ -75,8 +75,8 @@ export default function Play() {
 
   useEffect(() => {
     if (!moves.length) return;
-    saveGameSnapshot({ id: gameId, mode, status, fen, moves, updatedAt: new Date().toISOString() });
-  }, [fen, gameId, mode, moves, status]);
+    saveGameSnapshot({ id: gameId, mode, status, fen, moves, positions: history, updatedAt: new Date().toISOString() });
+  }, [fen, gameId, history, mode, moves, status]);
 
   useEffect(() => {
     if (!clockRunning) return;
