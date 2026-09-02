@@ -9,6 +9,7 @@ export type StoredGame = {
   status: PlayEngineStatus;
   fen: string;
   moves: string[];
+  positions?: string[];
   updatedAt: string;
 };
 
@@ -23,6 +24,7 @@ function isStoredGame(value: unknown): value is StoredGame {
     && typeof game.fen === "string"
     && Array.isArray(game.moves)
     && game.moves.every(move => typeof move === "string")
+    && (game.positions === undefined || (Array.isArray(game.positions) && game.positions.every(position => typeof position === "string")))
     && typeof game.updatedAt === "string";
 }
 
