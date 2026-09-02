@@ -27,7 +27,12 @@ export function ProductHeader({ activePath }: ProductHeaderProps) {
   const { theme, toggleTheme } = useTheme();
   const navRef = useRef<HTMLElement>(null);
   const activeLinkRef = useRef<HTMLAnchorElement>(null);
+  const mobileMoreRef = useRef<HTMLDetailsElement>(null);
   const moreIsActive = mobileMoreRoutes.includes(activePath);
+
+  function closeMobileMore() {
+    if (mobileMoreRef.current) mobileMoreRef.current.open = false;
+  }
 
   useEffect(() => {
     const nav = navRef.current;
@@ -41,6 +46,31 @@ export function ProductHeader({ activePath }: ProductHeaderProps) {
       inline: "center",
     });
   }, [activePath]);
+
+  useEffect(() => {
+    if (mobileMoreRef.current) mobileMoreRef.current.open = false;
+  }, [activePath]);
+
+  useEffect(() => {
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key !== "Escape" || !mobileMoreRef.current?.open) return;
+      mobileMoreRef.current.open = false;
+      mobileMoreRef.current.querySelector<HTMLElement>("summary")?.focus();
+    }
+
+    function handlePointerDown(event: PointerEvent) {
+      if (!mobileMoreRef.current?.open) return;
+      if (mobileMoreRef.current?.contains(event.target as Node)) return;
+      mobileMoreRef.current.open = false;
+    }
+
+    document.addEventListener("keydown", handleKeyDown);
+    document.addEventListener("pointerdown", handlePointerDown);
+    return () => {
+      document.removeEventListener("keydown", handleKeyDown);
+      document.removeEventListener("pointerdown", handlePointerDown);
+    };
+  }, []);
 
   return (
     <>
@@ -100,7 +130,7 @@ export function ProductHeader({ activePath }: ProductHeaderProps) {
             </Link>
           );
         })}
-        <details className={`mobile-more ${moreIsActive ? "is-active" : ""}`}>
+        <details ref={mobileMoreRef} className={`mobile-more ${moreIsActive ? "is-active" : ""}`}>
           <summary className="mobile-more-button" aria-label="Open more ChessIQ sections">
             <Menu size={19} aria-hidden="true" />
             <span>More</span>
@@ -116,6 +146,7 @@ export function ProductHeader({ activePath }: ProductHeaderProps) {
                   href={href}
                   className={`mobile-more-link ${isActive ? "is-active" : ""}`}
                   aria-current={isActive ? "page" : undefined}
+                  onClick={closeMobileMore}
                 >
                   <Icon size={18} aria-hidden="true" />
                   <span>{route.label}</span>
