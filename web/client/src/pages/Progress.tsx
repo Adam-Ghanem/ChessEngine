@@ -2,12 +2,11 @@ import { Activity, BookOpenCheck, CheckCircle2, Flame, Puzzle, Sparkles, Swords,
 import { Link } from "wouter";
 import { BrandMark } from "@/components/BrandMark";
 import { ProductHeader } from "@/components/ProductHeader";
+import { LEARN_STORAGE_KEY, LEARN_TOTAL_CHECKPOINTS, LESSONS } from "@/data/lessons";
 import { readGameHistory } from "@/lib/gameHistory";
+import { readNumberProgress } from "@/lib/localProgress";
 import { PUZZLE_IDS, PUZZLE_STORAGE_KEY, PUZZLE_TOTAL } from "@/lib/puzzleCatalog";
 import "../progress.css";
-
-const LEARN_STORAGE_KEY = "chessiq.learn.progress";
-const TOTAL_LEARN_CHECKPOINTS = 9;
 
 type ProgressSnapshot = {
   learnCheckpoints: number;
@@ -22,21 +21,16 @@ function readProgress(): ProgressSnapshot {
     return { learnCheckpoints: 0, completedLessons: 0, solvedPuzzles: 0, savedGames: 0, movesPlayed: 0 };
   }
 
-  let learnCheckpoints = 0;
-  let completedLessons = 0;
+  const learnProgress = readNumberProgress(window.localStorage, LEARN_STORAGE_KEY);
+  const learnCheckpoints = LESSONS.reduce(
+    (total, lesson) => total + Math.min(learnProgress[lesson.key] ?? 0, lesson.checkpoints.length),
+    0,
+  );
+  const completedLessons = LESSONS.filter(
+    (lesson) => (learnProgress[lesson.key] ?? 0) >= lesson.checkpoints.length,
+  ).length;
+
   let solvedPuzzles = 0;
-
-  try {
-    const parsed = JSON.parse(window.localStorage.getItem(LEARN_STORAGE_KEY) ?? "{}") as Record<string, unknown>;
-    const values = Object.values(parsed)
-      .filter((value): value is number => typeof value === "number" && Number.isFinite(value))
-      .map((value) => Math.max(0, Math.min(3, Math.trunc(value))));
-    learnCheckpoints = Math.min(TOTAL_LEARN_CHECKPOINTS, values.reduce((total, value) => total + value, 0));
-    completedLessons = values.filter((value) => value >= 3).length;
-  } catch {
-    // Corrupt browser data should never prevent Progress from rendering.
-  }
-
   try {
     const parsed = JSON.parse(window.localStorage.getItem(PUZZLE_STORAGE_KEY) ?? "[]");
     if (Array.isArray(parsed)) {
@@ -55,12 +49,12 @@ function readProgress(): ProgressSnapshot {
 }
 
 function percentage(value: number, total: number) {
-  return Math.round((Math.min(total, Math.max(0, value)) / total) * 100);
+  return total > 0 ? Math.round((Math.min(total, Math.max(0, value)) / total) * 100) : 0;
 }
 
 export default function Progress() {
   const snapshot = readProgress();
-  const learnPercent = percentage(snapshot.learnCheckpoints, TOTAL_LEARN_CHECKPOINTS);
+  const learnPercent = percentage(snapshot.learnCheckpoints, LEARN_TOTAL_CHECKPOINTS);
   const puzzlePercent = percentage(snapshot.solvedPuzzles, PUZZLE_TOTAL);
   const overallPercent = Math.round((learnPercent + puzzlePercent) / 2);
 
@@ -68,7 +62,7 @@ export default function Progress() {
     ? { href: "/play", label: "Play a Game", detail: "Create your first saved game so ChessIQ can connect training with real board activity." }
     : snapshot.solvedPuzzles < PUZZLE_TOTAL
       ? { href: "/puzzles", label: "Continue Puzzles", detail: "Build calculation consistency with the next unsolved tactical position." }
-      : snapshot.learnCheckpoints < TOTAL_LEARN_CHECKPOINTS
+      : snapshot.learnCheckpoints < LEARN_TOTAL_CHECKPOINTS
         ? { href: "/learn", label: "Continue Learn", detail: "Finish the remaining checkpoints and turn the concepts into repeatable habits." }
         : { href: "/analyze", label: "Open Analyze", detail: "Your current training set is complete. Put the habits to work on a real position." };
 
@@ -94,10 +88,10 @@ export default function Progress() {
           <article className="progress-card">
             <div className="progress-card-icon"><BookOpenCheck size={20} /></div>
             <span className="analysis-label">Learn</span>
-            <strong>{snapshot.learnCheckpoints}/{TOTAL_LEARN_CHECKPOINTS}</strong>
+            <strong>{snapshot.learnCheckpoints}/{LEARN_TOTAL_CHECKPOINTS}</strong>
             <p>checkpoints completed</p>
             <div className="progress-meter" aria-label={`Learn progress ${learnPercent}%`}><span style={{ width: `${learnPercent}%` }} /></div>
-            <small>{snapshot.completedLessons} lessons fully completed</small>
+            <small>{snapshot.completedLessons}/{LESSONS.length} lessons fully completed</small>
           </article>
 
           <article className="progress-card">
