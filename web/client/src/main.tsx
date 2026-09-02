@@ -8,5 +8,6 @@ import "./brand.css";
 import "./mobile-desktop-site.css";
 import "./accessibility.css";
 import "./premium-shell.css";
+import "./mobile-navigation.css";
 
 createRoot(document.getElementById("root")!).render(<App />);
