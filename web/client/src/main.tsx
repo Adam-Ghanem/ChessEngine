@@ -9,5 +9,6 @@ import "./mobile-desktop-site.css";
 import "./accessibility.css";
 import "./premium-shell.css";
 import "./mobile-navigation.css";
+import "./home-play-polish.css";
 
 createRoot(document.getElementById("root")!).render(<App />);
