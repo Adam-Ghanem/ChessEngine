@@ -59,6 +59,8 @@ describe("ChessIQ production product navigation", () => {
 
     expect(learn).toContain("ChessIQ Learn");
     expect(learn).toContain("lessonProgress");
+    expect(learn).toContain("LESSONS");
+    expect(learn).toContain("readNumberProgress");
     expect(learn).toContain("aria-pressed");
     expect(learn).toContain('href="/analyze"');
     expect(entry).toContain('import "./product-surfaces.css"');
@@ -85,11 +87,15 @@ describe("ChessIQ production product navigation", () => {
 
   it("ships an evidence-based Coach workspace without fabricated metrics", () => {
     const coach = readFileSync(new URL("./pages/Coach.tsx", import.meta.url), "utf8");
+    const lessons = readFileSync(new URL("./data/lessons.ts", import.meta.url), "utf8");
     const css = readFileSync(new URL("./coach.css", import.meta.url), "utf8");
 
     expect(coach).toContain("ChessIQ Coach");
     expect(coach).toContain("readGameHistory");
-    expect(coach).toContain("chessiq.learn.progress");
+    expect(coach).toContain("LEARN_STORAGE_KEY");
+    expect(coach).toContain("LESSONS");
+    expect(coach).toContain("readNumberProgress");
+    expect(lessons).toContain("chessiq.learn.progress");
     expect(coach).toContain("PUZZLE_STORAGE_KEY");
     expect(coach).toContain("PUZZLE_IDS");
     expect(coach).toContain('aria-label="Recommended training plan"');
