@@ -4,8 +4,12 @@ import { describe, expect, it } from "vitest";
 const coach = readFileSync(new URL("./pages/Coach.tsx", import.meta.url), "utf8");
 
 describe("Coach evidence integrity", () => {
-  it("counts only completed lesson checkpoints", () => {
-    expect(coach).toContain("value >= 3");
+  it("counts completed lessons from the shared lesson catalog and progress helper", () => {
+    expect(coach).toContain("LESSONS.filter");
+    expect(coach).toContain("lesson.checkpoints.length");
+    expect(coach).toContain("readNumberProgress");
+    expect(coach).toContain("LEARN_STORAGE_KEY");
+    expect(coach).not.toContain("value >= 3");
   });
 
   it("counts only unique puzzle ids that still exist in the shared catalog", () => {

@@ -4,74 +4,25 @@ import { Link } from "wouter";
 import { toast } from "sonner";
 import { BrandMark } from "@/components/BrandMark";
 import { ProductHeader } from "@/components/ProductHeader";
-
-type Lesson = {
-  key: string;
-  title: string;
-  summary: string;
-  difficulty: string;
-  minutes: number;
-  checkpoints: string[];
-};
-
-const lessons: Lesson[] = [
-  {
-    key: "checks-captures-threats",
-    title: "Checks, captures, threats",
-    summary: "Build the move-order habit that catches forcing tactics before you calculate quieter ideas.",
-    difficulty: "Foundation",
-    minutes: 7,
-    checkpoints: [
-      "Scan every legal check before choosing a candidate move.",
-      "Compare forcing captures by material, king safety, and recapture sequence.",
-      "Only then calculate direct threats and improving moves.",
-    ],
-  },
-  {
-    key: "piece-activity",
-    title: "Improve your worst piece",
-    summary: "Turn passive positions into plans by finding the piece contributing least to your position.",
-    difficulty: "Intermediate",
-    minutes: 9,
-    checkpoints: [
-      "Identify the least active piece and the squares it wants.",
-      "Check whether a pawn break can open a useful file or diagonal.",
-      "Recalculate forcing moves before committing to the positional plan.",
-    ],
-  },
-  {
-    key: "blunder-check",
-    title: "The 10-second blunder check",
-    summary: "Use a repeatable safety pass before every move to cut one-move mistakes from your games.",
-    difficulty: "Essential",
-    minutes: 5,
-    checkpoints: [
-      "After choosing a move, imagine it already played on the board.",
-      "Ask what checks, captures, and threats your opponent gains immediately.",
-      "If the move survives, compare it once more with your strongest alternative.",
-    ],
-  },
-];
+import { LEARN_STORAGE_KEY, LESSON_KEYS, LESSONS } from "@/data/lessons";
+import { readNumberProgress, writeNumberProgress } from "@/lib/localProgress";
 
 function loadLessonProgress(): Record<string, number> {
   if (typeof window === "undefined") return {};
-  try {
-    return JSON.parse(window.localStorage.getItem("chessiq.learn.progress") ?? "{}") as Record<string, number>;
-  } catch {
-    return {};
-  }
+  const stored = readNumberProgress(window.localStorage, LEARN_STORAGE_KEY);
+  return Object.fromEntries(Object.entries(stored).filter(([key]) => LESSON_KEYS.has(key)));
 }
 
 export default function Learn() {
-  const [selectedKey, setSelectedKey] = useState(lessons[0].key);
+  const [selectedKey, setSelectedKey] = useState(LESSONS[0].key);
   const [lessonProgress, setLessonProgress] = useState<Record<string, number>>(loadLessonProgress);
-  const selectedLesson = useMemo(() => lessons.find((lesson) => lesson.key === selectedKey) ?? lessons[0], [selectedKey]);
+  const selectedLesson = useMemo(() => LESSONS.find((lesson) => lesson.key === selectedKey) ?? LESSONS[0], [selectedKey]);
   const completed = Math.min(lessonProgress[selectedLesson.key] ?? 0, selectedLesson.checkpoints.length);
   const isComplete = completed === selectedLesson.checkpoints.length;
 
   function persistProgress(next: Record<string, number>) {
     setLessonProgress(next);
-    window.localStorage.setItem("chessiq.learn.progress", JSON.stringify(next));
+    writeNumberProgress(window.localStorage, LEARN_STORAGE_KEY, next);
   }
 
   function completeCheckpoint() {
@@ -85,6 +36,11 @@ export default function Learn() {
     persistProgress({ ...lessonProgress, [selectedLesson.key]: 0 });
     toast("Lesson progress reset.");
   }
+
+  const completedCheckpoints = LESSONS.reduce(
+    (total, lesson) => total + Math.min(lessonProgress[lesson.key] ?? 0, lesson.checkpoints.length),
+    0,
+  );
 
   return (
     <main className="app-shell chessiq-shell">
@@ -100,13 +56,13 @@ export default function Learn() {
           </div>
           <div className="learn-hero-stat" aria-label="Learning progress">
             <span>Completed checkpoints</span>
-            <strong>{Object.values(lessonProgress).reduce((total, value) => total + value, 0)}</strong>
+            <strong>{completedCheckpoints}</strong>
           </div>
         </section>
 
         <section className="learn-layout" aria-label="ChessIQ lessons">
           <div className="learn-grid">
-            {lessons.map((lesson) => {
+            {LESSONS.map((lesson) => {
               const progress = Math.min(lessonProgress[lesson.key] ?? 0, lesson.checkpoints.length);
               return (
                 <button
