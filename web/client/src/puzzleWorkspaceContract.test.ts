@@ -10,11 +10,12 @@ describe("production interactive Puzzles workspace", () => {
     expect(puzzles).not.toContain('aria-label="Candidate moves"');
   });
 
-  it("stores expected puzzle solutions as UCI lines", () => {
-    const puzzles = readFileSync(new URL("./pages/Puzzles.tsx", import.meta.url), "utf8");
-    expect(puzzles).toContain('solution: ["d1d8"]');
-    expect(puzzles).toContain('solution: ["e4f6"]');
-    expect(puzzles).toContain('solution: ["e1e8"]');
+  it("stores expected puzzle solutions as UCI lines in the shared catalog", () => {
+    const catalog = readFileSync(new URL("./lib/puzzleCatalog.ts", import.meta.url), "utf8");
+    expect(catalog).toContain('solution: ["d1d8"]');
+    expect(catalog).toContain('solution: ["e4f6"]');
+    expect(catalog).toContain('solution: ["e1e8"]');
+    expect(catalog).toContain("PUZZLE_TOTAL = PUZZLES.length");
   });
 
   it("reports real remaining progress and advances to the next unsolved puzzle", () => {
