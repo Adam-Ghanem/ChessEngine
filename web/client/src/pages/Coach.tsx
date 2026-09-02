@@ -2,21 +2,16 @@ import { Brain, Gamepad2, GraduationCap, Sparkles, Target, TrendingUp } from "lu
 import { Link } from "wouter";
 import { BrandMark } from "@/components/BrandMark";
 import { ProductHeader } from "@/components/ProductHeader";
+import { LEARN_STORAGE_KEY, LESSONS } from "@/data/lessons";
 import { readGameHistory } from "@/lib/gameHistory";
+import { readNumberProgress } from "@/lib/localProgress";
 import { PUZZLE_IDS, PUZZLE_STORAGE_KEY } from "@/lib/puzzleCatalog";
 import "../coach.css";
 
-const LEARN_KEY = "chessiq.learn.progress";
-
 function countCompletedLessons() {
   if (typeof window === "undefined") return 0;
-  try {
-    const value: unknown = JSON.parse(window.localStorage.getItem(LEARN_KEY) ?? "{}");
-    if (!value || typeof value !== "object" || Array.isArray(value)) return 0;
-    return Object.values(value).filter(value => typeof value === "number" && value >= 3).length;
-  } catch {
-    return 0;
-  }
+  const progress = readNumberProgress(window.localStorage, LEARN_STORAGE_KEY);
+  return LESSONS.filter((lesson) => (progress[lesson.key] ?? 0) >= lesson.checkpoints.length).length;
 }
 
 function countValidSolvedPuzzles() {
@@ -51,7 +46,7 @@ function planFor(games: number, lessons: number, puzzles: number) {
       icon: Target,
     };
   }
-  if (lessons < 3) {
+  if (lessons < LESSONS.length) {
     return {
       eyebrow: "Convert patterns into knowledge",
       title: "Continue structured learning",
@@ -98,7 +93,7 @@ export default function Coach() {
 
         <section className="coach-grid" aria-label="Training evidence">
           <article className="coach-stat-card"><Gamepad2 size={18} /><span>Saved games</span><strong>{games}</strong><small>from Play on this device</small></article>
-          <article className="coach-stat-card"><GraduationCap size={18} /><span>Learn checkpoints</span><strong>{lessons}</strong><small>completed locally</small></article>
+          <article className="coach-stat-card"><GraduationCap size={18} /><span>Lessons completed</span><strong>{lessons}/{LESSONS.length}</strong><small>verified from Learn checkpoints</small></article>
           <article className="coach-stat-card"><Target size={18} /><span>Solved puzzles</span><strong>{puzzles}</strong><small>verified catalog entries</small></article>
         </section>
 
