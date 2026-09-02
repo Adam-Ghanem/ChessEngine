@@ -50,4 +50,11 @@ describe("game history outcomes", () => {
 
     expect(readGameHistory(storage)).toEqual([]);
   });
+
+  it("rejects terminal metadata that contradicts the engine terminal status", () => {
+    const corrupted = { ...game("bad-status"), termination: "checkmate", result: "black-win" };
+    const storage = storageWith([corrupted]);
+
+    expect(readGameHistory(storage)).toEqual([]);
+  });
 });
