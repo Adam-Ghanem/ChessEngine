@@ -3,6 +3,9 @@ import type { PlayEngineStatus } from "@/engine/playEngine";
 export const GAME_HISTORY_KEY = "chessiq.games.v1";
 const MAX_GAMES = 20;
 
+export type GameResult = "white-win" | "black-win" | "draw";
+export type GameTermination = "checkmate" | "stalemate" | "draw" | "timeout" | "resignation";
+
 export type StoredGame = {
   id: string;
   mode: "computer" | "local";
@@ -10,10 +13,27 @@ export type StoredGame = {
   fen: string;
   moves: string[];
   positions?: string[];
+  result?: GameResult;
+  termination?: GameTermination;
   updatedAt: string;
 };
 
 type StorageLike = Pick<Storage, "getItem" | "setItem" | "removeItem">;
+
+function isGameResult(value: unknown): value is GameResult {
+  return value === "white-win" || value === "black-win" || value === "draw";
+}
+
+function isGameTermination(value: unknown): value is GameTermination {
+  return value === "checkmate" || value === "stalemate" || value === "draw" || value === "timeout" || value === "resignation";
+}
+
+function hasValidOutcome(game: Partial<StoredGame>) {
+  if (game.result === undefined && game.termination === undefined) return true;
+  if (!isGameResult(game.result) || !isGameTermination(game.termination)) return false;
+  if (game.termination === "stalemate" || game.termination === "draw") return game.result === "draw";
+  return game.result === "white-win" || game.result === "black-win";
+}
 
 function isStoredGame(value: unknown): value is StoredGame {
   if (!value || typeof value !== "object") return false;
@@ -25,6 +45,7 @@ function isStoredGame(value: unknown): value is StoredGame {
     && Array.isArray(game.moves)
     && game.moves.every(move => typeof move === "string")
     && (game.positions === undefined || (Array.isArray(game.positions) && game.positions.every(position => typeof position === "string")))
+    && hasValidOutcome(game)
     && typeof game.updatedAt === "string";
 }
 
