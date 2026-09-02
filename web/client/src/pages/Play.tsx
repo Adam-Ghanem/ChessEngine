@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { ArrowLeft, Bot, CircleDot, Flag, RotateCcw, ShieldCheck, Swords, Users } from "lucide-react";
+import { ArrowLeft, Bot, CircleDot, Clock3, Flag, RotateCcw, ShieldCheck, Swords, Users } from "lucide-react";
 import { Link } from "wouter";
 import { toast } from "sonner";
 import { LegalChessBoard } from "@/components/LegalChessBoard";
@@ -199,6 +199,19 @@ export default function Play() {
     <main className="app-shell chessiq-shell">
       <div className="analysis-product-shell play-product-shell">
         <ProductHeader activePath="/play" />
+
+        <header className="play-room-header">
+          <div>
+            <span className="premium-eyebrow">Play workspace</span>
+            <h1>Play with purpose.</h1>
+            <p>Every move stays legal, reviewable, and ready to carry into analysis.</p>
+          </div>
+          <div className="play-room-meta" aria-label="Game context">
+            <span><Clock3 size={14} /> 10 min</span>
+            <span><ShieldCheck size={14} /> First-party ChessEngine</span>
+            <span>{mode === "computer" ? <Bot size={14} /> : <Users size={14} />} {mode === "computer" ? "vs ChessIQ" : "Local game"}</span>
+          </div>
+        </header>
 
         <section className="play-game-room play-layout" aria-label="Chess game room">
           <div className="play-board-stage">
