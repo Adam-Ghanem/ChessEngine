@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { GAME_HISTORY_KEY, deleteGameHistory, readGameHistory, type StoredGame } from "./gameHistory";
+import { GAME_HISTORY_KEY, deleteGameHistory, findResumableGame, readGameHistory, type StoredGame } from "./gameHistory";
 
 function storageWith(games: unknown[]): Storage {
   const data = new Map<string, string>([[GAME_HISTORY_KEY, JSON.stringify(games)]]);
@@ -56,5 +56,37 @@ describe("game history outcomes", () => {
     const storage = storageWith([corrupted]);
 
     expect(readGameHistory(storage)).toEqual([]);
+  });
+});
+
+describe("game history resume", () => {
+  it("returns an unfinished game by id and rejects completed games", () => {
+    const active = {
+      ...game("active"),
+      fen: "8/8/8/8/8/8/8/8 b - - 0 1",
+      whiteSeconds: 172,
+      blackSeconds: 165,
+      timeControlId: "3",
+      playerSide: "black",
+      difficultyId: "hard",
+    };
+    const finished = {
+      ...game("finished"),
+      status: "checkmate",
+      result: "white-win",
+      termination: "checkmate",
+    };
+    const storage = storageWith([finished, active]);
+
+    expect(findResumableGame("active", storage)).toMatchObject({
+      id: "active",
+      whiteSeconds: 172,
+      blackSeconds: 165,
+      timeControlId: "3",
+      playerSide: "black",
+      difficultyId: "hard",
+    });
+    expect(findResumableGame("finished", storage)).toBeNull();
+    expect(findResumableGame("missing", storage)).toBeNull();
   });
 });
