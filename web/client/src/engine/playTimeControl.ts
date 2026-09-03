@@ -1,4 +1,4 @@
-export type PlayTimeControlId = "3+2" | "5+3" | "10" | "15+10";
+export type PlayTimeControlId = "3+2" | "5+3" | "10" | "15+10" | "3" | "5" | "15";
 
 export type PlayTimeControl = {
   id: PlayTimeControlId;
@@ -18,8 +18,16 @@ export const PLAY_TIME_CONTROLS = [
   { id: "15+10", label: "15 + 10", minutes: 15, seconds: 15 * 60, incrementSeconds: 10, detail: "Rapid" },
 ] as const satisfies readonly PlayTimeControl[];
 
+const LEGACY_PLAY_TIME_CONTROLS = [
+  { id: "3", label: "3 min", minutes: 3, seconds: 3 * 60, incrementSeconds: 0, detail: "Legacy blitz" },
+  { id: "5", label: "5 min", minutes: 5, seconds: 5 * 60, incrementSeconds: 0, detail: "Legacy blitz" },
+  { id: "15", label: "15 min", minutes: 15, seconds: 15 * 60, incrementSeconds: 0, detail: "Legacy rapid" },
+] as const satisfies readonly PlayTimeControl[];
+
 export function getPlayTimeControl(value: string | null | undefined): PlayTimeControl {
-  return PLAY_TIME_CONTROLS.find(control => control.id === value) ?? PLAY_TIME_CONTROLS[2];
+  return PLAY_TIME_CONTROLS.find(control => control.id === value)
+    ?? LEGACY_PLAY_TIME_CONTROLS.find(control => control.id === value)
+    ?? PLAY_TIME_CONTROLS[2];
 }
 
 export function addClockIncrement(seconds: number, incrementSeconds: number) {
