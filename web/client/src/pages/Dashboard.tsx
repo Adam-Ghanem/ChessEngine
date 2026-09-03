@@ -1,14 +1,15 @@
 import { Activity, BarChart3, BookOpen, ChevronRight, Gamepad2, LibraryBig, Puzzle, Search, ShieldCheck, Sparkles, TrendingUp } from "lucide-react";
 import { Link } from "wouter";
 import { ProductHeader } from "@/components/ProductHeader";
-import { readGameHistory } from "@/lib/gameHistory";
+import { latestResumableGame, readGameHistory } from "@/lib/gameHistory";
 
 const LEARN_STORAGE_KEY = "chessiq.learn.progress";
 const PUZZLE_STORAGE_KEY = "chessiq-puzzles-solved-v1";
 
 function readLocalSnapshot() {
-  if (typeof window === "undefined") return { games: 0, moves: 0, puzzles: 0, lessons: 0 };
+  if (typeof window === "undefined") return { games: 0, moves: 0, puzzles: 0, lessons: 0, resumeGameId: null as string | null };
   const games = readGameHistory(window.localStorage);
+  const resumableGame = latestResumableGame(window.localStorage);
   let puzzles = 0;
   let lessons = 0;
 
@@ -27,6 +28,7 @@ function readLocalSnapshot() {
     moves: games.reduce((total, game) => total + game.moves.length, 0),
     puzzles,
     lessons,
+    resumeGameId: resumableGame?.id ?? null,
   };
 }
 
@@ -39,6 +41,16 @@ const features = [
 
 export default function Dashboard() {
   const snapshot = readLocalSnapshot();
+  const nextHref = snapshot.resumeGameId
+    ? `/play?resume=${encodeURIComponent(snapshot.resumeGameId)}`
+    : snapshot.games === 0
+      ? "/play"
+      : "/games";
+  const nextCopy = snapshot.resumeGameId
+    ? "Continue your unfinished game exactly where you left it, with the saved board, clocks, side, and ChessIQ strength."
+    : snapshot.games === 0
+      ? "Play your first game so ChessIQ can start connecting training with real board activity."
+      : "Open Games to revisit a saved position, then carry it straight into Analyze.";
 
   return (
     <main className="app-shell chessiq-shell premium-product-page">
@@ -86,10 +98,10 @@ export default function Dashboard() {
 
           <article className="premium-panel premium-next-panel">
             <header><div><span className="premium-label">Continue</span><h2>Next best action</h2></div><BarChart3 size={19} /></header>
-            <p>{snapshot.games === 0 ? "Play your first game so ChessIQ can start connecting training with real board activity." : "Open Games to revisit a saved position, then carry it straight into Analyze."}</p>
-            <Link href={snapshot.games === 0 ? "/play" : "/games"} className="premium-secondary-action">
-              {snapshot.games === 0 ? <Gamepad2 size={16} /> : <LibraryBig size={16} />}
-              {snapshot.games === 0 ? "Start a game" : "Open games"}
+            <p>{nextCopy}</p>
+            <Link href={nextHref} className="premium-secondary-action">
+              {snapshot.resumeGameId || snapshot.games === 0 ? <Gamepad2 size={16} /> : <LibraryBig size={16} />}
+              {snapshot.resumeGameId ? "Resume game" : snapshot.games === 0 ? "Start a game" : "Open games"}
             </Link>
           </article>
         </section>
