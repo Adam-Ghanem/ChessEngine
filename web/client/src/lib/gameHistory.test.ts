@@ -63,6 +63,7 @@ describe("game history resume", () => {
   it("returns an unfinished game by id and rejects completed games", () => {
     const active = {
       ...game("active"),
+      fen: "8/8/8/8/8/8/8/8 b - - 0 1",
       whiteSeconds: 172,
       blackSeconds: 165,
       timeControlId: "3",
