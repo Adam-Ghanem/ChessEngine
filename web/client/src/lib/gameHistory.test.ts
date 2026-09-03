@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { GAME_HISTORY_KEY, deleteGameHistory, findResumableGame, readGameHistory, type StoredGame } from "./gameHistory";
+import { GAME_HISTORY_KEY, deleteGameHistory, findResumableGame, latestResumableGame, readGameHistory, type StoredGame } from "./gameHistory";
 
 function storageWith(games: unknown[]): Storage {
   const data = new Map<string, string>([[GAME_HISTORY_KEY, JSON.stringify(games)]]);
@@ -88,5 +88,31 @@ describe("game history resume", () => {
     });
     expect(findResumableGame("finished", storage)).toBeNull();
     expect(findResumableGame("missing", storage)).toBeNull();
+  });
+
+  it("returns the first trustworthy unfinished game for a continue experience", () => {
+    const finished = {
+      ...game("finished"),
+      status: "checkmate",
+      result: "white-win",
+      termination: "checkmate",
+    };
+    const newestActive = {
+      ...game("newest-active"),
+      fen: "8/8/8/8/8/8/8/8 b - - 0 1",
+      whiteSeconds: 420,
+      blackSeconds: 401,
+      timeControlId: "10",
+      playerSide: "white",
+      difficultyId: "medium",
+    };
+    const olderActive = {
+      ...newestActive,
+      id: "older-active",
+      updatedAt: "2026-09-01T12:00:00.000Z",
+    };
+    const storage = storageWith([finished, newestActive, olderActive]);
+
+    expect(latestResumableGame(storage)?.id).toBe("newest-active");
   });
 });
