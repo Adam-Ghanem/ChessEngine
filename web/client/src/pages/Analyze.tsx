@@ -7,7 +7,7 @@ import { ProductHeader } from "@/components/ProductHeader";
 import { analyzePosition, type ServerEngineAnalysis } from "@/engine/serverEngine";
 import { validateFenShape } from "@/engine/fen";
 import { initialAnalysisFenFromSearch, initialAnalysisGameIdFromSearch } from "@/lib/analysisRoute";
-import { readGameHistory } from "@/lib/gameHistory";
+import { readGameHistory, replayMoveContext } from "@/lib/gameHistory";
 import { gameOutcomeLabel } from "@/lib/gameOutcome";
 import "@/fen-analyze.css";
 
@@ -37,6 +37,17 @@ export default function Analyze() {
   const [analysis, setAnalysis] = useState<ServerEngineAnalysis | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [moveReview, setMoveReview] = useState<{ ply: number; playedMove: string; analysis: ServerEngineAnalysis } | null>(null);
+  const [reviewLoading, setReviewLoading] = useState(false);
+  const [reviewError, setReviewError] = useState<string | null>(null);
+
+  const selectedMoveContext = useMemo(
+    () => gameContext ? replayMoveContext(gameContext, replayIndex) : null,
+    [gameContext, replayIndex],
+  );
+  const moveReviewMatchesEngine = moveReview
+    ? moveReview.playedMove.toLowerCase() === moveReview.analysis.bestMove.toLowerCase()
+    : false;
 
   const bestArrow = useMemo(() => {
     if (!analysis || !/^[a-h][1-8][a-h][1-8]/.test(analysis.bestMove)) return { from: "a1", to: "a1" };
@@ -68,6 +79,8 @@ export default function Analyze() {
     setLoadedFen(position);
     setAnalysis(null);
     setError(null);
+    setMoveReview(null);
+    setReviewError(null);
   }
 
   async function runAnalysis() {
@@ -85,6 +98,22 @@ export default function Analyze() {
     }
   }
 
+  async function reviewSelectedMove() {
+    if (!selectedMoveContext) return;
+    setReviewLoading(true);
+    setReviewError(null);
+    try {
+      const result = await analyzePosition(selectedMoveContext.positionBeforeFen, depth);
+      setMoveReview({ ply: selectedMoveContext.ply, playedMove: selectedMoveContext.playedMove, analysis: result });
+    } catch (cause) {
+      const message = cause instanceof Error ? cause.message : "ChessEngine move review failed";
+      setReviewError(message);
+      toast.error(message);
+    } finally {
+      setReviewLoading(false);
+    }
+  }
+
   return (
     <main className="app-shell chessiq-shell">
       <div className="analysis-product-shell fen-analyze-shell">
@@ -94,12 +123,12 @@ export default function Analyze() {
           <div className="analysis-hero-copy">
             <div className="analysis-hero-kicker"><Sparkles size={14} /> Live ChessEngine</div>
             <h1>{gameContext ? "Review your saved game position." : "Analyze any position."}</h1>
-            <p>{gameContext ? "ChessIQ keeps the saved-game context with this position, so you can replay recorded positions and run the live first-party engine at the moment that matters." : "Load a FEN and run the first-party ChessEngine directly against that position. No sample score replaces the live result."}</p>
+            <p>{gameContext ? "ChessIQ keeps the saved-game context with this position, so you can replay recorded positions and ask the live first-party engine what it preferred before any recorded move." : "Load a FEN and run the first-party ChessEngine directly against that position. No sample score replaces the live result."}</p>
           </div>
           <div className="analysis-hero-meta" aria-label="Analyze status">
             <div><span>Depth</span><strong>{depth}</strong></div>
-            <div><span>Engine</span><strong>{analysis?.engine ?? "ChessEngine"}</strong></div>
-            <div className={loading ? "engine-status is-live" : "engine-status"}><span>Status</span><strong>{loading ? "Calculating" : analysis ? "Complete" : "Ready"}</strong></div>
+            <div><span>Engine</span><strong>{analysis?.engine ?? moveReview?.analysis.engine ?? "ChessEngine"}</strong></div>
+            <div className={loading || reviewLoading ? "engine-status is-live" : "engine-status"}><span>Status</span><strong>{loading || reviewLoading ? "Calculating" : analysis || moveReview ? "Complete" : "Ready"}</strong></div>
           </div>
         </section>
 
@@ -177,6 +206,26 @@ export default function Analyze() {
                       <button type="button" onClick={() => selectReplayPosition(replayIndex + 1)} disabled={replayIndex >= replayPositions.length - 1} aria-label="Next position">Next <ChevronRight size={16} /></button>
                     </div>
                     <button type="button" className="game-review-final-action" onClick={() => selectReplayPosition(replayPositions.length - 1)} disabled={replayIndex === replayPositions.length - 1} aria-label="Back to final position"><SkipForward size={15} /> Back to final position</button>
+
+                    <div className="game-review-engine-check" aria-live="polite">
+                      <div>
+                        <span className="analysis-label">Selected move</span>
+                        <strong>{selectedMoveContext ? `${selectedMoveContext.ply}. ${selectedMoveContext.playedMove}` : "Choose a recorded move"}</strong>
+                      </div>
+                      <button type="button" className="game-review-engine-action" onClick={reviewSelectedMove} disabled={!selectedMoveContext || reviewLoading}>
+                        <Sparkles size={15} /> {reviewLoading ? "Reviewing…" : "Review selected move"}
+                      </button>
+                      {reviewError && <p className="analysis-inline-error" role="alert">{reviewError}</p>}
+                      {moveReview && (
+                        <div className={`game-review-engine-result ${moveReviewMatchesEngine ? "is-match" : "is-alternative"}`}>
+                          <div><span>Played</span><strong>{moveReview.playedMove}</strong></div>
+                          <div><span>Engine choice</span><strong>{moveReview.analysis.bestMove}</strong></div>
+                          <div><span>Verdict</span><strong>{moveReviewMatchesEngine ? "Engine agreed" : "Engine preferred another move"}</strong></div>
+                          <div><span>Eval before move</span><strong>{(moveReview.analysis.scoreCp / 100).toFixed(2)}</strong></div>
+                          <p>Depth {moveReview.analysis.depth} · PV {moveReview.analysis.principalVariation || "not returned"}</p>
+                        </div>
+                      )}
+                    </div>
                   </div>
                 ) : (
                   <p className="game-review-legacy-note">This older saved game predates replay history. Its final position is still available for analysis.</p>
