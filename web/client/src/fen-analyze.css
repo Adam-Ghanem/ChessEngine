@@ -27,6 +27,17 @@
 .game-review-replay button:focus-visible { outline: 3px solid color-mix(in srgb, var(--ring) 28%, transparent); outline-offset: 2px; }
 .game-review-replay button:disabled { opacity: .42; cursor: not-allowed; }
 .game-review-final-action { width: 100%; }
+.game-review-engine-check { display: grid; gap: 10px; margin-top: 4px; padding: 12px; border: 1px solid color-mix(in srgb, var(--primary) 28%, var(--border)); border-radius: 13px; background: color-mix(in srgb, var(--primary) 5%, var(--background)); }
+.game-review-engine-check > div:first-child { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.game-review-engine-check > div:first-child strong { font: 800 .84rem/1.2 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; overflow-wrap: anywhere; }
+.game-review-engine-action { width: 100%; border-color: color-mix(in srgb, var(--primary) 54%, var(--border)) !important; background: color-mix(in srgb, var(--primary) 11%, var(--card)) !important; }
+.game-review-engine-result { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; padding-top: 2px; }
+.game-review-engine-result > div { min-width: 0; padding: 9px 10px; border: 1px solid var(--border); border-radius: 10px; background: color-mix(in srgb, var(--card) 86%, transparent); }
+.game-review-engine-result span { display: block; color: var(--muted-foreground); font-size: .66rem; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; }
+.game-review-engine-result strong { display: block; margin-top: 4px; font-size: .79rem; overflow-wrap: anywhere; }
+.game-review-engine-result.is-match { border-left: 3px solid color-mix(in srgb, #22c55e 78%, var(--border)); }
+.game-review-engine-result.is-alternative { border-left: 3px solid color-mix(in srgb, var(--primary) 74%, var(--border)); }
+.game-review-engine-result p { grid-column: 1 / -1; margin: 0; color: var(--muted-foreground); font-size: .74rem; line-height: 1.45; overflow-wrap: anywhere; }
 .game-review-legacy-note { margin: 12px 0 0; padding: 10px 11px; border: 1px dashed var(--border); border-radius: 11px; color: var(--muted-foreground); font-size: .78rem; line-height: 1.45; }
 .fen-field, .fen-depth-field { display: grid; gap: 8px; }
 .fen-field > span, .fen-depth-field > span { font-size: .78rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted-foreground); }
@@ -46,5 +57,5 @@
 .fen-result-grid strong { display: block; overflow-wrap: anywhere; }
 .fen-pv { grid-column: 1 / -1; }
 @media (max-width: 1030px) { .fen-analyze-layout { grid-template-columns: 1fr; } .fen-analyze-rail { grid-template-columns: 1fr; } .fen-analyze-hero { display: grid; gap: 16px; } .fen-result-card { grid-column: auto; } }
-@media (max-width: 680px) { .fen-analyze-layout, .fen-analyze-rail { display: grid; grid-template-columns: 1fr; gap: 14px; } .game-review-facts { grid-template-columns: 1fr; } .game-review-move-timeline { display: flex; overflow-x: auto; overflow-y: hidden; max-height: none; scroll-snap-type: x proximity; padding-bottom: 4px; } .game-review-move-timeline button { flex: 0 0 92px; scroll-snap-align: start; } .game-review-replay-actions { grid-template-columns: 1fr; } .fen-result-grid { grid-template-columns: 1fr 1fr; } .fen-pv { grid-column: 1 / -1; } .fen-review-link { width: 100%; } .fen-analyze-shell .analysis-card-header { align-items: stretch; flex-direction: column; gap: 10px; } }
+@media (max-width: 680px) { .fen-analyze-layout, .fen-analyze-rail { display: grid; grid-template-columns: 1fr; gap: 14px; } .game-review-facts { grid-template-columns: 1fr; } .game-review-move-timeline { display: flex; overflow-x: auto; overflow-y: hidden; max-height: none; scroll-snap-type: x proximity; padding-bottom: 4px; } .game-review-move-timeline button { flex: 0 0 92px; scroll-snap-align: start; } .game-review-replay-actions { grid-template-columns: 1fr; } .game-review-engine-check > div:first-child { align-items: flex-start; flex-direction: column; } .game-review-engine-result { grid-template-columns: 1fr; } .game-review-engine-result p { grid-column: auto; } .fen-result-grid { grid-template-columns: 1fr 1fr; } .fen-pv { grid-column: 1 / -1; } .fen-review-link { width: 100%; } .fen-analyze-shell .analysis-card-header { align-items: stretch; flex-direction: column; gap: 10px; } }
 @media (prefers-reduced-motion: reduce) { .fen-secondary-action, .fen-review-link, .game-review-replay button { transition: none; } }
