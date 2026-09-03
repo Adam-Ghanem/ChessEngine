@@ -25,53 +25,74 @@ function countValidSolvedPuzzles() {
   }
 }
 
-function planFor(games: number, lessons: number, puzzles: number) {
-  if (games === 0) {
-    return {
-      eyebrow: "Build game evidence",
-      title: "Play one complete training game",
-      copy: "Coach recommendations get more useful after ChessIQ has a real game from this device to work from.",
-      href: "/play",
-      action: "Start a game",
-      icon: Gamepad2,
-    };
+type TrainingStep = {
+  eyebrow: string;
+  title: string;
+  copy: string;
+  href: string;
+  action: string;
+  icon: typeof Gamepad2;
+};
+
+const playStep: TrainingStep = {
+  eyebrow: "Build game evidence",
+  title: "Play one complete training game",
+  copy: "Give Coach a real game from this device so later recommendations can be grounded in your own play.",
+  href: "/play",
+  action: "Start a game",
+  icon: Gamepad2,
+};
+
+const puzzleStep: TrainingStep = {
+  eyebrow: "Sharpen calculation",
+  title: "Solve the next tactical set",
+  copy: "Add a stronger tactics sample before broadening the plan. Only verified catalog solves count here.",
+  href: "/puzzles",
+  action: "Train tactics",
+  icon: Target,
+};
+
+const learnStep: TrainingStep = {
+  eyebrow: "Convert patterns into knowledge",
+  title: "Continue structured learning",
+  copy: "Finish more lesson checkpoints so tactical patterns become repeatable decisions at the board.",
+  href: "/learn",
+  action: "Open Learn",
+  icon: GraduationCap,
+};
+
+const analyzeStep: TrainingStep = {
+  eyebrow: "Review your evidence",
+  title: "Analyze a real position",
+  copy: "Use the first-party ChessEngine to inspect a position from your own games and turn activity into feedback.",
+  href: "/analyze",
+  action: "Open Analyze",
+  icon: Brain,
+};
+
+function buildTrainingQueue(games: number, lessons: number, puzzles: number): TrainingStep[] {
+  const queue: TrainingStep[] = [];
+
+  if (games === 0) queue.push(playStep);
+  if (puzzles < 3) queue.push(puzzleStep);
+  if (lessons < LESSONS.length) queue.push(learnStep);
+
+  queue.push(analyzeStep);
+
+  if (queue.length < 3) {
+    queue.push(puzzleStep, learnStep);
   }
-  if (puzzles < 3) {
-    return {
-      eyebrow: "Sharpen calculation",
-      title: "Solve the next tactical set",
-      copy: "Your device has game activity, but only a small tactics sample. Add puzzle evidence before broadening the plan.",
-      href: "/puzzles",
-      action: "Train tactics",
-      icon: Target,
-    };
-  }
-  if (lessons < LESSONS.length) {
-    return {
-      eyebrow: "Convert patterns into knowledge",
-      title: "Continue structured learning",
-      copy: "You have both games and tactical work recorded. The next useful step is finishing more lesson checkpoints.",
-      href: "/learn",
-      action: "Open Learn",
-      icon: GraduationCap,
-    };
-  }
-  return {
-    eyebrow: "Review your evidence",
-    title: "Analyze a real position",
-    copy: "You have activity across Play, Puzzles, and Learn. Use the first-party ChessEngine to inspect a position from your own games.",
-    href: "/analyze",
-    action: "Open Analyze",
-    icon: Brain,
-  };
+
+  return queue.filter((step, index) => queue.findIndex((candidate) => candidate.href === step.href) === index).slice(0, 3);
 }
 
 export default function Coach() {
   const games = readGameHistory().length;
   const lessons = countCompletedLessons();
   const puzzles = countValidSolvedPuzzles();
-  const plan = planFor(games, lessons, puzzles);
-  const PlanIcon = plan.icon;
+  const trainingQueue = buildTrainingQueue(games, lessons, puzzles);
+  const primaryPlan = trainingQueue[0];
+  const PlanIcon = primaryPlan.icon;
 
   return (
     <main className="app-shell chessiq-shell">
@@ -82,7 +103,7 @@ export default function Coach() {
           <div>
             <div className="analysis-hero-kicker"><Sparkles size={14} /> ChessIQ Coach</div>
             <h1>A training plan grounded in what you actually did.</h1>
-            <p>ChessIQ Coach reads only activity stored on this device and turns it into a clear next step. No invented performance data.</p>
+            <p>ChessIQ Coach reads only activity stored on this device and turns it into a prioritized training queue. No invented performance data.</p>
           </div>
           <div className="coach-trust-card">
             <TrendingUp size={20} />
@@ -100,11 +121,28 @@ export default function Coach() {
         <section className="coach-plan" aria-label="Recommended training plan">
           <div className="coach-plan-icon"><PlanIcon size={24} /></div>
           <div className="coach-plan-copy">
-            <span>{plan.eyebrow}</span>
-            <h2>{plan.title}</h2>
-            <p>{plan.copy}</p>
+            <span>Next · {primaryPlan.eyebrow}</span>
+            <h2>{primaryPlan.title}</h2>
+            <p>{primaryPlan.copy}</p>
           </div>
-          <Link href={plan.href} className="primary-action">{plan.action}</Link>
+          <Link href={primaryPlan.href} className="primary-action">{primaryPlan.action}</Link>
+        </section>
+
+        <section className="coach-plan-queue" aria-label="Training plan steps">
+          {trainingQueue.map((step, index) => {
+            const StepIcon = step.icon;
+            return (
+              <article className="coach-plan-step" key={step.href}>
+                <div className="coach-plan-step-number">{index === 0 ? "Next" : index === 1 ? "Then" : "After"}</div>
+                <div className="coach-plan-step-icon"><StepIcon size={18} /></div>
+                <div className="coach-plan-step-copy">
+                  <span>{step.eyebrow}</span>
+                  <strong>{step.title}</strong>
+                </div>
+                <Link href={step.href} aria-label={`${step.action}: ${step.title}`}>{step.action}</Link>
+              </article>
+            );
+          })}
         </section>
 
         <section className="coach-principles" aria-labelledby="coach-principles-title">
