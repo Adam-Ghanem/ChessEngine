@@ -8,16 +8,17 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Dashboard from "./pages/Dashboard";
+import { productRouteLoaders } from "./lib/productRouteLoaders";
 
-const Analyze = lazy(() => import("./pages/Analyze"));
-const Coach = lazy(() => import("./pages/Coach"));
-const Games = lazy(() => import("./pages/Games"));
-const Learn = lazy(() => import("./pages/Learn"));
+const Analyze = lazy(productRouteLoaders["/analyze"] as () => Promise<{ default: React.ComponentType }>);
+const Coach = lazy(productRouteLoaders["/coach"] as () => Promise<{ default: React.ComponentType }>);
+const Games = lazy(productRouteLoaders["/games"] as () => Promise<{ default: React.ComponentType }>);
+const Learn = lazy(productRouteLoaders["/learn"] as () => Promise<{ default: React.ComponentType }>);
+const Play = lazy(productRouteLoaders["/play"] as () => Promise<{ default: React.ComponentType }>);
+const Puzzles = lazy(productRouteLoaders["/puzzles"] as () => Promise<{ default: React.ComponentType }>);
+const Progress = lazy(productRouteLoaders["/progress"] as () => Promise<{ default: React.ComponentType }>);
 const OpeningDetail = lazy(() => import("./pages/OpeningDetail"));
 const Openings = lazy(() => import("./pages/Openings"));
-const Play = lazy(() => import("./pages/Play"));
-const Puzzles = lazy(() => import("./pages/Puzzles"));
-const Progress = lazy(() => import("./pages/Progress"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 function RouteLoadingState() {
