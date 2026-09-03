@@ -12,4 +12,12 @@ describe("Play time controls", () => {
     expect(play).not.toContain("const INITIAL_CLOCK_SECONDS = 10 * 60");
     expect(play).not.toContain("Time control: 10 minutes");
   });
+
+  it("awards the selected increment after every completed move", () => {
+    const play = readFileSync(new URL("./pages/Play.tsx", import.meta.url), "utf8");
+
+    expect(play).toContain("addClockIncrement");
+    expect(play).toContain("timeControl.incrementSeconds");
+    expect(play).toContain("awardMoveIncrement");
+  });
 });
