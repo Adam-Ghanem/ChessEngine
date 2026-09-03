@@ -114,6 +114,10 @@ export function isResumableGame(game: StoredGame) {
   return true;
 }
 
+export function latestResumableGame(storage: StorageLike | null = typeof window === "undefined" ? null : window.localStorage): StoredGame | null {
+  return readGameHistory(storage).find(isResumableGame) ?? null;
+}
+
 export function findResumableGame(gameId: string, storage: StorageLike | null = typeof window === "undefined" ? null : window.localStorage): StoredGame | null {
   const game = readGameHistory(storage).find(item => item.id === gameId);
   return game && isResumableGame(game) ? game : null;
