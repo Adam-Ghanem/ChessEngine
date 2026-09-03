@@ -9,7 +9,7 @@ import { PLAY_DIFFICULTIES, PLAY_DIFFICULTY_STORAGE_KEY, getPlayDifficulty, type
 import { fetchLegalMoves, playMove, type PlayEngineStatus } from "@/engine/playEngine";
 import { PLAY_SIDE_OPTIONS, PLAY_SIDE_STORAGE_KEY, getPlaySide, oppositeSide, resolvePlayerSide, type PlayerSide, type PlaySidePreference } from "@/engine/playSide";
 import { sideToMove, statusLabel } from "@/engine/playState";
-import { PLAY_TIME_CONTROLS, PLAY_TIME_CONTROL_STORAGE_KEY, getPlayTimeControl, type PlayTimeControl, type PlayTimeControlId } from "@/engine/playTimeControl";
+import { PLAY_TIME_CONTROLS, PLAY_TIME_CONTROL_STORAGE_KEY, addClockIncrement, getPlayTimeControl, type PlayTimeControl, type PlayTimeControlId } from "@/engine/playTimeControl";
 import { analyzePosition } from "@/engine/serverEngine";
 import { analysisHrefForFen } from "@/lib/analysisRoute";
 import { findResumableGame, saveGameSnapshot, type GameResult, type GameTermination } from "@/lib/gameHistory";
@@ -224,6 +224,12 @@ export default function Play() {
     }
   }, [blackSeconds, engineTerminal, moves.length, resignedSide, timedOut, whiteSeconds]);
 
+  function awardMoveIncrement(side: PlayerSide) {
+    if (timeControl.incrementSeconds <= 0) return;
+    if (side === "white") setWhiteSeconds(current => addClockIncrement(current, timeControl.incrementSeconds));
+    else setBlackSeconds(current => addClockIncrement(current, timeControl.incrementSeconds));
+  }
+
   async function applyComputerReply(positionFen: string, availableMoves: string[]) {
     if (!availableMoves.length) return;
     setComputerThinking(true);
@@ -232,6 +238,7 @@ export default function Play() {
       const engineMove = analysis.bestMove.trim().split(/\s+/)[0];
       if (!availableMoves.includes(engineMove)) throw new Error(`ChessEngine returned an illegal reply: ${engineMove}`);
       const reply = await playMove(positionFen, engineMove);
+      awardMoveIncrement(sideToMove(positionFen));
       setFen(reply.fen);
       setLegalMoves(reply.legalMoves);
       setStatus(reply.status);
@@ -249,6 +256,7 @@ export default function Play() {
     setError(null);
     try {
       const result = await playMove(fen, uci);
+      awardMoveIncrement(turn);
       setFen(result.fen);
       setLegalMoves(result.legalMoves);
       setStatus(result.status);
@@ -450,12 +458,12 @@ export default function Play() {
                     onClick={() => selectTimeControl(control.id)}
                     title={`${control.detail} game — ${control.label} per side`}
                   >
-                    <strong>{control.minutes}</strong>
-                    <span>min</span>
+                    <strong>{control.label}</strong>
+                    <span>{control.incrementSeconds ? `+${control.incrementSeconds}s` : "no inc"}</span>
                   </button>
                 ))}
               </div>
-              <p>{timeControl.detail} clock. Selecting a preset starts a fresh game and saves the choice on this device.</p>
+              <p>{timeControl.detail} clock · {timeControl.label} per side. Increment is awarded after each completed move.</p>
             </div>
 
             {mode === "computer" && (
