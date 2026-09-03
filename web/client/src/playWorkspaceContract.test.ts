@@ -4,9 +4,11 @@ import { describe, expect, it } from "vitest";
 describe("production Play workspace", () => {
   it("routes Play through the production web shell instead of a placeholder", () => {
     const app = readFileSync(new URL("./App.tsx", import.meta.url), "utf8");
+    const loaders = readFileSync(new URL("./lib/productRouteLoaders.ts", import.meta.url), "utf8");
     const play = readFileSync(new URL("./pages/Play.tsx", import.meta.url), "utf8");
     expect(app).toContain('path="/play"');
-    expect(app).toContain('lazy(() => import("./pages/Play"))');
+    expect(app).toContain('lazy(productRouteLoaders["/play"])');
+    expect(loaders).toContain('"/play": () => import("../pages/Play")');
     expect(play).toContain('ProductHeader activePath="/play"');
     expect(play).not.toContain("Play workspace is coming next.");
   });

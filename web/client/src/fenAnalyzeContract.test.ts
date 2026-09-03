@@ -4,7 +4,9 @@ import { describe, expect, it } from "vitest";
 describe("production FEN Analyze workspace", () => {
   it("routes Analyze and the legacy Review URL to the position-driven workspace", () => {
     const app = readFileSync(new URL("./App.tsx", import.meta.url), "utf8");
-    expect(app).toContain('lazy(() => import("./pages/Analyze"))');
+    const loaders = readFileSync(new URL("./lib/productRouteLoaders.ts", import.meta.url), "utf8");
+    expect(app).toContain('lazy(productRouteLoaders["/analyze"])');
+    expect(loaders).toContain('"/analyze": () => import("../pages/Analyze")');
     expect(app).toContain('<Route path="/analyze" component={Analyze} />');
     expect(app).toContain('<Route path="/review" component={Analyze} />');
     expect(app).not.toContain('import Home from "./pages/Home"');

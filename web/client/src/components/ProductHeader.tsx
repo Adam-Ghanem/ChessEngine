@@ -3,6 +3,7 @@ import { BarChart3, BookOpen, Bot, Gamepad2, Home, LibraryBig, Menu, Moon, Puzzl
 import { Link } from "wouter";
 import { BrandMark } from "@/components/BrandMark";
 import { useTheme } from "@/contexts/ThemeContext";
+import { prefetchProductRoute } from "@/lib/productRouteLoaders";
 import { productRoutes, type ProductPath } from "@/lib/productRoutes";
 
 type ProductHeaderProps = {
@@ -22,6 +23,15 @@ const routeIcons: Record<ProductPath, typeof Home> = {
 
 const mobilePrimaryRoutes: ProductPath[] = ["/", "/play", "/puzzles", "/analyze"];
 const mobileMoreRoutes: ProductPath[] = ["/learn", "/games", "/coach", "/progress"];
+
+function routeIntentProps(href: ProductPath) {
+  if (href === "/") return {};
+  return {
+    onPointerEnter: () => prefetchProductRoute(href),
+    onFocus: () => prefetchProductRoute(href),
+    onTouchStart: () => prefetchProductRoute(href),
+  };
+}
 
 export function ProductHeader({ activePath }: ProductHeaderProps) {
   const { theme, toggleTheme } = useTheme();
@@ -90,6 +100,7 @@ export function ProductHeader({ activePath }: ProductHeaderProps) {
                 className={`nav-item premium-nav-item ${isActive ? "is-active" : ""}`}
                 href={href}
                 aria-current={isActive ? "page" : undefined}
+                {...routeIntentProps(href)}
               >
                 <span className="sidebar-nav-icon" aria-hidden="true"><Icon size={18} /></span>
                 <span>{label}</span>
@@ -124,6 +135,7 @@ export function ProductHeader({ activePath }: ProductHeaderProps) {
               href={href}
               className={`mobile-bottom-link ${isActive ? "is-active" : ""}`}
               aria-current={isActive ? "page" : undefined}
+              {...routeIntentProps(href)}
             >
               <Icon size={19} aria-hidden="true" />
               <span>{route.label}</span>
@@ -147,6 +159,7 @@ export function ProductHeader({ activePath }: ProductHeaderProps) {
                   className={`mobile-more-link ${isActive ? "is-active" : ""}`}
                   aria-current={isActive ? "page" : undefined}
                   onClick={closeMobileMore}
+                  {...routeIntentProps(href)}
                 >
                   <Icon size={18} aria-hidden="true" />
                   <span>{route.label}</span>

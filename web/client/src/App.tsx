@@ -8,16 +8,17 @@ import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import Dashboard from "./pages/Dashboard";
+import { productRouteLoaders } from "./lib/productRouteLoaders";
 
-const Analyze = lazy(() => import("./pages/Analyze"));
-const Coach = lazy(() => import("./pages/Coach"));
-const Games = lazy(() => import("./pages/Games"));
-const Learn = lazy(() => import("./pages/Learn"));
+const Analyze = lazy(productRouteLoaders["/analyze"]);
+const Coach = lazy(productRouteLoaders["/coach"]);
+const Games = lazy(productRouteLoaders["/games"]);
+const Learn = lazy(productRouteLoaders["/learn"]);
+const Play = lazy(productRouteLoaders["/play"]);
+const Puzzles = lazy(productRouteLoaders["/puzzles"]);
+const Progress = lazy(productRouteLoaders["/progress"]);
 const OpeningDetail = lazy(() => import("./pages/OpeningDetail"));
 const Openings = lazy(() => import("./pages/Openings"));
-const Play = lazy(() => import("./pages/Play"));
-const Puzzles = lazy(() => import("./pages/Puzzles"));
-const Progress = lazy(() => import("./pages/Progress"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 function RouteLoadingState() {
