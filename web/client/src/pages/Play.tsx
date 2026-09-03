@@ -6,6 +6,7 @@ import { LegalChessBoard } from "@/components/LegalChessBoard";
 import { ProductHeader } from "@/components/ProductHeader";
 import { PLAY_DIFFICULTIES, PLAY_DIFFICULTY_STORAGE_KEY, getPlayDifficulty, type PlayDifficultyId } from "@/engine/playDifficulty";
 import { fetchLegalMoves, playMove, type PlayEngineStatus } from "@/engine/playEngine";
+import { PLAY_SIDE_OPTIONS, PLAY_SIDE_STORAGE_KEY, getPlaySide, oppositeSide, resolvePlayerSide, type PlayerSide, type PlaySidePreference } from "@/engine/playSide";
 import { sideToMove, statusLabel } from "@/engine/playState";
 import { analyzePosition } from "@/engine/serverEngine";
 import { analysisHrefForFen } from "@/lib/analysisRoute";
@@ -16,7 +17,6 @@ import "@/play-difficulty.css";
 const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 const INITIAL_CLOCK_SECONDS = 10 * 60;
 type PlayMode = "local" | "computer";
-type PlayerSide = "white" | "black";
 type TimedOutSide = PlayerSide | null;
 type ResignedSide = PlayerSide | null;
 
@@ -57,6 +57,14 @@ export default function Play() {
     if (typeof window === "undefined") return getPlayDifficulty(null);
     return getPlayDifficulty(window.localStorage.getItem(PLAY_DIFFICULTY_STORAGE_KEY));
   });
+  const [sidePreference, setSidePreference] = useState<PlaySidePreference>(() => {
+    if (typeof window === "undefined") return getPlaySide(null);
+    return getPlaySide(window.localStorage.getItem(PLAY_SIDE_STORAGE_KEY));
+  });
+  const [playerSide, setPlayerSide] = useState<PlayerSide>(() => {
+    if (typeof window === "undefined") return "white";
+    return resolvePlayerSide(getPlaySide(window.localStorage.getItem(PLAY_SIDE_STORAGE_KEY)));
+  });
   const [gameId, setGameId] = useState(createGameId);
   const [fen, setFen] = useState(START_FEN);
   const [legalMoves, setLegalMoves] = useState<string[]>([]);
@@ -76,6 +84,9 @@ export default function Play() {
   const terminal = engineTerminal || timedOut !== null || resignedSide !== null;
   const lastMove = moves.length ? moves[moves.length - 1] : null;
   const clockRunning = moves.length > 0 && !terminal && (!busy || computerThinking);
+  const orientation: PlayerSide = mode === "computer" ? playerSide : "white";
+  const topSide = oppositeSide(orientation);
+  const bottomSide = orientation;
 
   useEffect(() => {
     let cancelled = false;
@@ -92,6 +103,15 @@ export default function Play() {
       .finally(() => { if (!cancelled) setBusy(false); });
     return () => { cancelled = true; };
   }, [fen]);
+
+  useEffect(() => {
+    if (mode !== "computer" || playerSide !== "black" || moves.length || turn !== "white" || busy || computerThinking || !legalMoves.length) return;
+    void applyComputerReply(fen, legalMoves).catch(cause => {
+      const message = cause instanceof Error ? cause.message : "ChessIQ opening move failed";
+      setError(message);
+      toast.error(message);
+    });
+  }, [busy, computerThinking, fen, legalMoves, mode, moves.length, playerSide, turn]);
 
   useEffect(() => {
     if (!moves.length) return;
@@ -143,7 +163,7 @@ export default function Play() {
   }
 
   async function handleBoardMove(uci: string) {
-    if (busy || computerThinking || terminal || (mode === "computer" && turn !== "white")) return;
+    if (busy || computerThinking || terminal || (mode === "computer" && turn !== playerSide)) return;
     setBusy(true);
     setError(null);
     try {
@@ -167,8 +187,9 @@ export default function Play() {
     }
   }
 
-  function resetGame(nextMode: PlayMode = mode) {
+  function resetGame(nextMode: PlayMode = mode, nextPreference: PlaySidePreference = sidePreference) {
     setMode(nextMode);
+    setPlayerSide(nextMode === "computer" ? resolvePlayerSide(nextPreference) : "white");
     setGameId(createGameId());
     setFen(START_FEN);
     setStatus("ongoing");
@@ -200,9 +221,16 @@ export default function Play() {
     toast(`ChessIQ strength set to ${next.label}.`);
   }
 
+  function selectSidePreference(id: PlaySidePreference) {
+    const next = getPlaySide(id);
+    setSidePreference(next);
+    window.localStorage.setItem(PLAY_SIDE_STORAGE_KEY, next);
+    resetGame("computer", next);
+  }
+
   function resignGame() {
     if (!moves.length || terminal || busy || computerThinking) return;
-    const side: PlayerSide = mode === "computer" ? "white" : turn;
+    const side: PlayerSide = mode === "computer" ? playerSide : turn;
     const player = side === "white" ? whiteName : blackName;
     if (!window.confirm(`${player} resigns this game?`)) return;
     setResignedSide(side);
@@ -211,7 +239,7 @@ export default function Play() {
 
   function undoMove() {
     if (history.length <= 1 || busy || computerThinking || terminal) return;
-    const pliesToUndo = mode === "computer" && turn === "white" && moves.length >= 2 ? 2 : 1;
+    const pliesToUndo = mode === "computer" && turn === playerSide && moves.length >= 2 ? 2 : 1;
     const nextHistory = history.slice(0, Math.max(1, history.length - pliesToUndo));
     setHistory(nextHistory);
     setFen(nextHistory[nextHistory.length - 1]);
@@ -221,10 +249,30 @@ export default function Play() {
     setMoves(current => current.slice(0, Math.max(0, current.length - pliesToUndo)));
   }
 
-  const blackName = mode === "computer" ? "ChessIQ" : "Black";
-  const blackDetail = mode === "computer" ? `ChessEngine 0.3 · ${difficulty.label}` : "Local player";
-  const whiteName = mode === "computer" ? "You" : "White";
-  const whiteDetail = mode === "computer" ? "Playing White" : "Local player";
+  const whiteName = mode === "computer" ? (playerSide === "white" ? "You" : "ChessIQ") : "White";
+  const blackName = mode === "computer" ? (playerSide === "black" ? "You" : "ChessIQ") : "Black";
+  const whiteDetail = mode === "computer"
+    ? playerSide === "white" ? "Playing White" : `ChessEngine 0.3 · ${difficulty.label}`
+    : "Local player";
+  const blackDetail = mode === "computer"
+    ? playerSide === "black" ? "Playing Black" : `ChessEngine 0.3 · ${difficulty.label}`
+    : "Local player";
+
+  function renderPlayerBar(side: PlayerSide) {
+    const name = side === "white" ? whiteName : blackName;
+    const detail = side === "white" ? whiteDetail : blackDetail;
+    const seconds = side === "white" ? whiteSeconds : blackSeconds;
+    const isUser = mode === "local" || side === playerSide;
+    return (
+      <div className={`play-player-bar ${turn === side && !terminal ? "is-active" : ""}`}>
+        <div className="play-player-identity">
+          <span className={`play-player-avatar ${isUser ? "is-user" : ""}`}>{isUser ? <Users size={19} /> : <Bot size={19} />}</span>
+          <span><strong>{name}</strong><small>{detail}</small></span>
+        </div>
+        <div className="play-clock" aria-label={`${name} clock`}>{formatClock(seconds)}</div>
+      </div>
+    );
+  }
 
   const statusText = resignedSide
     ? `${resignedSide === "white" ? whiteName : blackName} resigned · ${resignedSide === "white" ? blackName : whiteName} wins`
@@ -236,9 +284,11 @@ export default function Play() {
           ? "Checking position"
           : engineTerminal
             ? statusLabel(status, turn)
-            : mode === "computer" && turn === "black"
+            : mode === "computer" && turn !== playerSide
               ? status === "check" ? "ChessIQ to move · Check" : "ChessIQ to move"
-              : statusLabel(status, turn);
+              : mode === "computer"
+                ? status === "check" ? "Your move · Check" : "Your move"
+                : statusLabel(status, turn);
 
   return (
     <main className="app-shell chessiq-shell">
@@ -254,38 +304,28 @@ export default function Play() {
           <div className="play-room-meta" aria-label="Game context">
             <span><Clock3 size={14} /> 10 min</span>
             <span><ShieldCheck size={14} /> First-party ChessEngine</span>
-            <span>{mode === "computer" ? <Bot size={14} /> : <Users size={14} />} {mode === "computer" ? `${difficulty.label} · vs ChessIQ` : "Local game"}</span>
+            <span>{mode === "computer" ? <Bot size={14} /> : <Users size={14} />} {mode === "computer" ? `${difficulty.label} · ${playerSide === "white" ? "White" : "Black"} vs ChessIQ` : "Local game"}</span>
           </div>
         </header>
 
         <section className="play-game-room play-layout" aria-label="Chess game room">
           <div className="play-board-stage">
-            <div className={`play-player-bar ${turn === "black" && !terminal ? "is-active" : ""}`}>
-              <div className="play-player-identity">
-                <span className="play-player-avatar"><Bot size={19} /></span>
-                <span><strong>{blackName}</strong><small>{blackDetail}</small></span>
-              </div>
-              <div className="play-clock" aria-label={`${blackName} clock`}>{formatClock(blackSeconds)}</div>
-            </div>
+            {renderPlayerBar(topSide)}
 
             <div className="play-board-card">
               <LegalChessBoard
                 fen={fen}
                 legalMoves={legalMoves}
                 lastMove={lastMove}
-                disabled={busy || computerThinking || terminal || (mode === "computer" && turn !== "white")}
+                orientation={orientation}
+                ariaLabel={`Playable chess board, ${orientation} orientation`}
+                disabled={busy || computerThinking || terminal || (mode === "computer" && turn !== playerSide)}
                 onMove={handleBoardMove}
               />
               {error && <p className="play-error" role="alert">{error}</p>}
             </div>
 
-            <div className={`play-player-bar ${turn === "white" && !terminal ? "is-active" : ""}`}>
-              <div className="play-player-identity">
-                <span className="play-player-avatar is-user"><Users size={19} /></span>
-                <span><strong>{whiteName}</strong><small>{whiteDetail}</small></span>
-              </div>
-              <div className="play-clock" aria-label={`${whiteName} clock`}>{formatClock(whiteSeconds)}</div>
-            </div>
+            {renderPlayerBar(bottomSide)}
           </div>
 
           <aside className="game-panel play-rail" aria-label="Game panel">
@@ -305,25 +345,48 @@ export default function Play() {
             </div>
 
             {mode === "computer" && (
-              <div className="play-difficulty-section">
-                <div className="game-panel-heading"><span>Engine strength</span><Bot size={16} /></div>
-                <div className="play-difficulty-options" role="group" aria-label="ChessIQ engine strength">
-                  {PLAY_DIFFICULTIES.map(level => (
-                    <button
-                      key={level.id}
-                      type="button"
-                      className={difficulty.id === level.id ? "is-active" : ""}
-                      aria-pressed={difficulty.id === level.id}
-                      disabled={computerThinking}
-                      onClick={() => selectDifficulty(level.id)}
-                    >
-                      <strong>{level.label}</strong>
-                      <span>D{level.depth}</span>
-                    </button>
-                  ))}
+              <>
+                <div className="play-difficulty-section">
+                  <div className="game-panel-heading"><span>Play as</span><Swords size={16} /></div>
+                  <div className="play-difficulty-options" role="group" aria-label="Choose your side">
+                    {PLAY_SIDE_OPTIONS.map(option => (
+                      <button
+                        key={option.id}
+                        type="button"
+                        className={sidePreference === option.id ? "is-active" : ""}
+                        aria-pressed={sidePreference === option.id}
+                        disabled={busy || computerThinking}
+                        onClick={() => selectSidePreference(option.id)}
+                        title={option.detail}
+                      >
+                        <strong>{option.label}</strong>
+                        <span>{option.id === "random" ? "?" : option.id === "white" ? "W" : "B"}</span>
+                      </button>
+                    ))}
+                  </div>
+                  <p>{sidePreference === "random" ? `This game: ${playerSide === "white" ? "White" : "Black"}.` : `Board follows your ${playerSide} side.`} Choice is saved on this device.</p>
                 </div>
-                <p>{difficulty.detail}. Choice is saved on this device.</p>
-              </div>
+
+                <div className="play-difficulty-section">
+                  <div className="game-panel-heading"><span>Engine strength</span><Bot size={16} /></div>
+                  <div className="play-difficulty-options" role="group" aria-label="ChessIQ engine strength">
+                    {PLAY_DIFFICULTIES.map(level => (
+                      <button
+                        key={level.id}
+                        type="button"
+                        className={difficulty.id === level.id ? "is-active" : ""}
+                        aria-pressed={difficulty.id === level.id}
+                        disabled={computerThinking}
+                        onClick={() => selectDifficulty(level.id)}
+                      >
+                        <strong>{level.label}</strong>
+                        <span>D{level.depth}</span>
+                      </button>
+                    ))}
+                  </div>
+                  <p>{difficulty.detail}. Choice is saved on this device.</p>
+                </div>
+              </>
             )}
 
             <div className="game-panel-section game-moves-section">

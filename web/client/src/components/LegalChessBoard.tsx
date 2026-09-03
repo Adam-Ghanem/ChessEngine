@@ -1,11 +1,12 @@
 import { useLayoutEffect, useMemo, useRef, useState } from "react";
 import { ChessPiece, type ChessPieceKind } from "@/components/ChessPiece";
-import { moveTargets, sideToMove } from "@/engine/playState";
+import { sideToMove, moveTargets } from "@/engine/playState";
+import type { PlayerSide } from "@/engine/playSide";
 import type { PieceColor } from "@/types/analysis";
 import "@/play.css";
 
-const files = ["a", "b", "c", "d", "e", "f", "g", "h"];
-const ranks = [8, 7, 6, 5, 4, 3, 2, 1];
+const whiteFiles = ["a", "b", "c", "d", "e", "f", "g", "h"] as const;
+const whiteRanks = [8, 7, 6, 5, 4, 3, 2, 1] as const;
 type BoardPiece = { color: PieceColor; kind: ChessPieceKind };
 type PieceMotion = { piece: BoardPiece; from: string; to: string; key: number };
 
@@ -16,6 +17,7 @@ type LegalChessBoardProps = {
   onMove: (uci: string) => void | Promise<void>;
   ariaLabel?: string;
   lastMove?: string | null;
+  orientation?: PlayerSide;
 };
 
 function decodeFen(fen: string) {
@@ -25,7 +27,7 @@ function decodeFen(fen: string) {
     for (const token of row) {
       if (/\d/.test(token)) fileIndex += Number(token);
       else {
-        board.set(`${files[fileIndex]}${ranks[rowIndex]}`, {
+        board.set(`${whiteFiles[fileIndex]}${whiteRanks[rowIndex]}`, {
           color: token === token.toUpperCase() ? "white" : "black",
           kind: token.toUpperCase() as ChessPieceKind,
         });
@@ -36,26 +38,42 @@ function decodeFen(fen: string) {
   return board;
 }
 
-function squareOrigin(square: string) {
+function boardAxes(orientation: PlayerSide) {
+  if (orientation === "black") {
+    return { files: [...whiteFiles].reverse(), ranks: [...whiteRanks].reverse() };
+  }
+  return { files: [...whiteFiles], ranks: [...whiteRanks] };
+}
+
+function squareOrigin(square: string, files: readonly string[], ranks: readonly number[]) {
   return {
     x: files.indexOf(square[0]) * 12.5,
     y: ranks.indexOf(Number(square[1])) * 12.5,
   };
 }
 
-function squareTravel(from: string, to: string) {
+function squareTravel(from: string, to: string, files: readonly string[], ranks: readonly number[]) {
   return {
     x: (files.indexOf(to[0]) - files.indexOf(from[0])) * 100,
     y: (ranks.indexOf(Number(to[1])) - ranks.indexOf(Number(from[1]))) * 100,
   };
 }
 
-export function LegalChessBoard({ fen, legalMoves, disabled = false, onMove, ariaLabel = "Playable chess board", lastMove = null }: LegalChessBoardProps) {
+export function LegalChessBoard({
+  fen,
+  legalMoves,
+  disabled = false,
+  onMove,
+  ariaLabel = "Playable chess board",
+  lastMove = null,
+  orientation = "white",
+}: LegalChessBoardProps) {
   const [selected, setSelected] = useState<string | null>(null);
   const [motion, setMotion] = useState<PieceMotion | null>(null);
   const previousBoardRef = useRef<Map<string, BoardPiece> | null>(null);
   const motionKeyRef = useRef(0);
   const board = useMemo(() => decodeFen(fen), [fen]);
+  const { files, ranks } = useMemo(() => boardAxes(orientation), [orientation]);
   const turn = sideToMove(fen);
   const targets = useMemo(() => selected ? moveTargets(legalMoves, selected) : [], [legalMoves, selected]);
 
@@ -76,7 +94,7 @@ export function LegalChessBoard({ fen, legalMoves, disabled = false, onMove, ari
     previousBoardRef.current = board;
   }, [board, lastMove]);
 
-  useLayoutEffect(() => setSelected(null), [fen]);
+  useLayoutEffect(() => setSelected(null), [fen, orientation]);
 
   async function chooseSquare(square: string) {
     if (disabled) return;
@@ -101,11 +119,11 @@ export function LegalChessBoard({ fen, legalMoves, disabled = false, onMove, ari
     await onMove(move);
   }
 
-  const motionOrigin = motion ? squareOrigin(motion.from) : null;
-  const motionTravel = motion ? squareTravel(motion.from, motion.to) : null;
+  const motionOrigin = motion ? squareOrigin(motion.from, files, ranks) : null;
+  const motionTravel = motion ? squareTravel(motion.from, motion.to, files, ranks) : null;
 
   return (
-    <div className="play-board" role="grid" aria-label={ariaLabel}>
+    <div className="play-board" role="grid" aria-label={ariaLabel} data-orientation={orientation}>
       {ranks.map((rank, row) => files.map((file, column) => {
         const square = `${file}${rank}`;
         const piece = board.get(square);
