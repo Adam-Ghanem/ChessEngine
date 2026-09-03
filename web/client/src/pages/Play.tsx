@@ -11,7 +11,7 @@ import { sideToMove, statusLabel } from "@/engine/playState";
 import { PLAY_TIME_CONTROLS, PLAY_TIME_CONTROL_STORAGE_KEY, getPlayTimeControl, type PlayTimeControl, type PlayTimeControlId } from "@/engine/playTimeControl";
 import { analyzePosition } from "@/engine/serverEngine";
 import { analysisHrefForFen } from "@/lib/analysisRoute";
-import { saveGameSnapshot, type GameResult, type GameTermination } from "@/lib/gameHistory";
+import { findResumableGame, saveGameSnapshot, type GameResult, type GameTermination } from "@/lib/gameHistory";
 import "@/play.css";
 import "@/play-difficulty.css";
 
@@ -52,34 +52,43 @@ function engineOutcome(status: PlayEngineStatus, turn: PlayerSide): { result?: G
 }
 
 export default function Play() {
-  const [mode, setMode] = useState<PlayMode>("computer");
+  const [resumedGame] = useState(() => {
+    if (typeof window === "undefined") return null;
+    const resumeId = new URLSearchParams(window.location.search).get("resume");
+    return resumeId ? findResumableGame(resumeId) : null;
+  });
+  const [mode, setMode] = useState<PlayMode>(() => resumedGame?.mode ?? "computer");
   const [difficulty, setDifficulty] = useState(() => {
+    if (resumedGame?.mode === "computer" && resumedGame.difficultyId) return getPlayDifficulty(resumedGame.difficultyId);
     if (typeof window === "undefined") return getPlayDifficulty(null);
     return getPlayDifficulty(window.localStorage.getItem(PLAY_DIFFICULTY_STORAGE_KEY));
   });
   const [sidePreference, setSidePreference] = useState<PlaySidePreference>(() => {
+    if (resumedGame?.mode === "computer" && resumedGame.playerSide) return resumedGame.playerSide;
     if (typeof window === "undefined") return getPlaySide(null);
     return getPlaySide(window.localStorage.getItem(PLAY_SIDE_STORAGE_KEY));
   });
   const [playerSide, setPlayerSide] = useState<PlayerSide>(() => {
+    if (resumedGame?.mode === "computer" && resumedGame.playerSide) return resumedGame.playerSide;
     if (typeof window === "undefined") return "white";
     return resolvePlayerSide(getPlaySide(window.localStorage.getItem(PLAY_SIDE_STORAGE_KEY)));
   });
   const [timeControl, setTimeControl] = useState<PlayTimeControl>(() => {
+    if (resumedGame?.timeControlId) return getPlayTimeControl(resumedGame.timeControlId);
     if (typeof window === "undefined") return getPlayTimeControl(null);
     return getPlayTimeControl(window.localStorage.getItem(PLAY_TIME_CONTROL_STORAGE_KEY));
   });
-  const [gameId, setGameId] = useState(createGameId);
-  const [fen, setFen] = useState(START_FEN);
+  const [gameId, setGameId] = useState(() => resumedGame?.id ?? createGameId());
+  const [fen, setFen] = useState(() => resumedGame?.fen ?? START_FEN);
   const [legalMoves, setLegalMoves] = useState<string[]>([]);
-  const [status, setStatus] = useState<PlayEngineStatus>("ongoing");
-  const [history, setHistory] = useState<string[]>([START_FEN]);
-  const [moves, setMoves] = useState<string[]>([]);
+  const [status, setStatus] = useState<PlayEngineStatus>(() => resumedGame?.status ?? "ongoing");
+  const [history, setHistory] = useState<string[]>(() => resumedGame?.positions ?? [START_FEN]);
+  const [moves, setMoves] = useState<string[]>(() => resumedGame?.moves ?? []);
   const [busy, setBusy] = useState(true);
   const [computerThinking, setComputerThinking] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [whiteSeconds, setWhiteSeconds] = useState(() => timeControl.seconds);
-  const [blackSeconds, setBlackSeconds] = useState(() => timeControl.seconds);
+  const [whiteSeconds, setWhiteSeconds] = useState(() => resumedGame?.whiteSeconds ?? timeControl.seconds);
+  const [blackSeconds, setBlackSeconds] = useState(() => resumedGame?.blackSeconds ?? timeControl.seconds);
   const [timedOut, setTimedOut] = useState<TimedOutSide>(null);
   const [resignedSide, setResignedSide] = useState<ResignedSide>(null);
 
@@ -91,6 +100,7 @@ export default function Play() {
   const orientation: PlayerSide = mode === "computer" ? playerSide : "white";
   const topSide = oppositeSide(orientation);
   const bottomSide = orientation;
+  const activeClockSeconds = turn === "white" ? whiteSeconds : blackSeconds;
 
   useEffect(() => {
     let cancelled = false;
@@ -118,14 +128,55 @@ export default function Play() {
   }, [busy, computerThinking, fen, legalMoves, mode, moves.length, playerSide, turn]);
 
   useEffect(() => {
+    if (!resumedGame || resumedGame.id !== gameId || mode !== "computer" || turn === playerSide || busy || computerThinking || terminal || !legalMoves.length) return;
+    void applyComputerReply(fen, legalMoves).catch(cause => {
+      const message = cause instanceof Error ? cause.message : "ChessIQ could not continue the saved game";
+      setError(message);
+      toast.error(message);
+    });
+  }, [busy, computerThinking, fen, gameId, legalMoves, mode, playerSide, resumedGame, terminal, turn]);
+
+  useEffect(() => {
     if (!moves.length) return;
     const outcome = resignedSide
       ? { result: winnerWhen(resignedSide), termination: "resignation" as const }
       : timedOut
         ? { result: winnerWhen(timedOut), termination: "timeout" as const }
         : engineOutcome(status, turn);
-    saveGameSnapshot({ id: gameId, mode, status, fen, moves, positions: history, ...outcome, updatedAt: new Date().toISOString() });
-  }, [fen, gameId, history, mode, moves, resignedSide, status, timedOut, turn]);
+    saveGameSnapshot({
+      id: gameId,
+      mode,
+      status,
+      fen,
+      moves,
+      positions: history,
+      whiteSeconds,
+      blackSeconds,
+      timeControlId: timeControl.id,
+      playerSide: mode === "computer" ? playerSide : undefined,
+      difficultyId: mode === "computer" ? difficulty.id : undefined,
+      ...outcome,
+      updatedAt: new Date().toISOString(),
+    });
+  }, [difficulty.id, fen, gameId, history, mode, moves, playerSide, resignedSide, status, timeControl.id, timedOut, turn]);
+
+  useEffect(() => {
+    if (!clockRunning || !moves.length || activeClockSeconds % 5 !== 0) return;
+    saveGameSnapshot({
+      id: gameId,
+      mode,
+      status,
+      fen,
+      moves,
+      positions: history,
+      whiteSeconds,
+      blackSeconds,
+      timeControlId: timeControl.id,
+      playerSide: mode === "computer" ? playerSide : undefined,
+      difficultyId: mode === "computer" ? difficulty.id : undefined,
+      updatedAt: new Date().toISOString(),
+    });
+  }, [activeClockSeconds, blackSeconds, clockRunning, difficulty.id, fen, gameId, history, mode, moves, playerSide, status, timeControl.id, whiteSeconds]);
 
   useEffect(() => {
     if (!clockRunning) return;
@@ -346,7 +397,7 @@ export default function Play() {
 
           <aside className="game-panel play-rail" aria-label="Game panel">
             <div className="game-panel-status" aria-live="polite">
-              <span><CircleDot size={13} /> {terminal ? "Game finished" : "Live game"}</span>
+              <span><CircleDot size={13} /> {terminal ? "Game finished" : resumedGame?.id === gameId ? "Resumed game" : "Live game"}</span>
               <strong>{statusText}</strong>
               <small>{terminal ? "Start a new game to continue." : `${legalMoves.length} legal moves available`}</small>
             </div>
