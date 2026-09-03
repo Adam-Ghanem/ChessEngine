@@ -106,13 +106,17 @@ export function readGameHistory(storage: StorageLike | null = typeof window === 
   }
 }
 
+export function isResumableGame(game: StoredGame) {
+  if (game.result || game.termination || (game.status !== "ongoing" && game.status !== "check")) return false;
+  if (!game.positions || game.positions.length !== game.moves.length + 1 || game.positions.at(-1) !== game.fen) return false;
+  if (!isClock(game.whiteSeconds) || !isClock(game.blackSeconds) || !isTimeControlId(game.timeControlId)) return false;
+  if (game.mode === "computer" && (!isPlayerSide(game.playerSide) || !isDifficultyId(game.difficultyId))) return false;
+  return true;
+}
+
 export function findResumableGame(gameId: string, storage: StorageLike | null = typeof window === "undefined" ? null : window.localStorage): StoredGame | null {
   const game = readGameHistory(storage).find(item => item.id === gameId);
-  if (!game || game.result || game.termination || (game.status !== "ongoing" && game.status !== "check")) return null;
-  if (!game.positions || game.positions.length !== game.moves.length + 1 || game.positions.at(-1) !== game.fen) return null;
-  if (!isClock(game.whiteSeconds) || !isClock(game.blackSeconds) || !isTimeControlId(game.timeControlId)) return null;
-  if (game.mode === "computer" && (!isPlayerSide(game.playerSide) || !isDifficultyId(game.difficultyId))) return null;
-  return game;
+  return game && isResumableGame(game) ? game : null;
 }
 
 export function saveGameSnapshot(game: StoredGame, storage: StorageLike | null = typeof window === "undefined" ? null : window.localStorage) {
