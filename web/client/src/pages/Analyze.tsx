@@ -8,14 +8,27 @@ import { analyzePosition, type ServerEngineAnalysis } from "@/engine/serverEngin
 import { validateFenShape } from "@/engine/fen";
 import { initialAnalysisFenFromSearch, initialAnalysisGameIdFromSearch } from "@/lib/analysisRoute";
 import { readGameHistory, replayMoveContext } from "@/lib/gameHistory";
+import { classifyMoveReview, type MoveReviewClassification } from "@/lib/gameReview";
 import { gameOutcomeLabel } from "@/lib/gameOutcome";
 import "@/fen-analyze.css";
 
 const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
+type ReviewedMove = {
+  ply: number;
+  playedMove: string;
+  analysis: ServerEngineAnalysis;
+  afterAnalysis: ServerEngineAnalysis | null;
+  classification: MoveReviewClassification | null;
+};
+
 function moveArrow(move: string | undefined) {
   if (!move || !/^[a-h][1-8][a-h][1-8]/.test(move)) return { from: "a1", to: "a1" };
   return { from: move.slice(0, 2), to: move.slice(2, 4) };
+}
+
+function formatMoverScore(scoreCp: number) {
+  return `${scoreCp > 0 ? "+" : ""}${(scoreCp / 100).toFixed(2)}`;
 }
 
 export default function Analyze() {
@@ -37,7 +50,7 @@ export default function Analyze() {
   const [analysis, setAnalysis] = useState<ServerEngineAnalysis | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [moveReview, setMoveReview] = useState<{ ply: number; playedMove: string; analysis: ServerEngineAnalysis } | null>(null);
+  const [moveReview, setMoveReview] = useState<ReviewedMove | null>(null);
   const [reviewLoading, setReviewLoading] = useState(false);
   const [reviewError, setReviewError] = useState<string | null>(null);
 
@@ -45,8 +58,9 @@ export default function Analyze() {
     () => gameContext ? replayMoveContext(gameContext, replayIndex) : null,
     [gameContext, replayIndex],
   );
-  const moveReviewMatchesEngine = moveReview
-    ? moveReview.playedMove.toLowerCase() === moveReview.analysis.bestMove.toLowerCase()
+  const visibleMoveReview = moveReview?.ply === selectedMoveContext?.ply ? moveReview : null;
+  const moveReviewMatchesEngine = visibleMoveReview
+    ? visibleMoveReview.playedMove.toLowerCase() === visibleMoveReview.analysis.bestMove.toLowerCase()
     : false;
 
   const bestArrow = useMemo(() => {
@@ -99,12 +113,49 @@ export default function Analyze() {
   }
 
   async function reviewSelectedMove() {
-    if (!selectedMoveContext) return;
+    if (!selectedMoveContext || !replayPositions) return;
+    const positionAfterFen = replayPositions[selectedMoveContext.ply];
+    if (!positionAfterFen) return;
+
     setReviewLoading(true);
     setReviewError(null);
     try {
-      const result = await analyzePosition(selectedMoveContext.positionBeforeFen, depth);
-      setMoveReview({ ply: selectedMoveContext.ply, playedMove: selectedMoveContext.playedMove, analysis: result });
+      const beforeAnalysis = await analyzePosition(selectedMoveContext.positionBeforeFen, depth);
+      const bestMoveMatch = selectedMoveContext.playedMove.toLowerCase() === beforeAnalysis.bestMove.toLowerCase();
+
+      if (bestMoveMatch) {
+        setMoveReview({
+          ply: selectedMoveContext.ply,
+          playedMove: selectedMoveContext.playedMove,
+          analysis: beforeAnalysis,
+          afterAnalysis: null,
+          classification: classifyMoveReview({ bestMoveMatch: true, beforeScoreCp: beforeAnalysis.scoreCp, afterScoreCp: 0 }),
+        });
+        return;
+      }
+
+      try {
+        const afterAnalysis = await analyzePosition(positionAfterFen, depth);
+        setMoveReview({
+          ply: selectedMoveContext.ply,
+          playedMove: selectedMoveContext.playedMove,
+          analysis: beforeAnalysis,
+          afterAnalysis,
+          classification: classifyMoveReview({
+            bestMoveMatch: false,
+            beforeScoreCp: beforeAnalysis.scoreCp,
+            afterScoreCp: afterAnalysis.scoreCp,
+          }),
+        });
+      } catch {
+        setMoveReview({
+          ply: selectedMoveContext.ply,
+          playedMove: selectedMoveContext.playedMove,
+          analysis: beforeAnalysis,
+          afterAnalysis: null,
+          classification: null,
+        });
+      }
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : "ChessEngine move review failed";
       setReviewError(message);
@@ -127,8 +178,8 @@ export default function Analyze() {
           </div>
           <div className="analysis-hero-meta" aria-label="Analyze status">
             <div><span>Depth</span><strong>{depth}</strong></div>
-            <div><span>Engine</span><strong>{analysis?.engine ?? moveReview?.analysis.engine ?? "ChessEngine"}</strong></div>
-            <div className={loading || reviewLoading ? "engine-status is-live" : "engine-status"}><span>Status</span><strong>{loading || reviewLoading ? "Calculating" : analysis || moveReview ? "Complete" : "Ready"}</strong></div>
+            <div><span>Engine</span><strong>{analysis?.engine ?? visibleMoveReview?.analysis.engine ?? "ChessEngine"}</strong></div>
+            <div className={loading || reviewLoading ? "engine-status is-live" : "engine-status"}><span>Status</span><strong>{loading || reviewLoading ? "Calculating" : analysis || visibleMoveReview ? "Complete" : "Ready"}</strong></div>
           </div>
         </section>
 
@@ -216,13 +267,16 @@ export default function Analyze() {
                         <Sparkles size={15} /> {reviewLoading ? "Reviewing…" : "Review selected move"}
                       </button>
                       {reviewError && <p className="analysis-inline-error" role="alert">{reviewError}</p>}
-                      {moveReview && (
+                      {visibleMoveReview && (
                         <div className={`game-review-engine-result ${moveReviewMatchesEngine ? "is-match" : "is-alternative"}`}>
-                          <div><span>Played</span><strong>{moveReview.playedMove}</strong></div>
-                          <div><span>Engine choice</span><strong>{moveReview.analysis.bestMove}</strong></div>
-                          <div><span>Verdict</span><strong>{moveReviewMatchesEngine ? "Engine agreed" : "Engine preferred another move"}</strong></div>
-                          <div><span>Eval before move</span><strong>{(moveReview.analysis.scoreCp / 100).toFixed(2)}</strong></div>
-                          <p>Depth {moveReview.analysis.depth} · PV {moveReview.analysis.principalVariation || "not returned"}</p>
+                          <div><span>Played</span><strong>{visibleMoveReview.playedMove}</strong></div>
+                          <div><span>Engine choice</span><strong>{visibleMoveReview.analysis.bestMove}</strong></div>
+                          <div><span>Verdict</span><strong>{visibleMoveReview.classification?.label ?? (moveReviewMatchesEngine ? "Best move" : "Engine preferred another move")}</strong></div>
+                          <div><span>Centipawn loss</span><strong>{visibleMoveReview.classification ? visibleMoveReview.classification.centipawnLoss : "Unavailable"}</strong></div>
+                          <div><span>Eval before move</span><strong>{formatMoverScore(visibleMoveReview.analysis.scoreCp)}</strong></div>
+                          <div><span>Eval after move</span><strong>{visibleMoveReview.afterAnalysis ? formatMoverScore(-visibleMoveReview.afterAnalysis.scoreCp) : moveReviewMatchesEngine ? "Same best line" : "Unavailable"}</strong></div>
+                          <p>Depth {visibleMoveReview.analysis.depth} · PV {visibleMoveReview.analysis.principalVariation || "not returned"}</p>
+                          <p>Move-loss thresholds: ≤20 Excellent · ≤50 Good · ≤100 Inaccuracy · ≤200 Mistake · &gt;200 Blunder. Scores are normalized to the player who made the move.</p>
                         </div>
                       )}
                     </div>
