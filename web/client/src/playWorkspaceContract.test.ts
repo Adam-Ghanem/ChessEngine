@@ -6,7 +6,7 @@ describe("production Play workspace", () => {
     const app = readFileSync(new URL("./App.tsx", import.meta.url), "utf8");
     const play = readFileSync(new URL("./pages/Play.tsx", import.meta.url), "utf8");
     expect(app).toContain('path="/play"');
-    expect(app).toContain('from "./pages/Play"');
+    expect(app).toContain('lazy(() => import("./pages/Play"))');
     expect(play).toContain('ProductHeader activePath="/play"');
     expect(play).not.toContain("Play workspace is coming next.");
   });
