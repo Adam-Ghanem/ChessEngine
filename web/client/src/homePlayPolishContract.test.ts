@@ -15,7 +15,7 @@ describe("ChessIQ Home and Play premium polish", () => {
     const play = readFileSync(new URL("./pages/Play.tsx", import.meta.url), "utf8");
 
     expect(play).toContain("play-room-header");
-    expect(play).toContain("10 min");
+    expect(play).toContain("timeControl.label");
     expect(play).toContain("First-party ChessEngine");
   });
 

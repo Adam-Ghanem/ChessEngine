@@ -8,6 +8,7 @@ import { PLAY_DIFFICULTIES, PLAY_DIFFICULTY_STORAGE_KEY, getPlayDifficulty, type
 import { fetchLegalMoves, playMove, type PlayEngineStatus } from "@/engine/playEngine";
 import { PLAY_SIDE_OPTIONS, PLAY_SIDE_STORAGE_KEY, getPlaySide, oppositeSide, resolvePlayerSide, type PlayerSide, type PlaySidePreference } from "@/engine/playSide";
 import { sideToMove, statusLabel } from "@/engine/playState";
+import { PLAY_TIME_CONTROLS, PLAY_TIME_CONTROL_STORAGE_KEY, getPlayTimeControl, type PlayTimeControl, type PlayTimeControlId } from "@/engine/playTimeControl";
 import { analyzePosition } from "@/engine/serverEngine";
 import { analysisHrefForFen } from "@/lib/analysisRoute";
 import { saveGameSnapshot, type GameResult, type GameTermination } from "@/lib/gameHistory";
@@ -15,7 +16,6 @@ import "@/play.css";
 import "@/play-difficulty.css";
 
 const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
-const INITIAL_CLOCK_SECONDS = 10 * 60;
 type PlayMode = "local" | "computer";
 type TimedOutSide = PlayerSide | null;
 type ResignedSide = PlayerSide | null;
@@ -65,6 +65,10 @@ export default function Play() {
     if (typeof window === "undefined") return "white";
     return resolvePlayerSide(getPlaySide(window.localStorage.getItem(PLAY_SIDE_STORAGE_KEY)));
   });
+  const [timeControl, setTimeControl] = useState<PlayTimeControl>(() => {
+    if (typeof window === "undefined") return getPlayTimeControl(null);
+    return getPlayTimeControl(window.localStorage.getItem(PLAY_TIME_CONTROL_STORAGE_KEY));
+  });
   const [gameId, setGameId] = useState(createGameId);
   const [fen, setFen] = useState(START_FEN);
   const [legalMoves, setLegalMoves] = useState<string[]>([]);
@@ -74,8 +78,8 @@ export default function Play() {
   const [busy, setBusy] = useState(true);
   const [computerThinking, setComputerThinking] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [whiteSeconds, setWhiteSeconds] = useState(INITIAL_CLOCK_SECONDS);
-  const [blackSeconds, setBlackSeconds] = useState(INITIAL_CLOCK_SECONDS);
+  const [whiteSeconds, setWhiteSeconds] = useState(() => timeControl.seconds);
+  const [blackSeconds, setBlackSeconds] = useState(() => timeControl.seconds);
   const [timedOut, setTimedOut] = useState<TimedOutSide>(null);
   const [resignedSide, setResignedSide] = useState<ResignedSide>(null);
 
@@ -187,7 +191,11 @@ export default function Play() {
     }
   }
 
-  function resetGame(nextMode: PlayMode = mode, nextPreference: PlaySidePreference = sidePreference) {
+  function resetGame(
+    nextMode: PlayMode = mode,
+    nextPreference: PlaySidePreference = sidePreference,
+    nextTimeControl: PlayTimeControl = timeControl,
+  ) {
     setMode(nextMode);
     setPlayerSide(nextMode === "computer" ? resolvePlayerSide(nextPreference) : "white");
     setGameId(createGameId());
@@ -197,8 +205,8 @@ export default function Play() {
     setMoves([]);
     setError(null);
     setComputerThinking(false);
-    setWhiteSeconds(INITIAL_CLOCK_SECONDS);
-    setBlackSeconds(INITIAL_CLOCK_SECONDS);
+    setWhiteSeconds(nextTimeControl.seconds);
+    setBlackSeconds(nextTimeControl.seconds);
     setTimedOut(null);
     setResignedSide(null);
     if (fen === START_FEN) {
@@ -226,6 +234,14 @@ export default function Play() {
     setSidePreference(next);
     window.localStorage.setItem(PLAY_SIDE_STORAGE_KEY, next);
     resetGame("computer", next);
+  }
+
+  function selectTimeControl(id: PlayTimeControlId) {
+    const next = getPlayTimeControl(id);
+    setTimeControl(next);
+    window.localStorage.setItem(PLAY_TIME_CONTROL_STORAGE_KEY, next.id);
+    resetGame(mode, sidePreference, next);
+    toast(`Time control set to ${next.label}.`);
   }
 
   function resignGame() {
@@ -302,7 +318,7 @@ export default function Play() {
             <p>Every move stays legal, reviewable, and ready to carry into analysis.</p>
           </div>
           <div className="play-room-meta" aria-label="Game context">
-            <span><Clock3 size={14} /> 10 min</span>
+            <span><Clock3 size={14} /> {timeControl.label}</span>
             <span><ShieldCheck size={14} /> First-party ChessEngine</span>
             <span>{mode === "computer" ? <Bot size={14} /> : <Users size={14} />} {mode === "computer" ? `${difficulty.label} · ${playerSide === "white" ? "White" : "Black"} vs ChessIQ` : "Local game"}</span>
           </div>
@@ -342,6 +358,27 @@ export default function Play() {
               <button type="button" className={mode === "local" ? "is-active" : ""} aria-pressed={mode === "local"} onClick={() => resetGame("local")} disabled={busy || computerThinking}>
                 <Users size={16} /><span><strong>Local</strong><small>two players</small></span>
               </button>
+            </div>
+
+            <div className="play-difficulty-section play-time-control-section">
+              <div className="game-panel-heading"><span>Time control</span><Clock3 size={16} /></div>
+              <div className="play-time-control-options" role="group" aria-label="Game time control">
+                {PLAY_TIME_CONTROLS.map(control => (
+                  <button
+                    key={control.id}
+                    type="button"
+                    className={timeControl.id === control.id ? "is-active" : ""}
+                    aria-pressed={timeControl.id === control.id}
+                    disabled={busy || computerThinking}
+                    onClick={() => selectTimeControl(control.id)}
+                    title={`${control.detail} game — ${control.label} per side`}
+                  >
+                    <strong>{control.minutes}</strong>
+                    <span>min</span>
+                  </button>
+                ))}
+              </div>
+              <p>{timeControl.detail} clock. Selecting a preset starts a fresh game and saves the choice on this device.</p>
             </div>
 
             {mode === "computer" && (
@@ -410,7 +447,7 @@ export default function Play() {
               <button type="button" className="play-resign-action" onClick={resignGame} disabled={!moves.length || busy || computerThinking || terminal}><Flag size={15} /> Resign</button>
             </div>
             <Link href={analysisHrefForFen(fen)} className="primary-action play-analyze-link">Open Analyze</Link>
-            {timedOut && <div className="game-timeout-note"><Flag size={14} /> Time control: 10 minutes</div>}
+            {timedOut && <div className="game-timeout-note"><Flag size={14} /> Time control: {timeControl.label}</div>}
           </aside>
         </section>
       </div>
