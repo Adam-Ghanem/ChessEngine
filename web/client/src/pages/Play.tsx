@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ArrowLeft, Bot, CircleDot, Clock3, Flag, RotateCcw, ShieldCheck, Swords, Users } from "lucide-react";
 import { Link } from "wouter";
 import { toast } from "sonner";
 import { LegalChessBoard } from "@/components/LegalChessBoard";
 import { ProductHeader } from "@/components/ProductHeader";
+import { elapsedClockSeconds } from "@/engine/playClock";
 import { PLAY_DIFFICULTIES, PLAY_DIFFICULTY_STORAGE_KEY, getPlayDifficulty, type PlayDifficultyId } from "@/engine/playDifficulty";
 import { fetchLegalMoves, playMove, type PlayEngineStatus } from "@/engine/playEngine";
 import { PLAY_SIDE_OPTIONS, PLAY_SIDE_STORAGE_KEY, getPlaySide, oppositeSide, resolvePlayerSide, type PlayerSide, type PlaySidePreference } from "@/engine/playSide";
@@ -91,6 +92,7 @@ export default function Play() {
   const [blackSeconds, setBlackSeconds] = useState(() => resumedGame?.blackSeconds ?? timeControl.seconds);
   const [timedOut, setTimedOut] = useState<TimedOutSide>(null);
   const [resignedSide, setResignedSide] = useState<ResignedSide>(null);
+  const lastClockTickAtRef = useRef<number | null>(null);
 
   const turn = sideToMove(fen);
   const engineTerminal = isTerminal(status);
@@ -179,12 +181,36 @@ export default function Play() {
   }, [activeClockSeconds, blackSeconds, clockRunning, difficulty.id, fen, gameId, history, mode, moves, playerSide, status, timeControl.id, whiteSeconds]);
 
   useEffect(() => {
-    if (!clockRunning) return;
-    const timer = window.setInterval(() => {
-      if (turn === "white") setWhiteSeconds(current => Math.max(0, current - 1));
-      else setBlackSeconds(current => Math.max(0, current - 1));
-    }, 1000);
-    return () => window.clearInterval(timer);
+    if (!clockRunning) {
+      lastClockTickAtRef.current = null;
+      return;
+    }
+
+    lastClockTickAtRef.current = Date.now();
+    const tick = () => {
+      const previousTickAt = lastClockTickAtRef.current;
+      const now = Date.now();
+      if (previousTickAt === null) {
+        lastClockTickAtRef.current = now;
+        return;
+      }
+
+      const elapsedSeconds = elapsedClockSeconds(previousTickAt, now);
+      if (elapsedSeconds <= 0) return;
+      lastClockTickAtRef.current = previousTickAt + elapsedSeconds * 1000;
+
+      if (turn === "white") setWhiteSeconds(current => Math.max(0, current - elapsedSeconds));
+      else setBlackSeconds(current => Math.max(0, current - elapsedSeconds));
+    };
+
+    const timer = window.setInterval(tick, 250);
+    document.addEventListener("visibilitychange", tick);
+    return () => {
+      tick();
+      window.clearInterval(timer);
+      document.removeEventListener("visibilitychange", tick);
+      lastClockTickAtRef.current = null;
+    };
   }, [clockRunning, turn]);
 
   useEffect(() => {
