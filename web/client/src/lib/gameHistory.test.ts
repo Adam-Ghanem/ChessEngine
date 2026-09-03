@@ -67,7 +67,7 @@ describe("game history resume", () => {
       blackSeconds: 165,
       timeControlId: "3",
       playerSide: "black",
-      difficultyId: "club",
+      difficultyId: "hard",
     };
     const finished = {
       ...game("finished"),
@@ -83,7 +83,7 @@ describe("game history resume", () => {
       blackSeconds: 165,
       timeControlId: "3",
       playerSide: "black",
-      difficultyId: "club",
+      difficultyId: "hard",
     });
     expect(findResumableGame("finished", storage)).toBeNull();
     expect(findResumableGame("missing", storage)).toBeNull();
