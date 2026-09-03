@@ -26,6 +26,12 @@ export type StoredGame = {
   updatedAt: string;
 };
 
+export type ReplayMoveContext = {
+  ply: number;
+  positionBeforeFen: string;
+  playedMove: string;
+};
+
 type StorageLike = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 
 function isGameResult(value: unknown): value is GameResult {
@@ -93,6 +99,17 @@ function isStoredGame(value: unknown): value is StoredGame {
     && hasValidOptionalSession(game)
     && hasValidOutcome(game)
     && typeof game.updatedAt === "string";
+}
+
+export function replayMoveContext(game: StoredGame, replayIndex: number): ReplayMoveContext | null {
+  if (!Number.isInteger(replayIndex) || replayIndex < 1 || replayIndex > game.moves.length) return null;
+  if (!game.positions || game.positions.length !== game.moves.length + 1 || game.positions.at(-1) !== game.fen) return null;
+
+  const positionBeforeFen = game.positions[replayIndex - 1];
+  const playedMove = game.moves[replayIndex - 1];
+  if (!positionBeforeFen || !playedMove) return null;
+
+  return { ply: replayIndex, positionBeforeFen, playedMove };
 }
 
 export function readGameHistory(storage: StorageLike | null = typeof window === "undefined" ? null : window.localStorage): StoredGame[] {
