@@ -6,7 +6,6 @@ import { classifyMoveReview } from "@/lib/gameReview";
 type ReplayMoveContext = {
   ply: number;
   positionBeforeFen: string;
-  positionAfterFen: string;
   playedMove: string;
 };
 
@@ -25,14 +24,13 @@ const game: StoredGame = {
 };
 
 describe("selected move review context", () => {
-  it("derives the positions around the selected recorded move", () => {
+  it("derives the position before the selected recorded move", () => {
     expect(replayMoveContext).toBeTypeOf("function");
     if (!replayMoveContext) return;
 
     expect(replayMoveContext(game, 2)).toEqual({
       ply: 2,
       positionBeforeFen: "fen-after-1",
-      positionAfterFen: "fen-after-2",
       playedMove: "e7e5",
     });
   });
