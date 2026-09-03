@@ -1,11 +1,11 @@
 import { useState } from "react";
-import { Clock3, Copy, Gamepad2, History, Sparkles, Trash2 } from "lucide-react";
+import { Clock3, Copy, Gamepad2, History, PlayCircle, Sparkles, Trash2 } from "lucide-react";
 import { Link } from "wouter";
 import { toast } from "sonner";
 import { BrandMark } from "@/components/BrandMark";
 import { ProductHeader } from "@/components/ProductHeader";
 import { analysisHrefForGame } from "@/lib/analysisRoute";
-import { clearGameHistory, deleteGameHistory, readGameHistory, type StoredGame } from "@/lib/gameHistory";
+import { clearGameHistory, deleteGameHistory, isResumableGame, readGameHistory, type StoredGame } from "@/lib/gameHistory";
 import { gameOutcomeLabel } from "@/lib/gameOutcome";
 import "../games.css";
 
@@ -71,6 +71,9 @@ export default function Games() {
                   <div className="game-history-actions">
                     <button type="button" onClick={() => copyFen(game.fen)}><Copy size={14} /> Copy FEN</button>
                     <button type="button" className="game-delete-action" onClick={() => deleteSavedGame(game)} aria-label={`Delete saved game from ${new Date(game.updatedAt).toLocaleString()}`}><Trash2 size={14} /> Delete</button>
+                    {isResumableGame(game) && (
+                      <Link href={`/play?resume=${encodeURIComponent(game.id)}`} className="primary-action"><PlayCircle size={14} /> Resume game</Link>
+                    )}
                     <Link href={analysisHrefForGame(game.fen, game.id)} className="primary-action">Review in Analyze</Link>
                   </div>
                 </article>
