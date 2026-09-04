@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import * as gameHistory from "@/lib/gameHistory";
 import type { StoredGame } from "@/lib/gameHistory";
 import { classifyMoveReview, summarizeMoveReviews } from "@/lib/gameReview";
-import { readGameReviewCache, writeGameReviewCache } from "@/lib/gameReviewCache";
+import { readGameReviewCache, readGameReviewProgress, writeGameReviewCache } from "@/lib/gameReviewCache";
 
 type ReplayMoveContext = {
   ply: number;
@@ -138,10 +138,27 @@ describe("persisted game review cache", () => {
     expect(readGameReviewCache(storage, game.id, 6, [...game.moves, "g1f3"])).toEqual({});
   });
 
+  it("exposes truthful review progress regardless of the cached engine depth", () => {
+    const storage = memoryStorage();
+    writeGameReviewCache(storage, game.id, 8, game.moves, {
+      1: {
+        ply: 1,
+        playedMove: "e2e4",
+        analysis: { bestMove: "e2e4", scoreCp: 26, depth: 8, principalVariation: "e2e4 e7e5", engine: "ChessEngine" },
+        afterAnalysis: null,
+        classification: { label: "Best move", centipawnLoss: 0 },
+      },
+    });
+
+    expect(readGameReviewProgress(storage, game.id, game.moves)).toEqual({ reviewed: 1, total: 2, depth: 8 });
+    expect(readGameReviewProgress(storage, game.id, [...game.moves, "g1f3"])).toBeNull();
+  });
+
   it("ignores malformed cached review data instead of breaking Analyze", () => {
     const storage = memoryStorage();
     storage.setItem("chessiq:game-review:v1:review-game", "not-json");
 
     expect(readGameReviewCache(storage, game.id, 6, game.moves)).toEqual({});
+    expect(readGameReviewProgress(storage, game.id, game.moves)).toBeNull();
   });
 });
