@@ -23,6 +23,25 @@ type MoveReviewInput = {
 };
 
 /**
+ * Return the one-based plies that still need an engine review. Keeping this
+ * deterministic lets the UI resume a partially reviewed game without
+ * re-running already cached first-party ChessEngine work.
+ */
+export function pendingReviewPlies(totalMoves: number, reviewedPlies: Iterable<number>): number[] {
+  const safeTotal = Math.max(0, Math.floor(totalMoves));
+  const reviewed = new Set<number>();
+  for (const ply of reviewedPlies) {
+    if (Number.isInteger(ply) && ply >= 1 && ply <= safeTotal) reviewed.add(ply);
+  }
+
+  const pending: number[] = [];
+  for (let ply = 1; ply <= safeTotal; ply += 1) {
+    if (!reviewed.has(ply)) pending.push(ply);
+  }
+  return pending;
+}
+
+/**
  * Engine scores are reported from the side-to-move perspective. After the
  * recorded move the opponent is to move, so the mover's resulting score is
  * the negated after-score. CPL is therefore before + after.
