@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { BarChart3, ChevronLeft, ChevronRight, Gauge, History, SkipForward, Sparkles, Swords } from "lucide-react";
 import { Link } from "wouter";
 import { toast } from "sonner";
@@ -9,6 +9,7 @@ import { validateFenShape } from "@/engine/fen";
 import { initialAnalysisFenFromSearch, initialAnalysisGameIdFromSearch } from "@/lib/analysisRoute";
 import { readGameHistory, replayMoveContext } from "@/lib/gameHistory";
 import { classifyMoveReview, pendingReviewPlies, rankCriticalReviewMoments, summarizeMoveReviews, summarizeMoveReviewsBySide, type MoveReviewClassification } from "@/lib/gameReview";
+import { readGameReviewCache, writeGameReviewCache } from "@/lib/gameReviewCache";
 import { gameOutcomeLabel } from "@/lib/gameOutcome";
 import "@/fen-analyze.css";
 import "@/game-review-side-performance.css";
@@ -60,6 +61,14 @@ export default function Analyze() {
   const [reviewLoading, setReviewLoading] = useState(false);
   const [reviewAllProgress, setReviewAllProgress] = useState<ReviewAllProgress | null>(null);
   const [reviewError, setReviewError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!gameContext || typeof window === "undefined") {
+      setMoveReviews({});
+      return;
+    }
+    setMoveReviews(readGameReviewCache(window.localStorage, gameContext.id, depth, gameContext.moves));
+  }, [gameContext, depth]);
 
   const selectedMoveContext = useMemo(
     () => gameContext ? replayMoveContext(gameContext, replayIndex) : null,
@@ -132,7 +141,13 @@ export default function Analyze() {
   }
 
   function cacheMoveReview(review: ReviewedMove) {
-    setMoveReviews(current => ({ ...current, [review.ply]: review }));
+    setMoveReviews(current => {
+      const next = { ...current, [review.ply]: review };
+      if (gameContext && typeof window !== "undefined") {
+        writeGameReviewCache(window.localStorage, gameContext.id, depth, gameContext.moves, next);
+      }
+      return next;
+    });
   }
 
   async function analyzeRecordedMove(ply: number): Promise<ReviewedMove | null> {
