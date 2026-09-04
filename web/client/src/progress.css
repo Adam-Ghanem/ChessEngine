@@ -210,6 +210,74 @@
   color: var(--iq-teal);
 }
 
+.progress-form {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding-top: 16px;
+  border-top: 1px solid color-mix(in srgb, var(--iq-border) 82%, transparent);
+}
+
+.progress-form-heading {
+  display: grid;
+  gap: 4px;
+}
+
+.progress-form-heading > span {
+  color: var(--iq-text);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.progress-form-heading > small,
+.progress-form-empty {
+  color: var(--iq-text-faint);
+  font: 500 9px/1.45 "JetBrains Mono", monospace;
+  letter-spacing: .035em;
+}
+
+.progress-form-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.progress-form-result {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--iq-border);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--iq-surface-raised) 84%, transparent);
+  color: var(--iq-text-soft);
+  font: 750 12px/1 "JetBrains Mono", monospace;
+}
+
+.progress-form-result.is-win {
+  border-color: color-mix(in srgb, var(--iq-teal) 45%, var(--iq-border));
+  background: color-mix(in srgb, var(--iq-teal) 12%, var(--iq-surface-raised));
+  color: var(--iq-teal);
+}
+
+.progress-form-result.is-draw {
+  border-color: color-mix(in srgb, var(--iq-violet-bright) 42%, var(--iq-border));
+  background: color-mix(in srgb, var(--iq-violet-soft) 54%, var(--iq-surface-raised));
+  color: var(--iq-violet-bright);
+}
+
+.progress-form-empty {
+  margin: 0;
+  text-align: right;
+}
+
 .progress-focus {
   display: flex;
   align-items: center;
@@ -309,6 +377,10 @@
     min-width: 0;
   }
 
+  .progress-form {
+    grid-column: auto;
+  }
+
   .progress-evidence {
     grid-template-columns: 1fr;
   }
@@ -343,6 +415,20 @@
 
   .progress-results-grid dd {
     font-size: 21px;
+  }
+
+  .progress-form {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .progress-form-list {
+    justify-content: flex-start;
+  }
+
+  .progress-form-empty {
+    text-align: left;
   }
 
   .progress-focus {
