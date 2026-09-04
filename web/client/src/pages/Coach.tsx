@@ -3,9 +3,10 @@ import { Link } from "wouter";
 import { BrandMark } from "@/components/BrandMark";
 import { ProductHeader } from "@/components/ProductHeader";
 import { LEARN_STORAGE_KEY, LESSONS } from "@/data/lessons";
+import { analysisHrefForGame } from "@/lib/analysisRoute";
 import { readGameHistory } from "@/lib/gameHistory";
 import { readNumberProgress } from "@/lib/localProgress";
-import { summarizeComputerGameOutcomes } from "@/lib/progressStats";
+import { latestCompletedComputerGame, summarizeComputerGameOutcomes } from "@/lib/progressStats";
 import { PUZZLE_IDS, PUZZLE_STORAGE_KEY } from "@/lib/puzzleCatalog";
 import "../coach.css";
 
@@ -71,14 +72,20 @@ const analyzeStep: TrainingStep = {
   icon: Brain,
 };
 
-function buildTrainingQueue(completedComputerGames: number, lessons: number, puzzles: number): TrainingStep[] {
+function buildTrainingQueue(completedComputerGames: number, lessons: number, puzzles: number, reviewHref: string): TrainingStep[] {
   const queue: TrainingStep[] = [];
 
   if (completedComputerGames === 0) queue.push(playStep);
   if (puzzles < 3) queue.push(puzzleStep);
   if (lessons < LESSONS.length) queue.push(learnStep);
 
-  queue.push(analyzeStep);
+  queue.push(completedComputerGames > 0 ? {
+    ...analyzeStep,
+    title: "Review your latest ChessIQ game",
+    copy: "Open the latest completed verified game directly in Game Review and use the first-party ChessEngine to find the decisions worth revisiting.",
+    href: reviewHref,
+    action: "Review latest game",
+  } : analyzeStep);
 
   if (queue.length < 3) {
     queue.push(puzzleStep, learnStep);
@@ -92,9 +99,13 @@ export default function Coach() {
   const savedGames = gameHistory.length;
   const gameOutcomes = summarizeComputerGameOutcomes(gameHistory);
   const completedComputerGames = gameOutcomes.completed;
+  const latestCompletedGame = latestCompletedComputerGame(gameHistory);
+  const reviewHref = latestCompletedGame
+    ? analysisHrefForGame(latestCompletedGame.fen, latestCompletedGame.id)
+    : "/analyze";
   const lessons = countCompletedLessons();
   const puzzles = countValidSolvedPuzzles();
-  const trainingQueue = buildTrainingQueue(completedComputerGames, lessons, puzzles);
+  const trainingQueue = buildTrainingQueue(completedComputerGames, lessons, puzzles, reviewHref);
   const primaryPlan = trainingQueue[0];
   const PlanIcon = primaryPlan.icon;
 
@@ -140,7 +151,7 @@ export default function Coach() {
                 <div className="coach-plan-step-number">{index === 0 ? "Next" : index === 1 ? "Then" : "After"}</div>
                 <div className="coach-plan-step-icon"><StepIcon size={18} /></div>
                 <div className="coach-plan-step-copy">
-                  <span>{step.eyebrow}</span>
+                  <span>{step.eyrow}</span>
                   <strong>{step.title}</strong>
                 </div>
                 <Link href={step.href} aria-label={`${step.action}: ${step.title}`}>{step.action}</Link>
