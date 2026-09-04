@@ -8,7 +8,7 @@ import { analyzePosition, type ServerEngineAnalysis } from "@/engine/serverEngin
 import { validateFenShape } from "@/engine/fen";
 import { initialAnalysisFenFromSearch, initialAnalysisGameIdFromSearch } from "@/lib/analysisRoute";
 import { readGameHistory, replayMoveContext } from "@/lib/gameHistory";
-import { classifyMoveReview, summarizeMoveReviews, type MoveReviewClassification } from "@/lib/gameReview";
+import { classifyMoveReview, pendingReviewPlies, summarizeMoveReviews, type MoveReviewClassification } from "@/lib/gameReview";
 import { gameOutcomeLabel } from "@/lib/gameOutcome";
 import "@/fen-analyze.css";
 
@@ -20,6 +20,11 @@ type ReviewedMove = {
   analysis: ServerEngineAnalysis;
   afterAnalysis: ServerEngineAnalysis | null;
   classification: MoveReviewClassification | null;
+};
+
+type ReviewAllProgress = {
+  completed: number;
+  total: number;
 };
 
 function moveArrow(move: string | undefined) {
@@ -52,6 +57,7 @@ export default function Analyze() {
   const [error, setError] = useState<string | null>(null);
   const [moveReviews, setMoveReviews] = useState<Record<number, ReviewedMove>>({});
   const [reviewLoading, setReviewLoading] = useState(false);
+  const [reviewAllProgress, setReviewAllProgress] = useState<ReviewAllProgress | null>(null);
   const [reviewError, setReviewError] = useState<string | null>(null);
 
   const selectedMoveContext = useMemo(
@@ -63,6 +69,11 @@ export default function Analyze() {
     () => summarizeMoveReviews(Object.values(moveReviews).map(review => review.classification)),
     [moveReviews],
   );
+  const remainingReviewPlies = useMemo(
+    () => pendingReviewPlies(gameContext?.moves.length ?? 0, Object.keys(moveReviews).map(Number)),
+    [gameContext, moveReviews],
+  );
+  const reviewBusy = reviewLoading || reviewAllProgress !== null;
   const moveReviewMatchesEngine = visibleMoveReview
     ? visibleMoveReview.playedMove.toLowerCase() === visibleMoveReview.analysis.bestMove.toLowerCase()
     : false;
@@ -104,6 +115,48 @@ export default function Analyze() {
     setMoveReviews(current => ({ ...current, [review.ply]: review }));
   }
 
+  async function analyzeRecordedMove(ply: number): Promise<ReviewedMove | null> {
+    if (!gameContext || !replayPositions) return null;
+    const context = replayMoveContext(gameContext, ply);
+    const positionAfterFen = replayPositions[ply];
+    if (!context || !positionAfterFen) return null;
+
+    const beforeAnalysis = await analyzePosition(context.positionBeforeFen, depth);
+    const bestMoveMatch = context.playedMove.toLowerCase() === beforeAnalysis.bestMove.toLowerCase();
+    if (bestMoveMatch) {
+      return {
+        ply: context.ply,
+        playedMove: context.playedMove,
+        analysis: beforeAnalysis,
+        afterAnalysis: null,
+        classification: classifyMoveReview({ bestMoveMatch: true, beforeScoreCp: beforeAnalysis.scoreCp, afterScoreCp: 0 }),
+      };
+    }
+
+    try {
+      const afterAnalysis = await analyzePosition(positionAfterFen, depth);
+      return {
+        ply: context.ply,
+        playedMove: context.playedMove,
+        analysis: beforeAnalysis,
+        afterAnalysis,
+        classification: classifyMoveReview({
+          bestMoveMatch: false,
+          beforeScoreCp: beforeAnalysis.scoreCp,
+          afterScoreCp: afterAnalysis.scoreCp,
+        }),
+      };
+    } catch {
+      return {
+        ply: context.ply,
+        playedMove: context.playedMove,
+        analysis: beforeAnalysis,
+        afterAnalysis: null,
+        classification: null,
+      };
+    }
+  }
+
   async function runAnalysis() {
     setLoading(true);
     setError(null);
@@ -121,54 +174,40 @@ export default function Analyze() {
 
   async function reviewSelectedMove() {
     if (!selectedMoveContext || !replayPositions) return;
-    const positionAfterFen = replayPositions[selectedMoveContext.ply];
-    if (!positionAfterFen) return;
 
     setReviewLoading(true);
     setReviewError(null);
     try {
-      const beforeAnalysis = await analyzePosition(selectedMoveContext.positionBeforeFen, depth);
-      const bestMoveMatch = selectedMoveContext.playedMove.toLowerCase() === beforeAnalysis.bestMove.toLowerCase();
-
-      if (bestMoveMatch) {
-        cacheMoveReview({
-          ply: selectedMoveContext.ply,
-          playedMove: selectedMoveContext.playedMove,
-          analysis: beforeAnalysis,
-          afterAnalysis: null,
-          classification: classifyMoveReview({ bestMoveMatch: true, beforeScoreCp: beforeAnalysis.scoreCp, afterScoreCp: 0 }),
-        });
-        return;
-      }
-
-      try {
-        const afterAnalysis = await analyzePosition(positionAfterFen, depth);
-        cacheMoveReview({
-          ply: selectedMoveContext.ply,
-          playedMove: selectedMoveContext.playedMove,
-          analysis: beforeAnalysis,
-          afterAnalysis,
-          classification: classifyMoveReview({
-            bestMoveMatch: false,
-            beforeScoreCp: beforeAnalysis.scoreCp,
-            afterScoreCp: afterAnalysis.scoreCp,
-          }),
-        });
-      } catch {
-        cacheMoveReview({
-          ply: selectedMoveContext.ply,
-          playedMove: selectedMoveContext.playedMove,
-          analysis: beforeAnalysis,
-          afterAnalysis: null,
-          classification: null,
-        });
-      }
+      const review = await analyzeRecordedMove(selectedMoveContext.ply);
+      if (review) cacheMoveReview(review);
     } catch (cause) {
       const message = cause instanceof Error ? cause.message : "ChessEngine move review failed";
       setReviewError(message);
       toast.error(message);
     } finally {
       setReviewLoading(false);
+    }
+  }
+
+  async function reviewRemainingMoves() {
+    if (!gameContext || !replayPositions || remainingReviewPlies.length === 0) return;
+
+    const queue = [...remainingReviewPlies];
+    setReviewError(null);
+    setReviewAllProgress({ completed: 0, total: queue.length });
+    try {
+      for (let index = 0; index < queue.length; index += 1) {
+        const review = await analyzeRecordedMove(queue[index]);
+        if (review) cacheMoveReview(review);
+        setReviewAllProgress({ completed: index + 1, total: queue.length });
+      }
+      toast.success(`Reviewed ${queue.length} saved-game move${queue.length === 1 ? "" : "s"}.`);
+    } catch (cause) {
+      const message = cause instanceof Error ? cause.message : "ChessEngine full game review failed";
+      setReviewError(`Full review stopped: ${message}`);
+      toast.error(message);
+    } finally {
+      setReviewAllProgress(null);
     }
   }
 
@@ -186,7 +225,7 @@ export default function Analyze() {
           <div className="analysis-hero-meta" aria-label="Analyze status">
             <div><span>Depth</span><strong>{depth}</strong></div>
             <div><span>Engine</span><strong>{analysis?.engine ?? visibleMoveReview?.analysis.engine ?? "ChessEngine"}</strong></div>
-            <div className={loading || reviewLoading ? "engine-status is-live" : "engine-status"}><span>Status</span><strong>{loading || reviewLoading ? "Calculating" : analysis || visibleMoveReview ? "Complete" : "Ready"}</strong></div>
+            <div className={loading || reviewBusy ? "engine-status is-live" : "engine-status"}><span>Status</span><strong>{loading || reviewBusy ? "Calculating" : analysis || visibleMoveReview ? "Complete" : "Ready"}</strong></div>
           </div>
         </section>
 
@@ -272,18 +311,21 @@ export default function Analyze() {
                       </div>
                     )}
                     <div className="game-review-replay-actions">
-                      <button type="button" onClick={() => selectReplayPosition(replayIndex - 1)} disabled={replayIndex === 0} aria-label="Previous position"><ChevronLeft size={16} /> Previous</button>
-                      <button type="button" onClick={() => selectReplayPosition(replayIndex + 1)} disabled={replayIndex >= replayPositions.length - 1} aria-label="Next position">Next <ChevronRight size={16} /></button>
+                      <button type="button" onClick={() => selectReplayPosition(replayIndex - 1)} disabled={replayIndex === 0 || reviewBusy} aria-label="Previous position"><ChevronLeft size={16} /> Previous</button>
+                      <button type="button" onClick={() => selectReplayPosition(replayIndex + 1)} disabled={replayIndex >= replayPositions.length - 1 || reviewBusy} aria-label="Next position">Next <ChevronRight size={16} /></button>
                     </div>
-                    <button type="button" className="game-review-final-action" onClick={() => selectReplayPosition(replayPositions.length - 1)} disabled={replayIndex === replayPositions.length - 1} aria-label="Back to final position"><SkipForward size={15} /> Back to final position</button>
+                    <button type="button" className="game-review-final-action" onClick={() => selectReplayPosition(replayPositions.length - 1)} disabled={replayIndex === replayPositions.length - 1 || reviewBusy} aria-label="Back to final position"><SkipForward size={15} /> Back to final position</button>
 
                     <div className="game-review-engine-check" aria-live="polite">
                       <div>
                         <span className="analysis-label">Selected move</span>
                         <strong>{selectedMoveContext ? `${selectedMoveContext.ply}. ${selectedMoveContext.playedMove}` : "Choose a recorded move"}</strong>
                       </div>
-                      <button type="button" className="game-review-engine-action" onClick={reviewSelectedMove} disabled={!selectedMoveContext || reviewLoading}>
+                      <button type="button" className="game-review-engine-action" onClick={reviewSelectedMove} disabled={!selectedMoveContext || reviewBusy}>
                         <Sparkles size={15} /> {reviewLoading ? "Reviewing…" : visibleMoveReview ? "Re-review selected move" : "Review selected move"}
+                      </button>
+                      <button type="button" className="game-review-engine-action" onClick={reviewRemainingMoves} disabled={reviewBusy || remainingReviewPlies.length === 0} aria-label="Review remaining saved-game moves">
+                        <Sparkles size={15} /> {reviewAllProgress ? `Reviewing ${reviewAllProgress.completed}/${reviewAllProgress.total}` : remainingReviewPlies.length === 0 ? "All moves reviewed" : `Review remaining moves (${remainingReviewPlies.length})`}
                       </button>
                       {reviewError && <p className="analysis-inline-error" role="alert">{reviewError}</p>}
                       {visibleMoveReview && (
@@ -326,7 +368,7 @@ export default function Analyze() {
                 <input type="range" min="1" max="10" value={depth} onChange={(event) => setDepth(Number(event.target.value))} aria-valuetext={`Depth ${depth}`} />
                 <strong>{depth}</strong>
               </label>
-              <button className="primary-action analysis-primary-action" type="button" onClick={runAnalysis} disabled={loading}>
+              <button className="primary-action analysis-primary-action" type="button" onClick={runAnalysis} disabled={loading || reviewBusy}>
                 <BarChart3 size={17} /> {loading ? "Calculating…" : "Analyze position"}
               </button>
               {error && <p className="analysis-inline-error" role="alert">{error}</p>}
