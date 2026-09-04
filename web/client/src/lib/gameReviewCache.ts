@@ -10,6 +10,11 @@ export type CachedMoveReview = {
 };
 
 export type GameReviewCache = Record<number, CachedMoveReview>;
+export type GameReviewProgress = {
+  reviewed: number;
+  total: number;
+  depth: number;
+};
 
 type ReviewStorage = Pick<Storage, "getItem" | "setItem" | "removeItem">;
 
@@ -75,6 +80,21 @@ function parseReviews(value: unknown): GameReviewCache | null {
   return reviews;
 }
 
+function parseStoredReviewCache(raw: string | null): StoredReviewCache | null {
+  if (!raw) return null;
+  const parsed: unknown = JSON.parse(raw);
+  if (!isRecord(parsed)) return null;
+  if (typeof parsed.depth !== "number" || !Number.isFinite(parsed.depth) || parsed.depth < 1) return null;
+  if (typeof parsed.historyFingerprint !== "string") return null;
+  const reviews = parseReviews(parsed.reviews);
+  if (!reviews) return null;
+  return {
+    depth: parsed.depth,
+    historyFingerprint: parsed.historyFingerprint,
+    reviews,
+  };
+}
+
 export function readGameReviewCache(
   storage: ReviewStorage,
   gameId: string,
@@ -82,14 +102,30 @@ export function readGameReviewCache(
   moves: readonly string[],
 ): GameReviewCache {
   try {
-    const raw = storage.getItem(cacheKey(gameId));
-    if (!raw) return {};
-    const parsed: unknown = JSON.parse(raw);
-    if (!isRecord(parsed)) return {};
+    const parsed = parseStoredReviewCache(storage.getItem(cacheKey(gameId)));
+    if (!parsed) return {};
     if (parsed.depth !== depth || parsed.historyFingerprint !== fingerprintMoves(moves)) return {};
-    return parseReviews(parsed.reviews) ?? {};
+    return parsed.reviews;
   } catch {
     return {};
+  }
+}
+
+export function readGameReviewProgress(
+  storage: ReviewStorage,
+  gameId: string,
+  moves: readonly string[],
+): GameReviewProgress | null {
+  try {
+    const parsed = parseStoredReviewCache(storage.getItem(cacheKey(gameId)));
+    if (!parsed || parsed.historyFingerprint !== fingerprintMoves(moves)) return null;
+    return {
+      reviewed: Object.keys(parsed.reviews).length,
+      total: moves.length,
+      depth: parsed.depth,
+    };
+  } catch {
+    return null;
   }
 }
 

@@ -7,6 +7,7 @@ import { ProductHeader } from "@/components/ProductHeader";
 import { analysisHrefForGame } from "@/lib/analysisRoute";
 import { clearGameHistory, deleteGameHistory, isResumableGame, readGameHistory, type StoredGame } from "@/lib/gameHistory";
 import { gameOutcomeLabel } from "@/lib/gameOutcome";
+import { clearGameReviewCache, readGameReviewProgress } from "@/lib/gameReviewCache";
 import "../games.css";
 
 export default function Games() {
@@ -24,11 +25,13 @@ export default function Games() {
   function deleteSavedGame(game: StoredGame) {
     if (!window.confirm("Delete this saved game from this device? This cannot be undone.")) return;
     deleteGameHistory(game.id);
+    clearGameReviewCache(window.localStorage, game.id);
     setGames(current => current.filter(item => item.id !== game.id));
     toast("Saved game deleted from this device.");
   }
 
   function clearHistory() {
+    games.forEach(game => clearGameReviewCache(window.localStorage, game.id));
     clearGameHistory();
     setGames([]);
     toast("Game history cleared on this device.");
@@ -59,25 +62,42 @@ export default function Games() {
               <button type="button" onClick={clearHistory}><Trash2 size={15} /> Clear history</button>
             </div>
             <section className="games-grid" aria-label="Saved games">
-              {games.map(game => (
-                <article className="game-history-card" key={game.id}>
-                  <div className="game-history-card-top">
-                    <span className="game-mode"><Gamepad2 size={15} /> {game.mode === "computer" ? "vs ChessIQ" : "Local board"}</span>
-                    <span className={`game-status game-status-${game.termination ?? game.status}`}>{gameOutcomeLabel(game)}</span>
-                  </div>
-                  <strong>{game.moves.length} ply{game.moves.length === 1 ? "" : "s"}</strong>
-                  <p>{game.moves.length ? game.moves.slice(-6).join(" · ") : "No recorded moves"}</p>
-                  <div className="game-history-meta"><Clock3 size={14} /><time dateTime={game.updatedAt}>{new Date(game.updatedAt).toLocaleString()}</time></div>
-                  <div className="game-history-actions">
-                    <button type="button" onClick={() => copyFen(game.fen)}><Copy size={14} /> Copy FEN</button>
-                    <button type="button" className="game-delete-action" onClick={() => deleteSavedGame(game)} aria-label={`Delete saved game from ${new Date(game.updatedAt).toLocaleString()}`}><Trash2 size={14} /> Delete</button>
-                    {isResumableGame(game) && (
-                      <Link href={`/play?resume=${encodeURIComponent(game.id)}`} className="primary-action"><PlayCircle size={14} /> Resume game</Link>
+              {games.map(game => {
+                const reviewProgress = readGameReviewProgress(window.localStorage, game.id, game.moves);
+                const hasReviewProgress = Boolean(reviewProgress && reviewProgress.reviewed > 0);
+                const reviewComplete = Boolean(reviewProgress && reviewProgress.total > 0 && reviewProgress.reviewed >= reviewProgress.total);
+                const reviewAction = reviewComplete ? "Open review" : hasReviewProgress ? "Continue review" : "Review in Analyze";
+
+                return (
+                  <article className="game-history-card" key={game.id}>
+                    <div className="game-history-card-top">
+                      <span className="game-mode"><Gamepad2 size={15} /> {game.mode === "computer" ? "vs ChessIQ" : "Local board"}</span>
+                      <span className={`game-status game-status-${game.termination ?? game.status}`}>{gameOutcomeLabel(game)}</span>
+                    </div>
+                    <strong>{game.moves.length} ply{game.moves.length === 1 ? "" : "s"}</strong>
+                    <p>{game.moves.length ? game.moves.slice(-6).join(" · ") : "No recorded moves"}</p>
+                    {hasReviewProgress && reviewProgress && (
+                      <div
+                        className={`game-review-progress${reviewComplete ? " is-complete" : ""}`}
+                        aria-label={`Game review progress: ${reviewProgress.reviewed} of ${reviewProgress.total} plies reviewed at depth ${reviewProgress.depth}`}
+                      >
+                        <span>Game review</span>
+                        <strong>{reviewProgress.reviewed}/{reviewProgress.total}</strong>
+                        <small>{reviewComplete ? `Complete · depth ${reviewProgress.depth}` : `Depth ${reviewProgress.depth}`}</small>
+                      </div>
                     )}
-                    <Link href={analysisHrefForGame(game.fen, game.id)} className="primary-action">Review in Analyze</Link>
-                  </div>
-                </article>
-              ))}
+                    <div className="game-history-meta"><Clock3 size={14} /><time dateTime={game.updatedAt}>{new Date(game.updatedAt).toLocaleString()}</time></div>
+                    <div className="game-history-actions">
+                      <button type="button" onClick={() => copyFen(game.fen)}><Copy size={14} /> Copy FEN</button>
+                      <button type="button" className="game-delete-action" onClick={() => deleteSavedGame(game)} aria-label={`Delete saved game from ${new Date(game.updatedAt).toLocaleString()}`}><Trash2 size={14} /> Delete</button>
+                      {isResumableGame(game) && (
+                        <Link href={`/play?resume=${encodeURIComponent(game.id)}`} className="primary-action"><PlayCircle size={14} /> Resume game</Link>
+                      )}
+                      <Link href={analysisHrefForGame(game.fen, game.id)} className="primary-action">{reviewAction}</Link>
+                    </div>
+                  </article>
+                );
+              })}
             </section>
           </>
         ) : (
