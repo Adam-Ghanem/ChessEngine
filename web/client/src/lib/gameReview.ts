@@ -27,12 +27,12 @@ type MoveReviewInput = {
  * deterministic lets the UI resume a partially reviewed game without
  * re-running already cached first-party ChessEngine work.
  */
-export function pendingReviewPlies(totalMoves: number, reviewedPlies: Iterable<number>): number[] {
+export function pendingReviewPlies(totalMoves: number, reviewedPlies: readonly number[]): number[] {
   const safeTotal = Math.max(0, Math.floor(totalMoves));
   const reviewed = new Set<number>();
-  for (const ply of reviewedPlies) {
+  reviewedPlies.forEach((ply) => {
     if (Number.isInteger(ply) && ply >= 1 && ply <= safeTotal) reviewed.add(ply);
-  }
+  });
 
   const pending: number[] = [];
   for (let ply = 1; ply <= safeTotal; ply += 1) {
