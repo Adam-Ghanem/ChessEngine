@@ -5,6 +5,7 @@ import { ProductHeader } from "@/components/ProductHeader";
 import { LEARN_STORAGE_KEY, LESSONS } from "@/data/lessons";
 import { readGameHistory } from "@/lib/gameHistory";
 import { readNumberProgress } from "@/lib/localProgress";
+import { summarizeComputerGameOutcomes } from "@/lib/progressStats";
 import { PUZZLE_IDS, PUZZLE_STORAGE_KEY } from "@/lib/puzzleCatalog";
 import "../coach.css";
 
@@ -37,7 +38,7 @@ type TrainingStep = {
 const playStep: TrainingStep = {
   eyebrow: "Build game evidence",
   title: "Play one complete training game",
-  copy: "Give Coach a real game from this device so later recommendations can be grounded in your own play.",
+  copy: "Give Coach a completed verified game against ChessIQ so later recommendations are grounded in a real result from your side.",
   href: "/play",
   action: "Start a game",
   icon: Gamepad2,
@@ -70,10 +71,10 @@ const analyzeStep: TrainingStep = {
   icon: Brain,
 };
 
-function buildTrainingQueue(games: number, lessons: number, puzzles: number): TrainingStep[] {
+function buildTrainingQueue(completedComputerGames: number, lessons: number, puzzles: number): TrainingStep[] {
   const queue: TrainingStep[] = [];
 
-  if (games === 0) queue.push(playStep);
+  if (completedComputerGames === 0) queue.push(playStep);
   if (puzzles < 3) queue.push(puzzleStep);
   if (lessons < LESSONS.length) queue.push(learnStep);
 
@@ -87,10 +88,13 @@ function buildTrainingQueue(games: number, lessons: number, puzzles: number): Tr
 }
 
 export default function Coach() {
-  const games = readGameHistory().length;
+  const gameHistory = readGameHistory();
+  const savedGames = gameHistory.length;
+  const gameOutcomes = summarizeComputerGameOutcomes(gameHistory);
+  const completedComputerGames = gameOutcomes.completed;
   const lessons = countCompletedLessons();
   const puzzles = countValidSolvedPuzzles();
-  const trainingQueue = buildTrainingQueue(games, lessons, puzzles);
+  const trainingQueue = buildTrainingQueue(completedComputerGames, lessons, puzzles);
   const primaryPlan = trainingQueue[0];
   const PlanIcon = primaryPlan.icon;
 
@@ -108,12 +112,12 @@ export default function Coach() {
           <div className="coach-trust-card">
             <TrendingUp size={20} />
             <strong>Evidence first</strong>
-            <span>Games, lessons, and solved puzzles only</span>
+            <span>Completed games, lessons, and solved puzzles only</span>
           </div>
         </section>
 
         <section className="coach-grid" aria-label="Training evidence">
-          <article className="coach-stat-card"><Gamepad2 size={18} /><span>Saved games</span><strong>{games}</strong><small>from Play on this device</small></article>
+          <article className="coach-stat-card"><Gamepad2 size={18} /><span>Completed vs ChessIQ</span><strong>{completedComputerGames}</strong><small>{savedGames} saved game{savedGames === 1 ? "" : "s"} total · only verified results count</small></article>
           <article className="coach-stat-card"><GraduationCap size={18} /><span>Lessons completed</span><strong>{lessons}/{LESSONS.length}</strong><small>verified from Learn checkpoints</small></article>
           <article className="coach-stat-card"><Target size={18} /><span>Solved puzzles</span><strong>{puzzles}</strong><small>verified catalog entries</small></article>
         </section>
@@ -147,7 +151,7 @@ export default function Coach() {
 
         <section className="coach-principles" aria-labelledby="coach-principles-title">
           <div><Brain size={20} /><h2 id="coach-principles-title">How Coach decides</h2></div>
-          <p>Coach prioritizes missing verified evidence first, then moves you toward review. It ignores stale puzzle IDs and incomplete lesson checkpoints instead of inflating your training history.</p>
+          <p>Coach prioritizes missing verified evidence first. A saved game counts as game evidence only when it is a completed ChessIQ game with both a persisted result and player side; local, ongoing, and legacy-incomplete records do not unlock review-first recommendations.</p>
           <div className="coach-links">
             <Link href="/games">Review saved games</Link>
             <Link href="/progress">Open Progress</Link>

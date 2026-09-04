@@ -22,4 +22,11 @@ describe("Coach evidence integrity", () => {
     expect(coach).toContain("PUZZLE_STORAGE_KEY");
     expect(coach).not.toContain('const PUZZLES_KEY = "chessiq-puzzles-solved-v1"');
   });
+
+  it("grounds game evidence in completed verified games against ChessIQ", () => {
+    expect(coach).toContain("summarizeComputerGameOutcomes");
+    expect(coach).toContain("completedComputerGames");
+    expect(coach).toContain("Completed vs ChessIQ");
+    expect(coach).toContain("completed verified game");
+  });
 });
