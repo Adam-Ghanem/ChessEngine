@@ -137,6 +137,79 @@
   font-weight: 700;
 }
 
+.progress-results {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 24px;
+  margin-top: 18px;
+  padding: 20px;
+  border: 1px solid var(--iq-border);
+  border-radius: 18px;
+  background:
+    radial-gradient(circle at 100% 0%, color-mix(in srgb, var(--iq-teal) 12%, transparent), transparent 46%),
+    color-mix(in srgb, var(--iq-surface) 96%, transparent);
+  box-shadow: 0 18px 48px rgba(0, 0, 0, .1);
+}
+
+.progress-results-copy {
+  min-width: 0;
+}
+
+.progress-results-copy h2 {
+  margin: 6px 0 5px;
+  color: var(--iq-text);
+  font-size: 18px;
+  letter-spacing: -.025em;
+}
+
+.progress-results-copy p {
+  max-width: 640px;
+  margin: 0;
+  color: var(--iq-text-soft);
+  font-size: 12px;
+  line-height: 1.55;
+}
+
+.progress-results-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(76px, 1fr));
+  gap: 9px;
+  min-width: min(100%, 300px);
+  margin: 0;
+}
+
+.progress-results-grid > div {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+  padding: 12px 14px;
+  border: 1px solid color-mix(in srgb, var(--iq-border) 84%, transparent);
+  border-radius: 13px;
+  background: color-mix(in srgb, var(--iq-surface-raised) 72%, transparent);
+  text-align: center;
+}
+
+.progress-results-grid dt {
+  color: var(--iq-text-faint);
+  font: 500 9px/1.25 "JetBrains Mono", monospace;
+  letter-spacing: .055em;
+  text-transform: uppercase;
+}
+
+.progress-results-grid dd {
+  margin: 0;
+  color: var(--iq-text);
+  font-size: 24px;
+  font-weight: 750;
+  line-height: 1;
+  letter-spacing: -.035em;
+}
+
+.progress-results-grid > div:first-child dd {
+  color: var(--iq-teal);
+}
+
 .progress-focus {
   display: flex;
   align-items: center;
@@ -227,6 +300,15 @@
     width: min(100%, 320px);
   }
 
+  .progress-results {
+    grid-template-columns: 1fr;
+  }
+
+  .progress-results-grid {
+    width: 100%;
+    min-width: 0;
+  }
+
   .progress-evidence {
     grid-template-columns: 1fr;
   }
@@ -243,6 +325,24 @@
 
   .progress-grid {
     grid-template-columns: 1fr;
+  }
+
+  .progress-results {
+    gap: 16px;
+    padding: 17px;
+  }
+
+  .progress-results-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  .progress-results-grid > div {
+    padding: 11px 8px;
+  }
+
+  .progress-results-grid dd {
+    font-size: 21px;
   }
 
   .progress-focus {

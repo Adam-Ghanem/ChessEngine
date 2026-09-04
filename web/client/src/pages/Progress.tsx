@@ -5,6 +5,7 @@ import { ProductHeader } from "@/components/ProductHeader";
 import { LEARN_STORAGE_KEY, LEARN_TOTAL_CHECKPOINTS, LESSONS } from "@/data/lessons";
 import { readGameHistory } from "@/lib/gameHistory";
 import { readNumberProgress } from "@/lib/localProgress";
+import { summarizeComputerGameOutcomes } from "@/lib/progressStats";
 import { PUZZLE_IDS, PUZZLE_STORAGE_KEY, PUZZLE_TOTAL } from "@/lib/puzzleCatalog";
 import "../progress.css";
 
@@ -14,12 +15,26 @@ type ProgressSnapshot = {
   solvedPuzzles: number;
   savedGames: number;
   movesPlayed: number;
+  completedComputerGames: number;
+  wins: number;
+  draws: number;
+  losses: number;
+};
+
+const emptyProgress: ProgressSnapshot = {
+  learnCheckpoints: 0,
+  completedLessons: 0,
+  solvedPuzzles: 0,
+  savedGames: 0,
+  movesPlayed: 0,
+  completedComputerGames: 0,
+  wins: 0,
+  draws: 0,
+  losses: 0,
 };
 
 function readProgress(): ProgressSnapshot {
-  if (typeof window === "undefined") {
-    return { learnCheckpoints: 0, completedLessons: 0, solvedPuzzles: 0, savedGames: 0, movesPlayed: 0 };
-  }
+  if (typeof window === "undefined") return emptyProgress;
 
   const learnProgress = readNumberProgress(window.localStorage, LEARN_STORAGE_KEY);
   const learnCheckpoints = LESSONS.reduce(
@@ -44,8 +59,19 @@ function readProgress(): ProgressSnapshot {
   const games = readGameHistory(window.localStorage);
   const savedGames = games.length;
   const movesPlayed = games.reduce((total, game) => total + game.moves.length, 0);
+  const outcomes = summarizeComputerGameOutcomes(games);
 
-  return { learnCheckpoints, completedLessons, solvedPuzzles, savedGames, movesPlayed };
+  return {
+    learnCheckpoints,
+    completedLessons,
+    solvedPuzzles,
+    savedGames,
+    movesPlayed,
+    completedComputerGames: outcomes.completed,
+    wins: outcomes.wins,
+    draws: outcomes.draws,
+    losses: outcomes.losses,
+  };
 }
 
 function percentage(value: number, total: number) {
@@ -135,6 +161,28 @@ export default function Progress() {
             <ProgressMeter label="Overall progress" value={overallPercent} />
             <small>Calculated only from saved Learn and Puzzle activity</small>
           </article>
+        </section>
+
+        <section className="progress-results" aria-label="Results against ChessIQ">
+          <div className="progress-results-copy">
+            <span className="analysis-label">Results against ChessIQ</span>
+            <h2>Completed games, from your side.</h2>
+            <p>{snapshot.completedComputerGames} completed games against ChessIQ have a verified saved result and player side.</p>
+          </div>
+          <dl className="progress-results-grid">
+            <div>
+              <dt>Wins</dt>
+              <dd>{snapshot.wins}</dd>
+            </div>
+            <div>
+              <dt>Draws</dt>
+              <dd>{snapshot.draws}</dd>
+            </div>
+            <div>
+              <dt>Losses</dt>
+              <dd>{snapshot.losses}</dd>
+            </div>
+          </dl>
         </section>
 
         <section className="progress-focus" aria-labelledby="progress-focus-title">
