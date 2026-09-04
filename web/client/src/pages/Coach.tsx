@@ -151,7 +151,7 @@ export default function Coach() {
                 <div className="coach-plan-step-number">{index === 0 ? "Next" : index === 1 ? "Then" : "After"}</div>
                 <div className="coach-plan-step-icon"><StepIcon size={18} /></div>
                 <div className="coach-plan-step-copy">
-                  <span>{step.eyrow}</span>
+                  <span>{step.eyebrow}</span>
                   <strong>{step.title}</strong>
                 </div>
                 <Link href={step.href} aria-label={`${step.action}: ${step.title}`}>{step.action}</Link>
