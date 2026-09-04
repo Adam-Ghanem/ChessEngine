@@ -11,7 +11,7 @@ describe("ChessIQ Play game room", () => {
     expect(play).toContain("play-clock");
     expect(play).toContain("game-panel");
     expect(play).toContain("Move list");
-    expect(play).toContain("Open Analyze");
+    expect(play).toContain("Review game");
     expect(play).not.toContain("play-hero");
     expect(css).toContain(".play-game-room");
     expect(css).toContain(".play-player-bar");
@@ -19,11 +19,11 @@ describe("ChessIQ Play game room", () => {
     expect(css).toContain(".game-panel");
   });
 
-  it("sends the current live position into Analyze", () => {
+  it("sends the saved game and current live position into Analyze", () => {
     const play = readFileSync(new URL("./pages/Play.tsx", import.meta.url), "utf8");
 
-    expect(play).toContain('import { analysisHrefForFen } from "@/lib/analysisRoute"');
-    expect(play).toContain('href={analysisHrefForFen(fen)}');
+    expect(play).toContain('import { analysisHrefForGame } from "@/lib/analysisRoute"');
+    expect(play).toContain('href={analysisHrefForGame(fen, gameId)}');
   });
 
   it("uses the approved cream, olive, navy, and warm-gold Play palette", () => {
