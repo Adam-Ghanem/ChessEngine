@@ -16,6 +16,11 @@ export type MoveReviewSummary = {
   averageCentipawnLoss: number;
 };
 
+export type CriticalReviewMoment = {
+  ply: number;
+  classification: MoveReviewClassification;
+};
+
 type MoveReviewInput = {
   bestMoveMatch: boolean;
   beforeScoreCp: number;
@@ -39,6 +44,28 @@ export function pendingReviewPlies(totalMoves: number, reviewedPlies: readonly n
     if (!reviewed.has(ply)) pending.push(ply);
   }
   return pending;
+}
+
+/**
+ * Rank only review errors by centipawn loss so the UI can surface the most
+ * useful positions without inventing conclusions for unreviewed or good moves.
+ */
+export function rankCriticalReviewMoments(
+  reviews: readonly { ply: number; classification: MoveReviewClassification | null | undefined }[],
+  limit = 3,
+): CriticalReviewMoment[] {
+  const safeLimit = Math.max(0, Math.floor(limit));
+  if (safeLimit === 0) return [];
+
+  return reviews
+    .filter((review): review is CriticalReviewMoment => {
+      const label = review.classification?.label;
+      return label === "Inaccuracy" || label === "Mistake" || label === "Blunder";
+    })
+    .sort((left, right) =>
+      right.classification.centipawnLoss - left.classification.centipawnLoss || left.ply - right.ply,
+    )
+    .slice(0, safeLimit);
 }
 
 /**
