@@ -12,4 +12,11 @@ describe("ChessIQ Progress outcome breakdown", () => {
     expect(progressSource).toContain("Losses");
     expect(progressSource).toContain("completed games against ChessIQ");
   });
+
+  it("shows a labeled recent form from verified saved computer results", () => {
+    expect(progressSource).toContain("summarizeRecentComputerForm");
+    expect(progressSource).toContain('aria-label="Recent form against ChessIQ"');
+    expect(progressSource).toContain("Last 5 completed games");
+    expect(progressSource).toContain('aria-label={`Recent game ${index + 1}: ${result}`}');
+  });
 });
