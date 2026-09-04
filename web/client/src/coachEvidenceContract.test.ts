@@ -29,4 +29,12 @@ describe("Coach evidence integrity", () => {
     expect(coach).toContain("Completed vs ChessIQ");
     expect(coach).toContain("completed verified game");
   });
+
+  it("deep-links the latest verified completed ChessIQ game into Game Review", () => {
+    expect(coach).toContain("latestCompletedComputerGame");
+    expect(coach).toContain("analysisHrefForGame");
+    expect(coach).toContain("latestCompletedGame.fen");
+    expect(coach).toContain("latestCompletedGame.id");
+    expect(coach).toContain("Review latest game");
+  });
 });

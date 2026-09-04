@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { StoredGame } from "@/lib/gameHistory";
-import { summarizeComputerGameOutcomes, summarizeRecentComputerForm } from "@/lib/progressStats";
+import { latestCompletedComputerGame, summarizeComputerGameOutcomes, summarizeRecentComputerForm } from "@/lib/progressStats";
 
 function game(overrides: Partial<StoredGame>): StoredGame {
   return {
@@ -46,5 +46,22 @@ describe("Progress computer game outcomes", () => {
     ]);
 
     expect(form).toEqual(["win", "draw", "loss", "win", "loss"]);
+  });
+
+  it("selects the newest verified completed ChessIQ game for direct review", () => {
+    const latest = latestCompletedComputerGame([
+      game({ id: "ongoing", status: "ongoing", result: undefined, termination: undefined }),
+      game({ id: "local", mode: "local" }),
+      game({ id: "latest-complete", playerSide: "black", result: "black-win" }),
+      game({ id: "legacy", playerSide: undefined }),
+      game({ id: "older-complete", playerSide: "white", result: "white-win" }),
+    ]);
+
+    expect(latest?.id).toBe("latest-complete");
+    expect(latestCompletedComputerGame([
+      game({ id: "ongoing", status: "ongoing", result: undefined, termination: undefined }),
+      game({ id: "local", mode: "local" }),
+      game({ id: "legacy", playerSide: undefined }),
+    ])).toBeNull();
   });
 });

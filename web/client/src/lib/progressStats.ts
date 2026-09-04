@@ -44,3 +44,7 @@ export function summarizeRecentComputerForm(games: readonly StoredGame[], limit 
   }
   return results;
 }
+
+export function latestCompletedComputerGame(games: readonly StoredGame[]): StoredGame | null {
+  return games.find((game) => playerComputerResult(game) !== null) ?? null;
+}
