@@ -16,6 +16,11 @@ export type MoveReviewSummary = {
   averageCentipawnLoss: number;
 };
 
+export type MoveReviewSideSummary = {
+  white: MoveReviewSummary;
+  black: MoveReviewSummary;
+};
+
 export type CriticalReviewMoment = {
   ply: number;
   classification: MoveReviewClassification;
@@ -115,4 +120,21 @@ export function summarizeMoveReviews(classifications: Array<MoveReviewClassifica
 
   summary.averageCentipawnLoss = summary.reviewed ? Math.round(totalCentipawnLoss / summary.reviewed) : 0;
   return summary;
+}
+
+export function summarizeMoveReviewsBySide(
+  reviews: readonly { ply: number; classification: MoveReviewClassification | null | undefined }[],
+): MoveReviewSideSummary {
+  const white: Array<MoveReviewClassification | null | undefined> = [];
+  const black: Array<MoveReviewClassification | null | undefined> = [];
+
+  for (const review of reviews) {
+    if (!Number.isInteger(review.ply) || review.ply < 1) continue;
+    (review.ply % 2 === 1 ? white : black).push(review.classification);
+  }
+
+  return {
+    white: summarizeMoveReviews(white),
+    black: summarizeMoveReviews(black),
+  };
 }

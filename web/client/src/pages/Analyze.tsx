@@ -8,9 +8,10 @@ import { analyzePosition, type ServerEngineAnalysis } from "@/engine/serverEngin
 import { validateFenShape } from "@/engine/fen";
 import { initialAnalysisFenFromSearch, initialAnalysisGameIdFromSearch } from "@/lib/analysisRoute";
 import { readGameHistory, replayMoveContext } from "@/lib/gameHistory";
-import { classifyMoveReview, pendingReviewPlies, rankCriticalReviewMoments, summarizeMoveReviews, type MoveReviewClassification } from "@/lib/gameReview";
+import { classifyMoveReview, pendingReviewPlies, rankCriticalReviewMoments, summarizeMoveReviews, summarizeMoveReviewsBySide, type MoveReviewClassification } from "@/lib/gameReview";
 import { gameOutcomeLabel } from "@/lib/gameOutcome";
 import "@/fen-analyze.css";
+import "@/game-review-side-performance.css";
 
 const START_FEN = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
@@ -69,6 +70,12 @@ export default function Analyze() {
     () => summarizeMoveReviews(Object.values(moveReviews).map(review => review.classification)),
     [moveReviews],
   );
+  const sideReviewSummary = useMemo(
+    () => summarizeMoveReviewsBySide(
+      Object.values(moveReviews).map(review => ({ ply: review.ply, classification: review.classification })),
+    ),
+    [moveReviews],
+  );
   const criticalReviewMoments = useMemo(
     () => rankCriticalReviewMoments(
       Object.values(moveReviews).map(review => ({ ply: review.ply, classification: review.classification })),
@@ -84,6 +91,12 @@ export default function Analyze() {
   const moveReviewMatchesEngine = visibleMoveReview
     ? visibleMoveReview.playedMove.toLowerCase() === visibleMoveReview.analysis.bestMove.toLowerCase()
     : false;
+  const whiteSideLabel = gameContext?.mode === "computer"
+    ? gameContext.playerSide === "white" ? "You" : "ChessIQ"
+    : "White";
+  const blackSideLabel = gameContext?.mode === "computer"
+    ? gameContext.playerSide === "black" ? "You" : "ChessIQ"
+    : "Black";
 
   const bestArrow = useMemo(() => {
     if (!analysis || !/^[a-h][1-8][a-h][1-8]/.test(analysis.bestMove)) return { from: "a1", to: "a1" };
@@ -266,11 +279,37 @@ export default function Analyze() {
                   <p>{gameContext.moves.length ? gameContext.moves.slice(-8).join(" · ") : "No recorded moves"}</p>
                 </div>
                 {reviewSummary.reviewed > 0 && (
-                  <div className="game-review-facts game-review-session-summary" aria-label="Reviewed move summary" aria-live="polite">
-                    <div><span>Classified</span><strong>{reviewSummary.reviewed} / {gameContext.moves.length}</strong></div>
-                    <div><span>Average CPL</span><strong>{reviewSummary.averageCentipawnLoss}</strong></div>
-                    <div><span>Errors</span><strong>{reviewSummary.inaccuracies + reviewSummary.mistakes + reviewSummary.blunders}</strong></div>
-                  </div>
+                  <>
+                    <div className="game-review-facts game-review-session-summary" aria-label="Reviewed move summary" aria-live="polite">
+                      <div><span>Classified</span><strong>{reviewSummary.reviewed} / {gameContext.moves.length}</strong></div>
+                      <div><span>Average CPL</span><strong>{reviewSummary.averageCentipawnLoss}</strong></div>
+                      <div><span>Errors</span><strong>{reviewSummary.inaccuracies + reviewSummary.mistakes + reviewSummary.blunders}</strong></div>
+                    </div>
+                    <div className="game-review-side-performance" aria-label="Per-side reviewed move summary" aria-live="polite">
+                      <div className="game-review-side-performance__heading">
+                        <span className="analysis-label">Side performance</span>
+                        <small>Engine-reviewed moves only</small>
+                      </div>
+                      <div className="game-review-side-performance__grid">
+                        {([
+                          { side: "White", label: whiteSideLabel, summary: sideReviewSummary.white },
+                          { side: "Black", label: blackSideLabel, summary: sideReviewSummary.black },
+                        ] as const).map(({ side, label, summary }) => (
+                          <div className="game-review-side-performance__card" key={side}>
+                            <div className="game-review-side-performance__card-head">
+                              <strong>{label}</strong>
+                              <span>{side}</span>
+                            </div>
+                            <dl>
+                              <div><dt>Reviewed</dt><dd>{summary.reviewed}</dd></div>
+                              <div><dt>Average CPL</dt><dd>{summary.reviewed ? `${summary.averageCentipawnLoss} cp` : "—"}</dd></div>
+                              <div><dt>Errors</dt><dd>{summary.inaccuracies + summary.mistakes + summary.blunders}</dd></div>
+                            </dl>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </>
                 )}
                 {criticalReviewMoments.length > 0 && (
                   <div className="game-review-critical-moments" aria-label="Critical review moments">

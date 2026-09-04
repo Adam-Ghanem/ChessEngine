@@ -1,0 +1,106 @@
+.game-review-side-performance {
+  display: grid;
+  gap: 0.75rem;
+  padding: 0.85rem;
+  border: 1px solid color-mix(in srgb, var(--border) 82%, transparent);
+  border-radius: 14px;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--card) 94%, white 6%), color-mix(in srgb, var(--background) 88%, transparent));
+}
+
+.game-review-side-performance__heading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.game-review-side-performance__heading small {
+  color: var(--muted-foreground);
+  font-size: 0.72rem;
+  line-height: 1.2;
+  text-align: right;
+}
+
+.game-review-side-performance__grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.game-review-side-performance__card {
+  min-width: 0;
+  padding: 0.75rem;
+  border: 1px solid color-mix(in srgb, var(--border) 78%, transparent);
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--card) 90%, transparent);
+}
+
+.game-review-side-performance__card-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.65rem;
+}
+
+.game-review-side-performance__card-head strong {
+  min-width: 0;
+  overflow: hidden;
+  color: var(--foreground);
+  font-size: 0.92rem;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.game-review-side-performance__card-head span {
+  color: var(--muted-foreground);
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.game-review-side-performance__card dl {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.45rem;
+  margin: 0;
+}
+
+.game-review-side-performance__card dl > div {
+  min-width: 0;
+}
+
+.game-review-side-performance__card dt {
+  margin: 0 0 0.2rem;
+  color: var(--muted-foreground);
+  font-size: 0.64rem;
+  line-height: 1.2;
+}
+
+.game-review-side-performance__card dd {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 0.84rem;
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+@media (max-width: 640px) {
+  .game-review-side-performance__heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .game-review-side-performance__heading small {
+    text-align: left;
+  }
+
+  .game-review-side-performance__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .game-review-side-performance__card {
+    padding: 0.7rem;
+  }
+}
