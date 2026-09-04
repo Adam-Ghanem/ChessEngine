@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import * as gameHistory from "@/lib/gameHistory";
 import type { StoredGame } from "@/lib/gameHistory";
 import { classifyMoveReview, summarizeMoveReviews } from "@/lib/gameReview";
+import { readGameReviewCache, writeGameReviewCache } from "@/lib/gameReviewCache";
 
 type ReplayMoveContext = {
   ply: number;
@@ -22,6 +23,21 @@ const game: StoredGame = {
   positions: ["fen-start", "fen-after-1", "fen-after-2"],
   updatedAt: "2026-09-03T20:00:00.000Z",
 };
+
+function memoryStorage() {
+  const values = new Map<string, string>();
+  return {
+    getItem(key: string) {
+      return values.get(key) ?? null;
+    },
+    setItem(key: string, value: string) {
+      values.set(key, value);
+    },
+    removeItem(key: string) {
+      values.delete(key);
+    },
+  };
+}
 
 describe("selected move review context", () => {
   it("derives the position before the selected recorded move", () => {
@@ -99,5 +115,33 @@ describe("reviewed move session summary", () => {
       blunders: 0,
       averageCentipawnLoss: 0,
     });
+  });
+});
+
+describe("persisted game review cache", () => {
+  it("restores reviewed moves only for the same game history and engine depth", () => {
+    const storage = memoryStorage();
+    const reviews = {
+      1: {
+        ply: 1,
+        playedMove: "e2e4",
+        analysis: { bestMove: "e2e4", scoreCp: 24, depth: 6, principalVariation: "e2e4 e7e5", engine: "ChessEngine" },
+        afterAnalysis: null,
+        classification: { label: "Best move" as const, centipawnLoss: 0 },
+      },
+    };
+
+    writeGameReviewCache(storage, game.id, 6, game.moves, reviews);
+
+    expect(readGameReviewCache(storage, game.id, 6, game.moves)).toEqual(reviews);
+    expect(readGameReviewCache(storage, game.id, 8, game.moves)).toEqual({});
+    expect(readGameReviewCache(storage, game.id, 6, [...game.moves, "g1f3"])).toEqual({});
+  });
+
+  it("ignores malformed cached review data instead of breaking Analyze", () => {
+    const storage = memoryStorage();
+    storage.setItem("chessiq:game-review:v1:review-game", "not-json");
+
+    expect(readGameReviewCache(storage, game.id, 6, game.moves)).toEqual({});
   });
 });
