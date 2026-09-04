@@ -5,6 +5,17 @@ export type MoveReviewClassification = {
   centipawnLoss: number;
 };
 
+export type MoveReviewSummary = {
+  reviewed: number;
+  best: number;
+  excellent: number;
+  good: number;
+  inaccuracies: number;
+  mistakes: number;
+  blunders: number;
+  averageCentipawnLoss: number;
+};
+
 type MoveReviewInput = {
   bestMoveMatch: boolean;
   beforeScoreCp: number;
@@ -29,4 +40,33 @@ export function classifyMoveReview({ bestMoveMatch, beforeScoreCp, afterScoreCp 
   if (centipawnLoss <= 100) return { label: "Inaccuracy", centipawnLoss };
   if (centipawnLoss <= 200) return { label: "Mistake", centipawnLoss };
   return { label: "Blunder", centipawnLoss };
+}
+
+export function summarizeMoveReviews(classifications: Array<MoveReviewClassification | null | undefined>): MoveReviewSummary {
+  const summary: MoveReviewSummary = {
+    reviewed: 0,
+    best: 0,
+    excellent: 0,
+    good: 0,
+    inaccuracies: 0,
+    mistakes: 0,
+    blunders: 0,
+    averageCentipawnLoss: 0,
+  };
+
+  let totalCentipawnLoss = 0;
+  for (const classification of classifications) {
+    if (!classification) continue;
+    summary.reviewed += 1;
+    totalCentipawnLoss += classification.centipawnLoss;
+    if (classification.label === "Best move") summary.best += 1;
+    if (classification.label === "Excellent") summary.excellent += 1;
+    if (classification.label === "Good") summary.good += 1;
+    if (classification.label === "Inaccuracy") summary.inaccuracies += 1;
+    if (classification.label === "Mistake") summary.mistakes += 1;
+    if (classification.label === "Blunder") summary.blunders += 1;
+  }
+
+  summary.averageCentipawnLoss = summary.reviewed ? Math.round(totalCentipawnLoss / summary.reviewed) : 0;
+  return summary;
 }

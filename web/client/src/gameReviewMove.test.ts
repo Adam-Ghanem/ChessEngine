@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import * as gameHistory from "@/lib/gameHistory";
 import type { StoredGame } from "@/lib/gameHistory";
-import { classifyMoveReview } from "@/lib/gameReview";
+import { classifyMoveReview, summarizeMoveReviews } from "@/lib/gameReview";
 
 type ReplayMoveContext = {
   ply: number;
@@ -65,6 +65,39 @@ describe("engine-backed move classification", () => {
     expect(classifyMoveReview({ bestMoveMatch: false, beforeScoreCp: 20, afterScoreCp: -60 })).toEqual({
       label: "Excellent",
       centipawnLoss: 0,
+    });
+  });
+});
+
+describe("reviewed move session summary", () => {
+  it("summarizes only engine-backed classifications that were actually reviewed", () => {
+    expect(summarizeMoveReviews([
+      { label: "Best move", centipawnLoss: 0 },
+      { label: "Good", centipawnLoss: 42 },
+      null,
+      { label: "Blunder", centipawnLoss: 260 },
+    ])).toEqual({
+      reviewed: 3,
+      best: 1,
+      excellent: 0,
+      good: 1,
+      inaccuracies: 0,
+      mistakes: 0,
+      blunders: 1,
+      averageCentipawnLoss: 101,
+    });
+  });
+
+  it("returns a zeroed summary when no move has a trustworthy classification", () => {
+    expect(summarizeMoveReviews([null, null])).toEqual({
+      reviewed: 0,
+      best: 0,
+      excellent: 0,
+      good: 0,
+      inaccuracies: 0,
+      mistakes: 0,
+      blunders: 0,
+      averageCentipawnLoss: 0,
     });
   });
 });

@@ -18,10 +18,12 @@ describe("ChessIQ saved-game replay contract", () => {
     expect(analyzeSource).toContain("Back to final position");
   });
 
-  it("lets reviewers jump directly to any recorded ply", () => {
+  it("lets reviewers jump directly to any recorded ply and exposes reviewed move context", () => {
     expect(analyzeSource).toContain("game-review-move-timeline");
-    expect(analyzeSource).toContain('aria-label={`Jump to position ${index + 1} after ${move}`}');
-    expect(analyzeSource).toContain('aria-current={replayIndex === index + 1 ? "step" : undefined}');
+    expect(analyzeSource).toContain('aria-label={`Jump to position ${index + 1} after ${move}${reviewed ?');
+    expect(analyzeSource).toContain("Reviewed: ${reviewed.label}, ${reviewed.centipawnLoss} centipawn loss");
+    expect(analyzeSource).toContain('aria-current={isCurrent ? "step" : undefined}');
+    expect(analyzeSource).toContain("game-review-timeline-verdict");
   });
 
   it("supports focused keyboard-first replay navigation", () => {
