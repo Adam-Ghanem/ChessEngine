@@ -5,7 +5,7 @@ import { ProductHeader } from "@/components/ProductHeader";
 import { LEARN_STORAGE_KEY, LEARN_TOTAL_CHECKPOINTS, LESSONS } from "@/data/lessons";
 import { readGameHistory } from "@/lib/gameHistory";
 import { readNumberProgress } from "@/lib/localProgress";
-import { summarizeComputerGameOutcomes } from "@/lib/progressStats";
+import { summarizeComputerGameOutcomes, summarizeRecentComputerForm, type ComputerGameFormResult } from "@/lib/progressStats";
 import { PUZZLE_IDS, PUZZLE_STORAGE_KEY, PUZZLE_TOTAL } from "@/lib/puzzleCatalog";
 import "../progress.css";
 
@@ -19,6 +19,7 @@ type ProgressSnapshot = {
   wins: number;
   draws: number;
   losses: number;
+  recentForm: ComputerGameFormResult[];
 };
 
 const emptyProgress: ProgressSnapshot = {
@@ -31,6 +32,7 @@ const emptyProgress: ProgressSnapshot = {
   wins: 0,
   draws: 0,
   losses: 0,
+  recentForm: [],
 };
 
 function readProgress(): ProgressSnapshot {
@@ -60,6 +62,7 @@ function readProgress(): ProgressSnapshot {
   const savedGames = games.length;
   const movesPlayed = games.reduce((total, game) => total + game.moves.length, 0);
   const outcomes = summarizeComputerGameOutcomes(games);
+  const recentForm = summarizeRecentComputerForm(games);
 
   return {
     learnCheckpoints,
@@ -71,6 +74,7 @@ function readProgress(): ProgressSnapshot {
     wins: outcomes.wins,
     draws: outcomes.draws,
     losses: outcomes.losses,
+    recentForm,
   };
 }
 
@@ -183,6 +187,27 @@ export default function Progress() {
               <dd>{snapshot.losses}</dd>
             </div>
           </dl>
+          <div className="progress-form" aria-label="Recent form against ChessIQ">
+            <div className="progress-form-heading">
+              <span>Recent form</span>
+              <small>Last 5 completed games</small>
+            </div>
+            {snapshot.recentForm.length > 0 ? (
+              <ol className="progress-form-list">
+                {snapshot.recentForm.map((result, index) => (
+                  <li
+                    key={`${result}-${index}`}
+                    className={`progress-form-result is-${result}`}
+                    aria-label={`Recent game ${index + 1}: ${result}`}
+                  >
+                    {result === "win" ? "W" : result === "draw" ? "D" : "L"}
+                  </li>
+                ))}
+              </ol>
+            ) : (
+              <p className="progress-form-empty">Complete a game against ChessIQ to start your recent form.</p>
+            )}
+          </div>
         </section>
 
         <section className="progress-focus" aria-labelledby="progress-focus-title">
