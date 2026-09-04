@@ -11,7 +11,7 @@ import { PLAY_SIDE_OPTIONS, PLAY_SIDE_STORAGE_KEY, getPlaySide, oppositeSide, re
 import { sideToMove, statusLabel } from "@/engine/playState";
 import { PLAY_TIME_CONTROLS, PLAY_TIME_CONTROL_STORAGE_KEY, addClockIncrement, getPlayTimeControl, type PlayTimeControl, type PlayTimeControlId } from "@/engine/playTimeControl";
 import { analyzePosition } from "@/engine/serverEngine";
-import { analysisHrefForFen } from "@/lib/analysisRoute";
+import { analysisHrefForGame } from "@/lib/analysisRoute";
 import { findResumableGame, saveGameSnapshot, type GameResult, type GameTermination } from "@/lib/gameHistory";
 import "@/play.css";
 import "@/play-difficulty.css";
@@ -531,7 +531,7 @@ export default function Play() {
               <button type="button" onClick={() => resetGame()} disabled={busy || computerThinking}><RotateCcw size={15} /> New game</button>
               <button type="button" className="play-resign-action" onClick={resignGame} disabled={!moves.length || busy || computerThinking || terminal}><Flag size={15} /> Resign</button>
             </div>
-            <Link href={analysisHrefForFen(fen)} className="primary-action play-analyze-link">Open Analyze</Link>
+            <Link href={analysisHrefForGame(fen, gameId)} className="primary-action play-analyze-link">Review game</Link>
             {timedOut && <div className="game-timeout-note"><Flag size={14} /> Time control: {timeControl.label}</div>}
           </aside>
         </section>
