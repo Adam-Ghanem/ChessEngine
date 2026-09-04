@@ -8,7 +8,7 @@ import { analyzePosition, type ServerEngineAnalysis } from "@/engine/serverEngin
 import { validateFenShape } from "@/engine/fen";
 import { initialAnalysisFenFromSearch, initialAnalysisGameIdFromSearch } from "@/lib/analysisRoute";
 import { readGameHistory, replayMoveContext } from "@/lib/gameHistory";
-import { classifyMoveReview, type MoveReviewClassification } from "@/lib/gameReview";
+import { classifyMoveReview, summarizeMoveReviews, type MoveReviewClassification } from "@/lib/gameReview";
 import { gameOutcomeLabel } from "@/lib/gameOutcome";
 import "@/fen-analyze.css";
 
@@ -50,7 +50,7 @@ export default function Analyze() {
   const [analysis, setAnalysis] = useState<ServerEngineAnalysis | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [moveReview, setMoveReview] = useState<ReviewedMove | null>(null);
+  const [moveReviews, setMoveReviews] = useState<Record<number, ReviewedMove>>({});
   const [reviewLoading, setReviewLoading] = useState(false);
   const [reviewError, setReviewError] = useState<string | null>(null);
 
@@ -58,7 +58,11 @@ export default function Analyze() {
     () => gameContext ? replayMoveContext(gameContext, replayIndex) : null,
     [gameContext, replayIndex],
   );
-  const visibleMoveReview = moveReview?.ply === selectedMoveContext?.ply ? moveReview : null;
+  const visibleMoveReview = selectedMoveContext ? moveReviews[selectedMoveContext.ply] ?? null : null;
+  const reviewSummary = useMemo(
+    () => summarizeMoveReviews(Object.values(moveReviews).map(review => review.classification)),
+    [moveReviews],
+  );
   const moveReviewMatchesEngine = visibleMoveReview
     ? visibleMoveReview.playedMove.toLowerCase() === visibleMoveReview.analysis.bestMove.toLowerCase()
     : false;
@@ -93,8 +97,11 @@ export default function Analyze() {
     setLoadedFen(position);
     setAnalysis(null);
     setError(null);
-    setMoveReview(null);
     setReviewError(null);
+  }
+
+  function cacheMoveReview(review: ReviewedMove) {
+    setMoveReviews(current => ({ ...current, [review.ply]: review }));
   }
 
   async function runAnalysis() {
@@ -124,7 +131,7 @@ export default function Analyze() {
       const bestMoveMatch = selectedMoveContext.playedMove.toLowerCase() === beforeAnalysis.bestMove.toLowerCase();
 
       if (bestMoveMatch) {
-        setMoveReview({
+        cacheMoveReview({
           ply: selectedMoveContext.ply,
           playedMove: selectedMoveContext.playedMove,
           analysis: beforeAnalysis,
@@ -136,7 +143,7 @@ export default function Analyze() {
 
       try {
         const afterAnalysis = await analyzePosition(positionAfterFen, depth);
-        setMoveReview({
+        cacheMoveReview({
           ply: selectedMoveContext.ply,
           playedMove: selectedMoveContext.playedMove,
           analysis: beforeAnalysis,
@@ -148,7 +155,7 @@ export default function Analyze() {
           }),
         });
       } catch {
-        setMoveReview({
+        cacheMoveReview({
           ply: selectedMoveContext.ply,
           playedMove: selectedMoveContext.playedMove,
           analysis: beforeAnalysis,
@@ -212,6 +219,13 @@ export default function Analyze() {
                   <span><Swords size={14} /> Recent moves</span>
                   <p>{gameContext.moves.length ? gameContext.moves.slice(-8).join(" · ") : "No recorded moves"}</p>
                 </div>
+                {reviewSummary.reviewed > 0 && (
+                  <div className="game-review-facts game-review-session-summary" aria-label="Reviewed move summary" aria-live="polite">
+                    <div><span>Classified</span><strong>{reviewSummary.reviewed} / {gameContext.moves.length}</strong></div>
+                    <div><span>Average CPL</span><strong>{reviewSummary.averageCentipawnLoss}</strong></div>
+                    <div><span>Errors</span><strong>{reviewSummary.inaccuracies + reviewSummary.mistakes + reviewSummary.blunders}</strong></div>
+                  </div>
+                )}
                 {replayPositions ? (
                   <div
                     className="game-review-replay"
@@ -236,20 +250,25 @@ export default function Analyze() {
                     <p id="game-review-keyboard-hint" className="game-review-keyboard-hint">Keyboard: ←/→ step · Home start · End final</p>
                     {gameContext.moves.length > 0 && (
                       <div className="game-review-move-timeline" role="list" aria-label="Recorded move timeline">
-                        {gameContext.moves.map((move, index) => (
-                          <button
-                            key={`${index}-${move}`}
-                            type="button"
-                            role="listitem"
-                            onClick={() => selectReplayPosition(index + 1)}
-                            aria-label={`Jump to position ${index + 1} after ${move}`}
-                            aria-current={replayIndex === index + 1 ? "step" : undefined}
-                            className={replayIndex === index + 1 ? "is-current" : ""}
-                          >
-                            <span>{index + 1}</span>
-                            <strong>{move}</strong>
-                          </button>
-                        ))}
+                        {gameContext.moves.map((move, index) => {
+                          const reviewed = moveReviews[index + 1]?.classification;
+                          const isCurrent = replayIndex === index + 1;
+                          return (
+                            <button
+                              key={`${index}-${move}`}
+                              type="button"
+                              role="listitem"
+                              onClick={() => selectReplayPosition(index + 1)}
+                              aria-label={`Jump to position ${index + 1} after ${move}${reviewed ? `. Reviewed: ${reviewed.label}, ${reviewed.centipawnLoss} centipawn loss` : ""}`}
+                              aria-current={isCurrent ? "step" : undefined}
+                              className={`${isCurrent ? "is-current" : ""}${reviewed ? " is-reviewed" : ""}`.trim()}
+                            >
+                              <span>{index + 1}</span>
+                              <strong>{move}</strong>
+                              {reviewed && <em className="game-review-timeline-verdict">{reviewed.label}</em>}
+                            </button>
+                          );
+                        })}
                       </div>
                     )}
                     <div className="game-review-replay-actions">
@@ -264,7 +283,7 @@ export default function Analyze() {
                         <strong>{selectedMoveContext ? `${selectedMoveContext.ply}. ${selectedMoveContext.playedMove}` : "Choose a recorded move"}</strong>
                       </div>
                       <button type="button" className="game-review-engine-action" onClick={reviewSelectedMove} disabled={!selectedMoveContext || reviewLoading}>
-                        <Sparkles size={15} /> {reviewLoading ? "Reviewing…" : "Review selected move"}
+                        <Sparkles size={15} /> {reviewLoading ? "Reviewing…" : visibleMoveReview ? "Re-review selected move" : "Review selected move"}
                       </button>
                       {reviewError && <p className="analysis-inline-error" role="alert">{reviewError}</p>}
                       {visibleMoveReview && (
