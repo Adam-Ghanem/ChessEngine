@@ -34,4 +34,14 @@ describe("ChessIQ mobile premium navigation", () => {
     expect(header).toContain("mobileMoreRef.current?.contains(event.target as Node)");
     expect(header).toContain("onClick={closeMobileMore}");
   });
+
+  it("surfaces the current secondary section directly in the mobile dock", () => {
+    const header = readFileSync(new URL("./components/ProductHeader.tsx", import.meta.url), "utf8");
+
+    expect(header).toContain("const activeMoreRoute = productRoutes.find");
+    expect(header).toContain("const MobileMoreIcon = activeMoreRoute ? routeIcons[activeMoreRoute.href] : Menu");
+    expect(header).toContain("<MobileMoreIcon size={19} aria-hidden=\"true\" />");
+    expect(header).toContain("<span>{activeMoreRoute?.label ?? \"More\"}</span>");
+    expect(header).toContain('aria-label={activeMoreRoute ? `${activeMoreRoute.label}, open more ChessIQ sections` : "Open more ChessIQ sections"}');
+  });
 });
