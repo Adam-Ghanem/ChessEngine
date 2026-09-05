@@ -52,6 +52,19 @@ export function pendingReviewPlies(totalMoves: number, reviewedPlies: readonly n
 }
 
 /**
+ * Resume a genuinely partial review at its first missing ply. Fresh reviews
+ * and completed reviews keep the caller's current replay position intact.
+ */
+export function resumeReviewPly(totalMoves: number, reviewedPlies: readonly number[], currentReplayIndex: number): number {
+  const safeTotal = Math.max(0, Math.floor(totalMoves));
+  const reviewed = reviewedPlies.filter((ply) => Number.isInteger(ply) && ply >= 1 && ply <= safeTotal);
+  if (reviewed.length === 0) return currentReplayIndex;
+
+  const pending = pendingReviewPlies(safeTotal, reviewed);
+  return pending.length === 0 ? currentReplayIndex : pending[0];
+}
+
+/**
  * Rank only review errors by centipawn loss so the UI can surface the most
  * useful positions without inventing conclusions for unreviewed or good moves.
  */
