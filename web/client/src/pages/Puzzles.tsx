@@ -6,7 +6,7 @@ import { BrandMark } from "@/components/BrandMark";
 import { LegalChessBoard } from "@/components/LegalChessBoard";
 import { ProductHeader } from "@/components/ProductHeader";
 import { fetchLegalMoves, playMove } from "@/engine/playEngine";
-import { evaluatePuzzleMove } from "@/engine/puzzleState";
+import { evaluatePuzzleMove, nextPuzzleAutoReply } from "@/engine/puzzleState";
 import { PUZZLE_IDS, PUZZLE_STORAGE_KEY, PUZZLES as puzzles } from "@/lib/puzzleCatalog";
 
 type PuzzleFeedback = "idle" | "incorrect" | "progress" | "solved";
@@ -79,10 +79,23 @@ export default function Puzzles() {
     setError(null);
     try {
       const result = await playMove(fen, move);
-      setFen(result.fen);
-      setLegalMoves(result.legalMoves);
-      setAttemptIndex(evaluation.nextIndex);
       if (evaluation.solved) {
+        setFen(result.fen);
+        setLegalMoves(result.legalMoves);
+        setAttemptIndex(evaluation.nextIndex);
+        persistSolved();
+        setFeedback("solved");
+        toast.success("Puzzle solved on the board.");
+        return;
+      }
+
+      const reply = nextPuzzleAutoReply(puzzle.solution, evaluation.nextIndex);
+      if (!reply.move) throw new Error("Puzzle line ended before the opponent reply.");
+      const replyResult = await playMove(result.fen, reply.move);
+      setFen(replyResult.fen);
+      setLegalMoves(replyResult.legalMoves);
+      setAttemptIndex(reply.nextIndex);
+      if (reply.solved) {
         persistSolved();
         setFeedback("solved");
         toast.success("Puzzle solved on the board.");
@@ -138,7 +151,7 @@ export default function Puzzles() {
           <div>
             <div className="analysis-hero-kicker"><Sparkles size={14} /> ChessIQ Training</div>
             <h1>Calculate before you move.</h1>
-            <p>Every move is made on the board and checked through the same first-party ChessEngine legality path used by Play.</p>
+            <p>Every solver move and curated opponent reply runs through the same first-party ChessEngine legality path used by Play.</p>
           </div>
           <div className="puzzles-stats" aria-label="Puzzle training progress">
             <div><Trophy size={16} /><span>Solved</span><strong>{solvedCount}/{puzzles.length}</strong></div>
@@ -178,12 +191,12 @@ export default function Puzzles() {
 
             <div className="puzzle-answer-panel">
               <div className="analysis-section-heading compact"><div><span className="analysis-label">Board attempt</span><h2>Find the move</h2></div><Lightbulb size={18} /></div>
-              <p className="sidebar-note">Select a piece, then play one of its engine-verified legal destinations. ChessIQ checks the UCI move against the curated solution line.</p>
+              <p className="sidebar-note">Play only your side of the tactic. ChessIQ validates your UCI move, auto-plays the curated reply through the first-party engine, then returns the board to you.</p>
               {error && <div className="puzzle-feedback" role="alert"><strong>Engine error.</strong><p>{error}</p></div>}
               {feedback !== "idle" && !error && (
                 <div className={feedback === "solved" ? "puzzle-feedback is-success" : "puzzle-feedback"} role="status" aria-live="polite">
-                  <strong>{feedback === "solved" ? "Correct." : feedback === "progress" ? "Correct — continue the line." : "Keep calculating."}</strong>
-                  <p>{feedback === "solved" ? puzzle.explanation : feedback === "incorrect" ? "That move is legal, but it is not the tactical solution. The position has not changed." : "Play the next move in the solution line."}</p>
+                  <strong>{feedback === "solved" ? "Correct." : feedback === "progress" ? "Correct — opponent replied. Continue." : "Keep calculating."}</strong>
+                  <p>{feedback === "solved" ? puzzle.explanation : feedback === "incorrect" ? "That move is legal, but it is not the tactical solution. The position has not changed." : "The verified reply is on the board. Find your next move."}</p>
                 </div>
               )}
               <div className="puzzle-next-row">
