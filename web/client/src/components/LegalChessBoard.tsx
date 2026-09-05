@@ -1,7 +1,8 @@
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { ChessPiece, type ChessPieceKind } from "@/components/ChessPiece";
 import { sideToMove, moveTargets } from "@/engine/playState";
 import type { PlayerSide } from "@/engine/playSide";
+import { nextBoardFocusSquare } from "@/lib/boardKeyboardNavigation";
 import type { PieceColor } from "@/types/analysis";
 import "@/play.css";
 
@@ -70,7 +71,9 @@ export function LegalChessBoard({
 }: LegalChessBoardProps) {
   const [selected, setSelected] = useState<string | null>(null);
   const [motion, setMotion] = useState<PieceMotion | null>(null);
+  const [focusedSquare, setFocusedSquare] = useState(() => orientation === "white" ? "a8" : "h1");
   const previousBoardRef = useRef<Map<string, BoardPiece> | null>(null);
+  const squareRefs = useRef(new Map<string, HTMLButtonElement>());
   const motionKeyRef = useRef(0);
   const board = useMemo(() => decodeFen(fen), [fen]);
   const { files, ranks } = useMemo(() => boardAxes(orientation), [orientation]);
@@ -95,6 +98,7 @@ export function LegalChessBoard({
   }, [board, lastMove]);
 
   useLayoutEffect(() => setSelected(null), [fen, orientation]);
+  useLayoutEffect(() => setFocusedSquare(`${files[0]}${ranks[0]}`), [files, ranks]);
 
   async function chooseSquare(square: string) {
     if (disabled) return;
@@ -119,11 +123,19 @@ export function LegalChessBoard({
     await onMove(move);
   }
 
+  function handleSquareKeyDown(event: KeyboardEvent<HTMLButtonElement>, square: string) {
+    const nextSquare = nextBoardFocusSquare(square, event.key, orientation);
+    if (!nextSquare) return;
+    event.preventDefault();
+    setFocusedSquare(nextSquare);
+    squareRefs.current.get(nextSquare)?.focus();
+  }
+
   const motionOrigin = motion ? squareOrigin(motion.from, files, ranks) : null;
   const motionTravel = motion ? squareTravel(motion.from, motion.to, files, ranks) : null;
 
   return (
-    <div className="play-board" role="grid" aria-label={ariaLabel} data-orientation={orientation}>
+    <div className="play-board" role="grid" aria-label={ariaLabel} aria-rowcount={8} aria-colcount={8} data-orientation={orientation}>
       {ranks.map((rank, row) => files.map((file, column) => {
         const square = `${file}${rank}`;
         const piece = board.get(square);
@@ -133,9 +145,17 @@ export function LegalChessBoard({
         return (
           <button
             key={square}
+            ref={element => {
+              if (element) squareRefs.current.set(square, element);
+              else squareRefs.current.delete(square);
+            }}
             type="button"
             role="gridcell"
+            data-square={square}
+            tabIndex={square === focusedSquare ? 0 : -1}
             className={`play-square ${(row + column) % 2 === 0 ? "is-light" : "is-dark"} ${isSelected ? "is-selected" : ""} ${isTarget ? "is-target" : ""} ${isMotionDestination ? "is-motion-destination" : ""}`}
+            onFocus={() => setFocusedSquare(square)}
+            onKeyDown={event => handleSquareKeyDown(event, square)}
             onClick={() => chooseSquare(square)}
             aria-label={piece ? `${piece.color} ${piece.kind} on ${square}` : `Empty ${square}`}
             aria-pressed={isSelected}
