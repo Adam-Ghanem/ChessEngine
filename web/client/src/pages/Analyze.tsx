@@ -8,7 +8,7 @@ import { analyzePosition, type ServerEngineAnalysis } from "@/engine/serverEngin
 import { validateFenShape } from "@/engine/fen";
 import { initialAnalysisFenFromSearch, initialAnalysisGameIdFromSearch } from "@/lib/analysisRoute";
 import { readGameHistory, replayMoveContext } from "@/lib/gameHistory";
-import { classifyMoveReview, pendingReviewPlies, rankCriticalReviewMoments, summarizeMoveReviews, summarizeMoveReviewsBySide, type MoveReviewClassification } from "@/lib/gameReview";
+import { classifyMoveReview, pendingReviewPlies, rankCriticalReviewMoments, resumeReviewPly, summarizeMoveReviews, summarizeMoveReviewsBySide, type MoveReviewClassification } from "@/lib/gameReview";
 import { readGameReviewCache, writeGameReviewCache } from "@/lib/gameReviewCache";
 import { gameOutcomeLabel } from "@/lib/gameOutcome";
 import "@/fen-analyze.css";
@@ -67,8 +67,23 @@ export default function Analyze() {
       setMoveReviews({});
       return;
     }
-    setMoveReviews(readGameReviewCache(window.localStorage, gameContext.id, depth, gameContext.moves));
-  }, [gameContext, depth]);
+
+    const cachedReviews = readGameReviewCache(window.localStorage, gameContext.id, depth, gameContext.moves);
+    setMoveReviews(cachedReviews);
+    if (!replayPositions) return;
+
+    const initialReplayIndex = replayPositions.length - 1;
+    const resumePly = resumeReviewPly(gameContext.moves.length, Object.keys(cachedReviews).map(Number), initialReplayIndex);
+    const resumePosition = replayPositions[resumePly];
+    if (resumePly === initialReplayIndex || !resumePosition) return;
+
+    setReplayIndex(resumePly);
+    setDraftFen(resumePosition);
+    setLoadedFen(resumePosition);
+    setAnalysis(null);
+    setError(null);
+    setReviewError(null);
+  }, [gameContext, depth, replayPositions]);
 
   const selectedMoveContext = useMemo(
     () => gameContext ? replayMoveContext(gameContext, replayIndex) : null,
