@@ -3,11 +3,20 @@ import { Link } from "wouter";
 import { BrandMark } from "@/components/BrandMark";
 import { ProductHeader } from "@/components/ProductHeader";
 import { LEARN_STORAGE_KEY, LEARN_TOTAL_CHECKPOINTS, LESSONS } from "@/data/lessons";
+import { analysisHrefForGame } from "@/lib/analysisRoute";
 import { readGameHistory } from "@/lib/gameHistory";
+import type { MoveReviewSummary } from "@/lib/gameReview";
+import { readPlayerGameReviewSummary } from "@/lib/gameReviewCache";
 import { readNumberProgress } from "@/lib/localProgress";
 import { summarizeComputerGameOutcomes, summarizeRecentComputerForm, type ComputerGameFormResult } from "@/lib/progressStats";
 import { PUZZLE_IDS, PUZZLE_STORAGE_KEY, PUZZLE_TOTAL } from "@/lib/puzzleCatalog";
 import "../progress.css";
+
+type ReviewedComputerGame = {
+  id: string;
+  fen: string;
+  summary: MoveReviewSummary;
+};
 
 type ProgressSnapshot = {
   learnCheckpoints: number;
@@ -20,6 +29,7 @@ type ProgressSnapshot = {
   draws: number;
   losses: number;
   recentForm: ComputerGameFormResult[];
+  latestReviewedGame: ReviewedComputerGame | null;
 };
 
 const emptyProgress: ProgressSnapshot = {
@@ -33,6 +43,7 @@ const emptyProgress: ProgressSnapshot = {
   draws: 0,
   losses: 0,
   recentForm: [],
+  latestReviewedGame: null,
 };
 
 function readProgress(): ProgressSnapshot {
@@ -64,6 +75,15 @@ function readProgress(): ProgressSnapshot {
   const outcomes = summarizeComputerGameOutcomes(games);
   const recentForm = summarizeRecentComputerForm(games);
 
+  let latestReviewedGame: ReviewedComputerGame | null = null;
+  for (const game of games) {
+    if (game.mode !== "computer" || !game.playerSide || !game.result) continue;
+    const summary = readPlayerGameReviewSummary(window.localStorage, game.id, game.moves, game.playerSide);
+    if (!summary) continue;
+    latestReviewedGame = { id: game.id, fen: game.fen, summary };
+    break;
+  }
+
   return {
     learnCheckpoints,
     completedLessons,
@@ -75,6 +95,7 @@ function readProgress(): ProgressSnapshot {
     draws: outcomes.draws,
     losses: outcomes.losses,
     recentForm,
+    latestReviewedGame,
   };
 }
 
@@ -208,6 +229,51 @@ export default function Progress() {
               <p className="progress-form-empty">Complete a game against ChessIQ to start your recent form.</p>
             )}
           </div>
+        </section>
+
+        <section className="progress-review" aria-labelledby="progress-review-title">
+          <div className="progress-review-heading">
+            <div>
+              <span className="analysis-label">Latest Game Review</span>
+              <h2 id="progress-review-title">
+                {snapshot.latestReviewedGame ? "Move quality from your latest reviewed game." : "No reviewed ChessIQ game yet"}
+              </h2>
+              <p>Only first-party ChessEngine move reviews count here. Stale or mismatched saved histories are ignored.</p>
+            </div>
+            {snapshot.latestReviewedGame ? (
+              <Link
+                href={analysisHrefForGame(snapshot.latestReviewedGame.fen, snapshot.latestReviewedGame.id)}
+                className="primary-action progress-review-action"
+              >
+                Open reviewed game
+              </Link>
+            ) : (
+              <Link href="/games" className="secondary-action progress-review-action">Open games</Link>
+            )}
+          </div>
+
+          {snapshot.latestReviewedGame ? (
+            <dl className="progress-review-grid" aria-label="Verified Game Review quality">
+              <div>
+                <dt>Reviewed moves</dt>
+                <dd>{snapshot.latestReviewedGame.summary.reviewed}</dd>
+              </div>
+              <div>
+                <dt>Average CPL</dt>
+                <dd>{snapshot.latestReviewedGame.summary.averageCentipawnLoss}</dd>
+              </div>
+              <div>
+                <dt>Mistakes</dt>
+                <dd>{snapshot.latestReviewedGame.summary.mistakes}</dd>
+              </div>
+              <div>
+                <dt>Blunders</dt>
+                <dd>{snapshot.latestReviewedGame.summary.blunders}</dd>
+              </div>
+            </dl>
+          ) : (
+            <p className="progress-review-empty">Review a completed game against ChessIQ to add verified move-quality evidence here.</p>
+          )}
         </section>
 
         <section className="progress-focus" aria-labelledby="progress-focus-title">
