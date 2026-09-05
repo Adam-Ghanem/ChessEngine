@@ -26,11 +26,12 @@ export function normalizeServerAnalysis(payload: unknown): ServerEngineAnalysis 
   };
 }
 
-export async function analyzePosition(fen: string, depth = 4): Promise<ServerEngineAnalysis> {
+export async function analyzePosition(fen: string, depth = 4, signal?: AbortSignal): Promise<ServerEngineAnalysis> {
   const response = await fetch("/api/analyze", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ fen, depth }),
+    signal,
   });
   const payload = await response.json().catch(() => ({})) as Record<string, unknown>;
   if (!response.ok) {
