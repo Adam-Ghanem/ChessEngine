@@ -26,13 +26,13 @@ export const PUZZLES: readonly PuzzleDefinition[] = [
   },
   {
     id: "fork",
-    title: "Knight fork",
+    title: "Knight fork conversion",
     theme: "Double attack",
     difficulty: "Intermediate",
     fen: "4k3/8/8/3q4/4N3/8/8/4K3 w - - 0 1",
-    prompt: "White to move. Find the knight jump that checks the king and attacks the queen.",
-    solution: ["e4f6"],
-    explanation: "Nf6+ attacks the king and queen at the same time, forcing the king to respond before the queen can move.",
+    prompt: "White to move. Force the king away, then collect the queen.",
+    solution: ["e4f6", "e8f8", "f6d5"],
+    explanation: "Nf6+ forks king and queen. After the curated king reply ...Kf8, Nxd5 converts the tactic by taking the queen.",
   },
   {
     id: "remove-defender",
