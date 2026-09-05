@@ -43,6 +43,21 @@ describe("Coach reviewed weakness", () => {
     });
   });
 
+  it("never coaches the opponent's larger reviewed error as the player's weakness", () => {
+    const reviews: GameReviewCache = {
+      2: review(2, "Blunder", 500),
+      3: review(3, "Mistake", 150),
+    };
+
+    expect(biggestReviewedWeakness(game, reviews)).toEqual({
+      ply: 3,
+      playedMove: "g1f3",
+      positionBeforeFen: "after-2",
+      label: "Mistake",
+      centipawnLoss: 150,
+    });
+  });
+
   it("returns null when reviewed moves contain no inaccuracy-or-worse decision", () => {
     const reviews: GameReviewCache = {
       1: review(1, "Best move", 0),
