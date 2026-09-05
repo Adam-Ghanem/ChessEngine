@@ -11,10 +11,12 @@ describe("ChessIQ premium application shell", () => {
     expect(header).toContain("sidebar-nav-icon");
   });
 
-  it("turns the root route into a real product dashboard without replacing Play", () => {
+  it("keeps the root route as the real product dashboard while allowing it to be route-split", () => {
     const app = readFileSync(new URL("./App.tsx", import.meta.url), "utf8");
+    const loaders = readFileSync(new URL("./lib/productRouteLoaders.ts", import.meta.url), "utf8");
 
-    expect(app).toContain('import Dashboard from "./pages/Dashboard"');
+    expect(app).toContain('const Dashboard = lazy(productRouteLoaders["/"])');
+    expect(loaders).toContain('"/": () => import("../pages/Dashboard")');
     expect(app).toContain('<Route path="/" component={Dashboard} />');
     expect(app).toContain('<Route path="/play" component={Play} />');
   });

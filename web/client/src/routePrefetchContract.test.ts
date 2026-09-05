@@ -6,10 +6,13 @@ const header = readFileSync(new URL("./components/ProductHeader.tsx", import.met
 const loaders = readFileSync(new URL("./lib/productRouteLoaders.ts", import.meta.url), "utf8");
 
 describe("production route prefetch contract", () => {
-  it("shares lazy loaders between the router and navigation prefetch", () => {
+  it("route-splits every product page, including Dashboard, behind shared lazy loaders", () => {
     expect(app).toContain('import { productRouteLoaders } from "./lib/productRouteLoaders"');
+    expect(app).not.toContain('import Dashboard from "./pages/Dashboard"');
+    expect(app).toContain('lazy(productRouteLoaders["/"]');
     expect(app).toContain('lazy(productRouteLoaders["/play"]');
     expect(app).toContain('lazy(productRouteLoaders["/analyze"]');
+    expect(loaders).toContain('"/": () => import("../pages/Dashboard")');
     expect(loaders).toContain('"/play": () => import("../pages/Play")');
     expect(loaders).toContain('"/puzzles": () => import("../pages/Puzzles")');
     expect(loaders).toContain('"/learn": () => import("../pages/Learn")');
@@ -19,7 +22,7 @@ describe("production route prefetch contract", () => {
     expect(loaders).toContain('"/progress": () => import("../pages/Progress")');
   });
 
-  it("prefetches only after pointer, keyboard, or touch intent", () => {
+  it("prefetches non-Home product routes only after pointer, keyboard, or touch intent", () => {
     expect(header).toContain("onPointerEnter: () => prefetchProductRoute(href)");
     expect(header).toContain("onFocus: () => prefetchProductRoute(href)");
     expect(header).toContain("onTouchStart: () => prefetchProductRoute(href)");

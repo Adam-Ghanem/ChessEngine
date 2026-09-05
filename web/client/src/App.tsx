@@ -7,9 +7,9 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
-import Dashboard from "./pages/Dashboard";
 import { productRouteLoaders } from "./lib/productRouteLoaders";
 
+const Dashboard = lazy(productRouteLoaders["/"]);
 const Analyze = lazy(productRouteLoaders["/analyze"]);
 const Coach = lazy(productRouteLoaders["/coach"]);
 const Games = lazy(productRouteLoaders["/games"]);

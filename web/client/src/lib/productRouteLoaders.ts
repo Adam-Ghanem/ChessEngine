@@ -2,9 +2,9 @@ import type { ComponentType } from "react";
 import type { ProductPath } from "./productRoutes";
 
 type LazyPageModule = { default: ComponentType };
-type LazyProductPath = Exclude<ProductPath, "/">;
 
-export const productRouteLoaders: Record<LazyProductPath, () => Promise<LazyPageModule>> = {
+export const productRouteLoaders: Record<ProductPath, () => Promise<LazyPageModule>> = {
+  "/": () => import("../pages/Dashboard"),
   "/play": () => import("../pages/Play"),
   "/puzzles": () => import("../pages/Puzzles"),
   "/learn": () => import("../pages/Learn"),
