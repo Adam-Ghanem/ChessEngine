@@ -16,12 +16,18 @@ function isWeaknessLabel(label: MoveReviewClassification["label"]): label is Wea
   return label === "Inaccuracy" || label === "Mistake" || label === "Blunder";
 }
 
+function isPlayerPly(game: StoredGame, ply: number) {
+  if (game.playerSide === "white") return ply % 2 === 1;
+  if (game.playerSide === "black") return ply % 2 === 0;
+  return false;
+}
+
 export function biggestReviewedWeakness(game: StoredGame, reviews: GameReviewCache): CoachReviewWeakness | null {
   let biggest: CoachReviewWeakness | null = null;
 
   for (const review of Object.values(reviews)) {
     const classification = review.classification;
-    if (!classification || !isWeaknessLabel(classification.label)) continue;
+    if (!classification || !isWeaknessLabel(classification.label) || !isPlayerPly(game, review.ply)) continue;
 
     const context = replayMoveContext(game, review.ply);
     if (!context) continue;
