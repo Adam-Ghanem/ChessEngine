@@ -1,18 +1,33 @@
-import { Activity, BarChart3, BookOpen, ChevronRight, Gamepad2, LibraryBig, Puzzle, Search, ShieldCheck, Sparkles, TrendingUp } from "lucide-react";
+import { Activity, BarChart3, BookOpen, Bot, ChevronRight, Gamepad2, LibraryBig, Puzzle, Search, ShieldCheck, Sparkles, TrendingUp } from "lucide-react";
 import { Link } from "wouter";
 import { ProductHeader } from "@/components/ProductHeader";
-import { analysisHrefForGame } from "@/lib/analysisRoute";
+import { dashboardNextAction } from "@/lib/dashboardNextAction";
 import { latestResumableGame, readGameHistory } from "@/lib/gameHistory";
+import { readGameReviewProgress } from "@/lib/gameReviewCache";
 import { latestCompletedComputerGame } from "@/lib/progressStats";
 
 const LEARN_STORAGE_KEY = "chessiq.learn.progress";
 const PUZZLE_STORAGE_KEY = "chessiq-puzzles-solved-v1";
 
 function readLocalSnapshot() {
-  if (typeof window === "undefined") return { games: 0, moves: 0, puzzles: 0, lessons: 0, resumeGameId: null as string | null, latestCompletedGame: null };
+  if (typeof window === "undefined") {
+    return {
+      games: 0,
+      moves: 0,
+      puzzles: 0,
+      lessons: 0,
+      resumeGameId: null as string | null,
+      latestCompletedGame: null,
+      latestReviewProgress: null,
+    };
+  }
+
   const games = readGameHistory(window.localStorage);
   const resumableGame = latestResumableGame(window.localStorage);
   const latestCompletedGame = latestCompletedComputerGame(games);
+  const latestReviewProgress = latestCompletedGame
+    ? readGameReviewProgress(window.localStorage, latestCompletedGame.id, latestCompletedGame.moves)
+    : null;
   let puzzles = 0;
   let lessons = 0;
 
@@ -33,6 +48,7 @@ function readLocalSnapshot() {
     lessons,
     resumeGameId: resumableGame?.id ?? null,
     latestCompletedGame,
+    latestReviewProgress,
   };
 }
 
@@ -46,27 +62,19 @@ const features = [
 export default function Dashboard() {
   const snapshot = readLocalSnapshot();
   const latestCompletedGame = snapshot.latestCompletedGame;
-  const nextHref = snapshot.resumeGameId
-    ? `/play?resume=${encodeURIComponent(snapshot.resumeGameId)}`
-    : latestCompletedGame
-      ? analysisHrefForGame(latestCompletedGame.fen, latestCompletedGame.id)
-      : snapshot.games === 0
-        ? "/play"
-        : "/games";
-  const nextCopy = snapshot.resumeGameId
-    ? "Continue your unfinished game exactly where you left it, with the saved board, clocks, side, and ChessIQ strength."
-    : latestCompletedGame
-      ? "Review your latest completed ChessIQ game move by move with first-party engine evaluation and saved-game context."
-      : snapshot.games === 0
-        ? "Play your first game so ChessIQ can start connecting training with real board activity."
-        : "Open Games to revisit a saved position, then carry it straight into Analyze.";
-  const nextLabel = snapshot.resumeGameId
-    ? "Resume game"
-    : latestCompletedGame
-      ? "Review latest game"
-      : snapshot.games === 0
-        ? "Start a game"
-        : "Open games";
+  const nextAction = dashboardNextAction({
+    resumeGameId: snapshot.resumeGameId,
+    gamesCount: snapshot.games,
+    latestCompletedGame,
+    latestReviewProgress: snapshot.latestReviewProgress,
+  });
+  const NextActionIcon = nextAction.kind === "play"
+    ? Gamepad2
+    : nextAction.kind === "analyze"
+      ? Search
+      : nextAction.kind === "coach"
+        ? Bot
+        : LibraryBig;
 
   return (
     <main className="app-shell chessiq-shell premium-product-page">
@@ -114,10 +122,10 @@ export default function Dashboard() {
 
           <article className="premium-panel premium-next-panel">
             <header><div><span className="premium-label">Continue</span><h2>Next best action</h2></div><BarChart3 size={19} /></header>
-            <p>{nextCopy}</p>
-            <Link href={nextHref} className="premium-secondary-action">
-              {snapshot.resumeGameId || snapshot.games === 0 ? <Gamepad2 size={16} /> : latestCompletedGame ? <Search size={16} /> : <LibraryBig size={16} />}
-              {nextLabel}
+            <p>{nextAction.copy}</p>
+            <Link href={nextAction.href} className="premium-secondary-action">
+              <NextActionIcon size={16} />
+              {nextAction.label}
             </Link>
           </article>
         </section>
