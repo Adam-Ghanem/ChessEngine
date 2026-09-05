@@ -194,7 +194,7 @@ export default function Coach() {
 
         <section className="coach-principles" aria-labelledby="coach-principles-title">
           <div><Brain size={20} /><h2 id="coach-principles-title">How Coach decides</h2></div>
-          <p>Coach prioritizes missing verified evidence first. A saved game counts as game evidence only when it is a completed ChessIQ game with both a persisted result and player side. When a matching persisted Game Review exists, Coach can focus the highest-loss reviewed inaccuracy, mistake, or blunder; local, ongoing, stale-review, and legacy-incomplete records do not unlock that recommendation.</p>
+          <p>Coach prioritizes missing verified evidence first. A saved game counts as game evidence only when it is a completed ChessIQ game with both a persisted result and player side. When a matching persisted Game Review exists, Coach can focus the highest-loss reviewed error from its persisted classifications; local, ongoing, stale-review, and legacy-incomplete records do not unlock that recommendation.</p>
           <div className="coach-links">
             <Link href="/games">Review saved games</Link>
             <Link href="/progress">Open Progress</Link>
