@@ -22,12 +22,13 @@ describe("production route prefetch contract", () => {
     expect(loaders).toContain('"/progress": () => import("../pages/Progress")');
   });
 
-  it("prefetches non-Home product routes only after pointer, keyboard, or touch intent", () => {
+  it("prefetches every product route, including Home, only after pointer, keyboard, or touch intent", () => {
     expect(header).toContain("onPointerEnter: () => prefetchProductRoute(href)");
     expect(header).toContain("onFocus: () => prefetchProductRoute(href)");
     expect(header).toContain("onTouchStart: () => prefetchProductRoute(href)");
     expect(header).toContain("{...routeIntentProps(href)}");
-    expect(loaders).toContain('if (path === "/" || prefetchedRoutes.has(path)) return;');
+    expect(loaders).toContain("if (prefetchedRoutes.has(path)) return;");
+    expect(loaders).not.toContain('path === "/"');
     expect(loaders).toContain("prefetchedRoutes.delete(path)");
   });
 });
