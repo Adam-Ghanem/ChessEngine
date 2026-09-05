@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { BarChart3, ChevronLeft, ChevronRight, Gauge, History, SkipForward, Sparkles, Swords } from "lucide-react";
 import { Link } from "wouter";
 import { toast } from "sonner";
@@ -61,6 +61,11 @@ export default function Analyze() {
   const [reviewLoading, setReviewLoading] = useState(false);
   const [reviewAllProgress, setReviewAllProgress] = useState<ReviewAllProgress | null>(null);
   const [reviewError, setReviewError] = useState<string | null>(null);
+  const reviewAbortControllerRef = useRef<AbortController | null>(null);
+
+  useEffect(() => () => {
+    reviewAbortControllerRef.current?.abort();
+  }, []);
 
   useEffect(() => {
     if (!gameContext || typeof window === "undefined") {
@@ -165,13 +170,13 @@ export default function Analyze() {
     });
   }
 
-  async function analyzeRecordedMove(ply: number): Promise<ReviewedMove | null> {
+  async function analyzeRecordedMove(ply: number, signal?: AbortSignal): Promise<ReviewedMove | null> {
     if (!gameContext || !replayPositions) return null;
     const context = replayMoveContext(gameContext, ply);
     const positionAfterFen = replayPositions[ply];
     if (!context || !positionAfterFen) return null;
 
-    const beforeAnalysis = await analyzePosition(context.positionBeforeFen, depth);
+    const beforeAnalysis = await analyzePosition(context.positionBeforeFen, depth, signal);
     const bestMoveMatch = context.playedMove.toLowerCase() === beforeAnalysis.bestMove.toLowerCase();
     if (bestMoveMatch) {
       return {
@@ -184,7 +189,7 @@ export default function Analyze() {
     }
 
     try {
-      const afterAnalysis = await analyzePosition(positionAfterFen, depth);
+      const afterAnalysis = await analyzePosition(positionAfterFen, depth, signal);
       return {
         ply: context.ply,
         playedMove: context.playedMove,
@@ -196,7 +201,8 @@ export default function Analyze() {
           afterScoreCp: afterAnalysis.scoreCp,
         }),
       };
-    } catch {
+    } catch (cause) {
+      if (signal?.aborted) throw cause;
       return {
         ply: context.ply,
         playedMove: context.playedMove,
@@ -239,24 +245,37 @@ export default function Analyze() {
     }
   }
 
+  function stopReviewRemainingMoves() {
+    reviewAbortControllerRef.current?.abort();
+  }
+
   async function reviewRemainingMoves() {
     if (!gameContext || !replayPositions || remainingReviewPlies.length === 0) return;
 
     const queue = [...remainingReviewPlies];
+    const controller = new AbortController();
+    reviewAbortControllerRef.current = controller;
+    let completed = 0;
     setReviewError(null);
-    setReviewAllProgress({ completed: 0, total: queue.length });
+    setReviewAllProgress({ completed, total: queue.length });
     try {
       for (let index = 0; index < queue.length; index += 1) {
-        const review = await analyzeRecordedMove(queue[index]);
+        const review = await analyzeRecordedMove(queue[index], controller.signal);
         if (review) cacheMoveReview(review);
-        setReviewAllProgress({ completed: index + 1, total: queue.length });
+        completed = index + 1;
+        setReviewAllProgress({ completed, total: queue.length });
       }
       toast.success(`Reviewed ${queue.length} saved-game move${queue.length === 1 ? "" : "s"}.`);
     } catch (cause) {
-      const message = cause instanceof Error ? cause.message : "ChessEngine full game review failed";
-      setReviewError(`Full review stopped: ${message}`);
-      toast.error(message);
+      if (controller.signal.aborted) {
+        toast.info(completed > 0 ? `Review stopped. ${completed} completed move${completed === 1 ? "" : "s"} saved.` : "Review stopped.");
+      } else {
+        const message = cause instanceof Error ? cause.message : "ChessEngine full game review failed";
+        setReviewError(`Full review stopped: ${message}`);
+        toast.error(message);
+      }
     } finally {
+      if (reviewAbortControllerRef.current === controller) reviewAbortControllerRef.current = null;
       setReviewAllProgress(null);
     }
   }
@@ -426,8 +445,14 @@ export default function Analyze() {
                       <button type="button" className="game-review-engine-action" onClick={reviewSelectedMove} disabled={!selectedMoveContext || reviewBusy}>
                         <Sparkles size={15} /> {reviewLoading ? "Reviewing…" : visibleMoveReview ? "Re-review selected move" : "Review selected move"}
                       </button>
-                      <button type="button" className="game-review-engine-action" onClick={reviewRemainingMoves} disabled={reviewBusy || remainingReviewPlies.length === 0} aria-label="Review remaining saved-game moves">
-                        <Sparkles size={15} /> {reviewAllProgress ? `Reviewing ${reviewAllProgress.completed}/${reviewAllProgress.total}` : remainingReviewPlies.length === 0 ? "All moves reviewed" : `Review remaining moves (${remainingReviewPlies.length})`}
+                      <button
+                        type="button"
+                        className="game-review-engine-action"
+                        onClick={reviewAllProgress ? stopReviewRemainingMoves : reviewRemainingMoves}
+                        disabled={reviewLoading || (!reviewAllProgress && remainingReviewPlies.length === 0)}
+                        aria-label={reviewAllProgress ? "Stop full saved-game review" : "Review remaining saved-game moves"}
+                      >
+                        <Sparkles size={15} /> {reviewAllProgress ? `Stop review (${reviewAllProgress.completed}/${reviewAllProgress.total})` : remainingReviewPlies.length === 0 ? "All moves reviewed" : `Review remaining moves (${remainingReviewPlies.length})`}
                       </button>
                       {reviewError && <p className="analysis-inline-error" role="alert">{reviewError}</p>}
                       {visibleMoveReview && (
