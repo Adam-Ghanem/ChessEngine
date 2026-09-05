@@ -2,9 +2,9 @@ import type { ComponentType } from "react";
 import type { ProductPath } from "./productRoutes";
 
 type LazyPageModule = { default: ComponentType };
-type LazyProductPath = Exclude<ProductPath, "/">;
 
-export const productRouteLoaders: Record<LazyProductPath, () => Promise<LazyPageModule>> = {
+export const productRouteLoaders: Record<ProductPath, () => Promise<LazyPageModule>> = {
+  "/": () => import("../pages/Dashboard"),
   "/play": () => import("../pages/Play"),
   "/puzzles": () => import("../pages/Puzzles"),
   "/learn": () => import("../pages/Learn"),
@@ -17,7 +17,7 @@ export const productRouteLoaders: Record<LazyProductPath, () => Promise<LazyPage
 const prefetchedRoutes = new Set<ProductPath>();
 
 export function prefetchProductRoute(path: ProductPath) {
-  if (path === "/" || prefetchedRoutes.has(path)) return;
+  if (prefetchedRoutes.has(path)) return;
   prefetchedRoutes.add(path);
 
   void productRouteLoaders[path]().catch(() => {
