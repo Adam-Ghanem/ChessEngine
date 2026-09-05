@@ -1,5 +1,10 @@
+import type { PlayerSide } from "@/engine/playSide";
 import type { ServerEngineAnalysis } from "@/engine/serverEngine";
-import type { MoveReviewClassification } from "@/lib/gameReview";
+import {
+  summarizeMoveReviewsBySide,
+  type MoveReviewClassification,
+  type MoveReviewSummary,
+} from "@/lib/gameReview";
 
 export type CachedMoveReview = {
   ply: number;
@@ -124,6 +129,24 @@ export function readGameReviewProgress(
       total: moves.length,
       depth: parsed.depth,
     };
+  } catch {
+    return null;
+  }
+}
+
+export function readPlayerGameReviewSummary(
+  storage: ReviewStorage,
+  gameId: string,
+  moves: readonly string[],
+  playerSide: PlayerSide,
+): MoveReviewSummary | null {
+  try {
+    const parsed = parseStoredReviewCache(storage.getItem(cacheKey(gameId)));
+    if (!parsed || parsed.historyFingerprint !== fingerprintMoves(moves)) return null;
+
+    const summaryBySide = summarizeMoveReviewsBySide(Object.values(parsed.reviews));
+    const summary = summaryBySide[playerSide];
+    return summary.reviewed > 0 ? summary : null;
   } catch {
     return null;
   }
