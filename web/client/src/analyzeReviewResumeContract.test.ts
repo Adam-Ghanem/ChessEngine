@@ -7,7 +7,8 @@ describe("Analyze partial review resume", () => {
 
     expect(analyze).toContain("resumeReviewPly");
     expect(analyze).toContain("const cachedReviews = readGameReviewCache(window.localStorage, gameContext.id, depth, gameContext.moves)");
-    expect(analyze).toContain("const resumePly = resumeReviewPly(gameContext.moves.length, Object.keys(cachedReviews).map(Number), replayIndex)");
+    expect(analyze).toContain("const initialReplayIndex = replayPositions.length - 1");
+    expect(analyze).toContain("const resumePly = resumeReviewPly(gameContext.moves.length, Object.keys(cachedReviews).map(Number), initialReplayIndex)");
     expect(analyze).toContain("setReplayIndex(resumePly)");
     expect(analyze).toContain("setDraftFen(replayPositions[resumePly])");
     expect(analyze).toContain("setLoadedFen(replayPositions[resumePly])");
