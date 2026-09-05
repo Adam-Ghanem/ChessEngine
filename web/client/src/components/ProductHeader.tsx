@@ -39,6 +39,10 @@ export function ProductHeader({ activePath }: ProductHeaderProps) {
   const activeLinkRef = useRef<HTMLAnchorElement>(null);
   const mobileMoreRef = useRef<HTMLDetailsElement>(null);
   const moreIsActive = mobileMoreRoutes.includes(activePath);
+  const activeMoreRoute = productRoutes.find(
+    (route) => route.href === activePath && mobileMoreRoutes.includes(route.href),
+  );
+  const MobileMoreIcon = activeMoreRoute ? routeIcons[activeMoreRoute.href] : Menu;
 
   function closeMobileMore() {
     if (mobileMoreRef.current) mobileMoreRef.current.open = false;
@@ -143,9 +147,12 @@ export function ProductHeader({ activePath }: ProductHeaderProps) {
           );
         })}
         <details ref={mobileMoreRef} className={`mobile-more ${moreIsActive ? "is-active" : ""}`}>
-          <summary className="mobile-more-button" aria-label="Open more ChessIQ sections">
-            <Menu size={19} aria-hidden="true" />
-            <span>More</span>
+          <summary
+            className="mobile-more-button"
+            aria-label={activeMoreRoute ? `${activeMoreRoute.label}, open more ChessIQ sections` : "Open more ChessIQ sections"}
+          >
+            <MobileMoreIcon size={19} aria-hidden="true" />
+            <span>{activeMoreRoute?.label ?? "More"}</span>
           </summary>
           <div className="mobile-more-menu">
             {mobileMoreRoutes.map((href) => {
