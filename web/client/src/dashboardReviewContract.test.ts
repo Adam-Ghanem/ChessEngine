@@ -4,17 +4,18 @@ import { describe, expect, it } from "vitest";
 const dashboard = readFileSync(new URL("./pages/Dashboard.tsx", import.meta.url), "utf8");
 
 describe("Dashboard continuation flow", () => {
-  it("deep-links the latest verified completed ChessIQ game into Game Review", () => {
-    expect(dashboard).toContain("latestCompletedComputerGame");
-    expect(dashboard).toContain("analysisHrefForGame");
-    expect(dashboard).toContain("latestCompletedGame.fen");
-    expect(dashboard).toContain("latestCompletedGame.id");
-    expect(dashboard).toContain("Review latest game");
+  it("derives the next action from persisted Game Review progress", () => {
+    expect(dashboard).toContain("dashboardNextAction");
+    expect(dashboard).toContain("readGameReviewProgress");
+    expect(dashboard).toContain("latestReviewProgress");
+    expect(dashboard).toContain("nextAction.href");
+    expect(dashboard).toContain("nextAction.label");
+    expect(dashboard).toContain("nextAction.copy");
   });
 
-  it("keeps resumable games ahead of completed-game review", () => {
+  it("keeps resumable games ahead of completed-game review and coaching", () => {
     expect(dashboard).toContain("snapshot.resumeGameId");
     expect(dashboard).toContain("latestCompletedGame");
-    expect(dashboard).toMatch(/snapshot\.resumeGameId[\s\S]*latestCompletedGame/);
+    expect(dashboard).toMatch(/dashboardNextAction\([\s\S]*resumeGameId:\s*snapshot\.resumeGameId/);
   });
 });
