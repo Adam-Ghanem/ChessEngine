@@ -17,7 +17,7 @@ export const productRouteLoaders: Record<ProductPath, () => Promise<LazyPageModu
 const prefetchedRoutes = new Set<ProductPath>();
 
 export function prefetchProductRoute(path: ProductPath) {
-  if (path === "/" || prefetchedRoutes.has(path)) return;
+  if (prefetchedRoutes.has(path)) return;
   prefetchedRoutes.add(path);
 
   void productRouteLoaders[path]().catch(() => {
