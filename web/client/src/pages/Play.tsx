@@ -4,7 +4,7 @@ import { Link } from "wouter";
 import { toast } from "sonner";
 import { LegalChessBoard } from "@/components/LegalChessBoard";
 import { ProductHeader } from "@/components/ProductHeader";
-import { elapsedClockSeconds } from "@/engine/playClock";
+import { clockSnapshotAfterUndo, elapsedClockSeconds, type ClockSnapshot } from "@/engine/playClock";
 import { PLAY_DIFFICULTIES, PLAY_DIFFICULTY_STORAGE_KEY, getPlayDifficulty, type PlayDifficultyId } from "@/engine/playDifficulty";
 import { fetchLegalMoves, playMove, type PlayEngineStatus } from "@/engine/playEngine";
 import { PLAY_SIDE_OPTIONS, PLAY_SIDE_STORAGE_KEY, getPlaySide, oppositeSide, resolvePlayerSide, type PlayerSide, type PlaySidePreference } from "@/engine/playSide";
@@ -90,6 +90,10 @@ export default function Play() {
   const [error, setError] = useState<string | null>(null);
   const [whiteSeconds, setWhiteSeconds] = useState(() => resumedGame?.whiteSeconds ?? timeControl.seconds);
   const [blackSeconds, setBlackSeconds] = useState(() => resumedGame?.blackSeconds ?? timeControl.seconds);
+  const [clockHistory, setClockHistory] = useState<ClockSnapshot[] | null>(() => {
+    if (resumedGame) return resumedGame.clockHistory ?? null;
+    return [{ whiteSeconds: timeControl.seconds, blackSeconds: timeControl.seconds }];
+  });
   const [timedOut, setTimedOut] = useState<TimedOutSide>(null);
   const [resignedSide, setResignedSide] = useState<ResignedSide>(null);
   const lastClockTickAtRef = useRef<number | null>(null);
@@ -103,6 +107,7 @@ export default function Play() {
   const topSide = oppositeSide(orientation);
   const bottomSide = orientation;
   const activeClockSeconds = turn === "white" ? whiteSeconds : blackSeconds;
+  const canUndo = history.length > 1 && clockHistory !== null && clockHistory.length === history.length;
 
   useEffect(() => {
     let cancelled = false;
@@ -139,6 +144,13 @@ export default function Play() {
   }, [busy, computerThinking, fen, gameId, legalMoves, mode, playerSide, resumedGame, terminal, turn]);
 
   useEffect(() => {
+    if (!clockHistory || history.length !== moves.length + 1 || clockHistory.length !== moves.length) return;
+    setClockHistory(current => current && current.length === moves.length
+      ? [...current, { whiteSeconds, blackSeconds }]
+      : current);
+  }, [blackSeconds, clockHistory, history.length, moves.length, whiteSeconds]);
+
+  useEffect(() => {
     if (!moves.length) return;
     const outcome = resignedSide
       ? { result: winnerWhen(resignedSide), termination: "resignation" as const }
@@ -152,6 +164,7 @@ export default function Play() {
       fen,
       moves,
       positions: history,
+      clockHistory: clockHistory?.length === moves.length + 1 ? clockHistory : undefined,
       whiteSeconds,
       blackSeconds,
       timeControlId: timeControl.id,
@@ -160,7 +173,7 @@ export default function Play() {
       ...outcome,
       updatedAt: new Date().toISOString(),
     });
-  }, [difficulty.id, fen, gameId, history, mode, moves, playerSide, resignedSide, status, timeControl.id, timedOut, turn]);
+  }, [blackSeconds, clockHistory, difficulty.id, fen, gameId, history, mode, moves, playerSide, resignedSide, status, timeControl.id, timedOut, turn, whiteSeconds]);
 
   useEffect(() => {
     if (!clockRunning || !moves.length || activeClockSeconds % 5 !== 0) return;
@@ -171,6 +184,7 @@ export default function Play() {
       fen,
       moves,
       positions: history,
+      clockHistory: clockHistory?.length === moves.length + 1 ? clockHistory : undefined,
       whiteSeconds,
       blackSeconds,
       timeControlId: timeControl.id,
@@ -178,7 +192,7 @@ export default function Play() {
       difficultyId: mode === "computer" ? difficulty.id : undefined,
       updatedAt: new Date().toISOString(),
     });
-  }, [activeClockSeconds, blackSeconds, clockRunning, difficulty.id, fen, gameId, history, mode, moves, playerSide, status, timeControl.id, whiteSeconds]);
+  }, [activeClockSeconds, blackSeconds, clockHistory, clockRunning, difficulty.id, fen, gameId, history, mode, moves, playerSide, status, timeControl.id, whiteSeconds]);
 
   useEffect(() => {
     if (!clockRunning) {
@@ -292,6 +306,7 @@ export default function Play() {
     setComputerThinking(false);
     setWhiteSeconds(nextTimeControl.seconds);
     setBlackSeconds(nextTimeControl.seconds);
+    setClockHistory([{ whiteSeconds: nextTimeControl.seconds, blackSeconds: nextTimeControl.seconds }]);
     setTimedOut(null);
     setResignedSide(null);
     if (fen === START_FEN) {
@@ -339,8 +354,10 @@ export default function Play() {
   }
 
   function undoMove() {
-    if (history.length <= 1 || busy || computerThinking || terminal) return;
+    if (!canUndo || busy || computerThinking || terminal || !clockHistory) return;
     const pliesToUndo = mode === "computer" && turn === playerSide && moves.length >= 2 ? 2 : 1;
+    const clockSnapshot = clockSnapshotAfterUndo(clockHistory, pliesToUndo);
+    if (!clockSnapshot) return;
     const nextHistory = history.slice(0, Math.max(1, history.length - pliesToUndo));
     setHistory(nextHistory);
     setFen(nextHistory[nextHistory.length - 1]);
@@ -348,6 +365,9 @@ export default function Play() {
     setTimedOut(null);
     setResignedSide(null);
     setMoves(current => current.slice(0, Math.max(0, current.length - pliesToUndo)));
+    setClockHistory(current => current?.slice(0, nextHistory.length) ?? null);
+    setWhiteSeconds(clockSnapshot.whiteSeconds);
+    setBlackSeconds(clockSnapshot.blackSeconds);
   }
 
   const whiteName = mode === "computer" ? (playerSide === "white" ? "You" : "ChessIQ") : "White";
@@ -527,7 +547,7 @@ export default function Play() {
             <div className="game-panel-engine"><ShieldCheck size={15} /><span>Moves verified by first-party ChessEngine</span></div>
 
             <div className="game-panel-actions">
-              <button type="button" onClick={undoMove} disabled={history.length <= 1 || busy || computerThinking || terminal}><ArrowLeft size={15} /> Undo</button>
+              <button type="button" onClick={undoMove} disabled={!canUndo || busy || computerThinking || terminal} title={!clockHistory && moves.length ? "Undo is unavailable for games saved before clock-history support." : undefined}><ArrowLeft size={15} /> Undo</button>
               <button type="button" onClick={() => resetGame()} disabled={busy || computerThinking}><RotateCcw size={15} /> New game</button>
               <button type="button" className="play-resign-action" onClick={resignGame} disabled={!moves.length || busy || computerThinking || terminal}><Flag size={15} /> Resign</button>
             </div>

@@ -1,3 +1,5 @@
+import type { ClockSnapshot } from "@/engine/playClock";
+import { isClockSnapshot } from "@/engine/playClock";
 import type { PlayDifficultyId } from "@/engine/playDifficulty";
 import type { PlayEngineStatus } from "@/engine/playEngine";
 import type { PlayerSide } from "@/engine/playSide";
@@ -16,6 +18,7 @@ export type StoredGame = {
   fen: string;
   moves: string[];
   positions?: string[];
+  clockHistory?: ClockSnapshot[];
   whiteSeconds?: number;
   blackSeconds?: number;
   timeControlId?: PlayTimeControlId;
@@ -78,12 +81,20 @@ function hasValidOutcome(game: Partial<StoredGame>) {
   return (game.status === "ongoing" || game.status === "check") && game.result !== "draw";
 }
 
+function hasValidClockHistory(game: Partial<StoredGame>) {
+  if (game.clockHistory === undefined) return true;
+  return Array.isArray(game.clockHistory)
+    && game.clockHistory.length === (game.moves?.length ?? -1) + 1
+    && game.clockHistory.every(isClockSnapshot);
+}
+
 function hasValidOptionalSession(game: Partial<StoredGame>) {
   return (game.whiteSeconds === undefined || isClock(game.whiteSeconds))
     && (game.blackSeconds === undefined || isClock(game.blackSeconds))
     && (game.timeControlId === undefined || isTimeControlId(game.timeControlId))
     && (game.playerSide === undefined || isPlayerSide(game.playerSide))
-    && (game.difficultyId === undefined || isDifficultyId(game.difficultyId));
+    && (game.difficultyId === undefined || isDifficultyId(game.difficultyId))
+    && hasValidClockHistory(game);
 }
 
 function isStoredGame(value: unknown): value is StoredGame {
