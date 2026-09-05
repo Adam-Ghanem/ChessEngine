@@ -37,4 +37,13 @@ describe("Coach evidence integrity", () => {
     expect(coach).toContain("latestCompletedGame.id");
     expect(coach).toContain("Review latest game");
   });
+
+  it("uses persisted first-party Game Review evidence to focus the biggest verified weakness", () => {
+    expect(coach).toContain("readGameReviewProgress");
+    expect(coach).toContain("readGameReviewCache");
+    expect(coach).toContain("biggestReviewedWeakness");
+    expect(coach).toContain("analysisHrefForFen");
+    expect(coach).toContain("positionBeforeFen");
+    expect(coach).toContain("Analyze this decision");
+  });
 });
