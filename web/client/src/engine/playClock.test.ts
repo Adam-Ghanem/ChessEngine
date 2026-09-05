@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { elapsedClockSeconds } from "./playClock";
+import { clockSnapshotAfterUndo, elapsedClockSeconds } from "./playClock";
 
 describe("elapsedClockSeconds", () => {
   it("counts only complete elapsed seconds", () => {
@@ -15,5 +15,27 @@ describe("elapsedClockSeconds", () => {
   it("never reports negative elapsed time", () => {
     expect(elapsedClockSeconds(5_000, 4_000)).toBe(0);
     expect(elapsedClockSeconds(Number.NaN, 5_000)).toBe(0);
+  });
+});
+
+describe("clockSnapshotAfterUndo", () => {
+  const history = [
+    { whiteSeconds: 300, blackSeconds: 300 },
+    { whiteSeconds: 292, blackSeconds: 300 },
+    { whiteSeconds: 292, blackSeconds: 294 },
+    { whiteSeconds: 286, blackSeconds: 294 },
+  ];
+
+  it("restores the clock snapshot that belongs to the target position", () => {
+    expect(clockSnapshotAfterUndo(history, 2)).toEqual({
+      whiteSeconds: 292,
+      blackSeconds: 300,
+    });
+  });
+
+  it("rejects unsafe undo requests instead of inventing clock state", () => {
+    expect(clockSnapshotAfterUndo(history, 0)).toBeNull();
+    expect(clockSnapshotAfterUndo(history, history.length)).toBeNull();
+    expect(clockSnapshotAfterUndo([], 1)).toBeNull();
   });
 });
