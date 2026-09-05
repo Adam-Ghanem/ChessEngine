@@ -3,8 +3,10 @@ import { Link } from "wouter";
 import { BrandMark } from "@/components/BrandMark";
 import { ProductHeader } from "@/components/ProductHeader";
 import { LEARN_STORAGE_KEY, LESSONS } from "@/data/lessons";
-import { analysisHrefForGame } from "@/lib/analysisRoute";
+import { analysisHrefForFen, analysisHrefForGame } from "@/lib/analysisRoute";
+import { biggestReviewedWeakness, type CoachReviewWeakness } from "@/lib/coachReviewInsight";
 import { readGameHistory } from "@/lib/gameHistory";
+import { readGameReviewCache, readGameReviewProgress } from "@/lib/gameReviewCache";
 import { readNumberProgress } from "@/lib/localProgress";
 import { latestCompletedComputerGame, summarizeComputerGameOutcomes } from "@/lib/progressStats";
 import { PUZZLE_IDS, PUZZLE_STORAGE_KEY } from "@/lib/puzzleCatalog";
@@ -72,20 +74,41 @@ const analyzeStep: TrainingStep = {
   icon: Brain,
 };
 
-function buildTrainingQueue(completedComputerGames: number, lessons: number, puzzles: number, reviewHref: string): TrainingStep[] {
+function reviewedWeaknessStep(weakness: CoachReviewWeakness): TrainingStep {
+  return {
+    ...analyzeStep,
+    eyebrow: "Fix a reviewed decision",
+    title: `Revisit your ${weakness.label.toLowerCase()}`,
+    copy: `Move ${weakness.ply} (${weakness.playedMove}) lost ${weakness.centipawnLoss} centipawns in the persisted first-party Game Review. Re-open the position before that decision and calculate a stronger continuation.`,
+    href: analysisHrefForFen(weakness.positionBeforeFen),
+    action: "Analyze this decision",
+  };
+}
+
+function buildTrainingQueue(
+  completedComputerGames: number,
+  lessons: number,
+  puzzles: number,
+  reviewHref: string,
+  reviewedWeakness: CoachReviewWeakness | null,
+): TrainingStep[] {
   const queue: TrainingStep[] = [];
 
   if (completedComputerGames === 0) queue.push(playStep);
   if (puzzles < 3) queue.push(puzzleStep);
   if (lessons < LESSONS.length) queue.push(learnStep);
 
-  queue.push(completedComputerGames > 0 ? {
-    ...analyzeStep,
-    title: "Review your latest ChessIQ game",
-    copy: "Open the latest completed verified game directly in Game Review and use the first-party ChessEngine to find the decisions worth revisiting.",
-    href: reviewHref,
-    action: "Review latest game",
-  } : analyzeStep);
+  queue.push(completedComputerGames > 0
+    ? reviewedWeakness
+      ? reviewedWeaknessStep(reviewedWeakness)
+      : {
+        ...analyzeStep,
+        title: "Review your latest ChessIQ game",
+        copy: "Open the latest completed verified game directly in Game Review and use the first-party ChessEngine to find the decisions worth revisiting.",
+        href: reviewHref,
+        action: "Review latest game",
+      }
+    : analyzeStep);
 
   if (queue.length < 3) {
     queue.push(puzzleStep, learnStep);
@@ -103,9 +126,18 @@ export default function Coach() {
   const reviewHref = latestCompletedGame
     ? analysisHrefForGame(latestCompletedGame.fen, latestCompletedGame.id)
     : "/analyze";
+  const reviewProgress = latestCompletedGame && typeof window !== "undefined"
+    ? readGameReviewProgress(window.localStorage, latestCompletedGame.id, latestCompletedGame.moves)
+    : null;
+  const latestReviews = latestCompletedGame && reviewProgress && typeof window !== "undefined"
+    ? readGameReviewCache(window.localStorage, latestCompletedGame.id, reviewProgress.depth, latestCompletedGame.moves)
+    : {};
+  const reviewedWeakness = latestCompletedGame
+    ? biggestReviewedWeakness(latestCompletedGame, latestReviews)
+    : null;
   const lessons = countCompletedLessons();
   const puzzles = countValidSolvedPuzzles();
-  const trainingQueue = buildTrainingQueue(completedComputerGames, lessons, puzzles, reviewHref);
+  const trainingQueue = buildTrainingQueue(completedComputerGames, lessons, puzzles, reviewHref, reviewedWeakness);
   const primaryPlan = trainingQueue[0];
   const PlanIcon = primaryPlan.icon;
 
@@ -123,7 +155,7 @@ export default function Coach() {
           <div className="coach-trust-card">
             <TrendingUp size={20} />
             <strong>Evidence first</strong>
-            <span>Completed games, lessons, and solved puzzles only</span>
+            <span>Completed games, lessons, solved puzzles, and verified Game Review findings</span>
           </div>
         </section>
 
@@ -162,7 +194,7 @@ export default function Coach() {
 
         <section className="coach-principles" aria-labelledby="coach-principles-title">
           <div><Brain size={20} /><h2 id="coach-principles-title">How Coach decides</h2></div>
-          <p>Coach prioritizes missing verified evidence first. A saved game counts as game evidence only when it is a completed ChessIQ game with both a persisted result and player side; local, ongoing, and legacy-incomplete records do not unlock review-first recommendations.</p>
+          <p>Coach prioritizes missing verified evidence first. A saved game counts as game evidence only when it is a completed ChessIQ game with both a persisted result and player side. When a matching persisted Game Review exists, Coach can focus the highest-loss reviewed inaccuracy, mistake, or blunder; local, ongoing, stale-review, and legacy-incomplete records do not unlock that recommendation.</p>
           <div className="coach-links">
             <Link href="/games">Review saved games</Link>
             <Link href="/progress">Open Progress</Link>
