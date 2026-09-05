@@ -8,6 +8,7 @@ describe("saved-game full review UI contract", () => {
     expect(analyzeSource).toContain("pendingReviewPlies");
     expect(analyzeSource).toContain("Review remaining moves");
     expect(analyzeSource).toContain("reviewAllProgress");
-    expect(analyzeSource).toContain("aria-label=\"Review remaining saved-game moves\"");
+    expect(analyzeSource).toContain("Review remaining saved-game moves");
+    expect(analyzeSource).toContain("Stop full saved-game review");
   });
 });
