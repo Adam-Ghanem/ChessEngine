@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { BrandMark } from "@/components/BrandMark";
 import { ProductHeader } from "@/components/ProductHeader";
 import { LEARN_STORAGE_KEY, LESSON_KEYS, LESSONS } from "@/data/lessons";
+import { findNextIncompleteLessonKey, findResumeLessonKey } from "@/lib/learnProgress";
 import { readNumberProgress, writeNumberProgress } from "@/lib/localProgress";
 
 function loadLessonProgress(): Record<string, number> {
@@ -14,11 +15,12 @@ function loadLessonProgress(): Record<string, number> {
 }
 
 export default function Learn() {
-  const [selectedKey, setSelectedKey] = useState(LESSONS[0].key);
   const [lessonProgress, setLessonProgress] = useState<Record<string, number>>(loadLessonProgress);
+  const [selectedKey, setSelectedKey] = useState(() => findResumeLessonKey(loadLessonProgress()));
   const selectedLesson = useMemo(() => LESSONS.find((lesson) => lesson.key === selectedKey) ?? LESSONS[0], [selectedKey]);
   const completed = Math.min(lessonProgress[selectedLesson.key] ?? 0, selectedLesson.checkpoints.length);
   const isComplete = completed === selectedLesson.checkpoints.length;
+  const nextLessonKey = isComplete ? findNextIncompleteLessonKey(selectedLesson.key, lessonProgress) : null;
 
   function persistProgress(next: Record<string, number>) {
     setLessonProgress(next);
@@ -113,7 +115,13 @@ export default function Learn() {
                 <RotateCcw size={15} /> Reset
               </button>
               {isComplete ? (
-                <Link href="/analyze" className="primary-action lesson-primary">Open Analyze</Link>
+                nextLessonKey ? (
+                  <button type="button" className="primary-action lesson-primary" onClick={() => setSelectedKey(nextLessonKey)}>
+                    Continue to next lesson
+                  </button>
+                ) : (
+                  <Link href="/analyze" className="primary-action lesson-primary">Open Analyze</Link>
+                )
               ) : (
                 <button type="button" className="primary-action lesson-primary" onClick={completeCheckpoint}>
                   Complete checkpoint
