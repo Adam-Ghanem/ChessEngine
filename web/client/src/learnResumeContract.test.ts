@@ -13,4 +13,11 @@ describe("Learn resume continuity", () => {
     expect(learnPage).toContain("findNextIncompleteLessonKey");
     expect(learnPage).toContain("Continue to next lesson");
   });
+
+  it("protects persisted lesson progress from accidental reset", () => {
+    expect(learnPage).toContain("window.confirm");
+    expect(learnPage).toContain("selectedLesson.title");
+    expect(learnPage).toContain("completed checkpoint");
+    expect(learnPage).toContain("This cannot be undone.");
+  });
 });
