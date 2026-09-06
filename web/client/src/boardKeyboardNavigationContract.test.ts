@@ -11,4 +11,11 @@ describe("ChessIQ chessboard keyboard accessibility contract", () => {
     expect(boardSource).toContain("onKeyDown={event => handleSquareKeyDown(event, square)}");
     expect(boardSource).toContain("data-square={square}");
   });
+
+  it("exposes readable piece names and legal-target state to assistive technology", () => {
+    expect(boardSource).toContain('from "@/lib/boardAccessibility"');
+    expect(boardSource).toContain("boardSquareAriaLabel({");
+    expect(boardSource).toContain("isSelected,");
+    expect(boardSource).toContain("isTarget,");
+  });
 });

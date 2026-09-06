@@ -2,6 +2,7 @@ import { useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent } from "
 import { ChessPiece, type ChessPieceKind } from "@/components/ChessPiece";
 import { sideToMove, moveTargets } from "@/engine/playState";
 import type { PlayerSide } from "@/engine/playSide";
+import { boardSquareAriaLabel } from "@/lib/boardAccessibility";
 import { nextBoardFocusSquare } from "@/lib/boardKeyboardNavigation";
 import type { PieceColor } from "@/types/analysis";
 import "@/play.css";
@@ -157,7 +158,12 @@ export function LegalChessBoard({
             onFocus={() => setFocusedSquare(square)}
             onKeyDown={event => handleSquareKeyDown(event, square)}
             onClick={() => chooseSquare(square)}
-            aria-label={piece ? `${piece.color} ${piece.kind} on ${square}` : `Empty ${square}`}
+            aria-label={boardSquareAriaLabel({
+              piece,
+              square,
+              isSelected,
+              isTarget,
+            })}
             aria-pressed={isSelected}
             disabled={disabled}
           >
