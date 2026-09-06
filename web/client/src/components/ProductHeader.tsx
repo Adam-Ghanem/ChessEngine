@@ -25,7 +25,6 @@ const mobilePrimaryRoutes: ProductPath[] = ["/", "/play", "/puzzles", "/analyze"
 const mobileMoreRoutes: ProductPath[] = ["/learn", "/games", "/coach", "/progress"];
 
 function routeIntentProps(href: ProductPath) {
-  if (href === "/") return {};
   return {
     onPointerEnter: () => prefetchProductRoute(href),
     onFocus: () => prefetchProductRoute(href),
