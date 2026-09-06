@@ -31,6 +31,7 @@ export default function Games() {
   }
 
   function clearHistory() {
+    if (!window.confirm(`Clear all ${games.length} saved games and their Game Reviews from this device? This cannot be undone.`)) return;
     games.forEach(game => clearGameReviewCache(window.localStorage, game.id));
     clearGameHistory();
     setGames([]);
