@@ -7,6 +7,7 @@ import { ProductHeader } from "@/components/ProductHeader";
 import { clockSnapshotAfterUndo, elapsedClockSeconds, type ClockSnapshot } from "@/engine/playClock";
 import { PLAY_DIFFICULTIES, PLAY_DIFFICULTY_STORAGE_KEY, getPlayDifficulty, type PlayDifficultyId } from "@/engine/playDifficulty";
 import { fetchLegalMoves, playMove, type PlayEngineStatus } from "@/engine/playEngine";
+import { requiresNewGameConfirmation } from "@/engine/playReset";
 import { PLAY_SIDE_OPTIONS, PLAY_SIDE_STORAGE_KEY, getPlaySide, oppositeSide, resolvePlayerSide, type PlayerSide, type PlaySidePreference } from "@/engine/playSide";
 import { sideToMove, statusLabel } from "@/engine/playState";
 import { PLAY_TIME_CONTROLS, PLAY_TIME_CONTROL_STORAGE_KEY, addClockIncrement, getPlayTimeControl, type PlayTimeControl, type PlayTimeControlId } from "@/engine/playTimeControl";
@@ -322,6 +323,19 @@ export default function Play() {
     toast(nextMode === "computer" ? "New game vs ChessIQ ready." : "New local game ready.");
   }
 
+  function requestGameReset(
+    nextMode: PlayMode = mode,
+    nextPreference: PlaySidePreference = sidePreference,
+    nextTimeControl: PlayTimeControl = timeControl,
+  ) {
+    if (requiresNewGameConfirmation(moves.length, terminal)
+      && !window.confirm("Start a new game? Your current game is saved in Games.")) {
+      return false;
+    }
+    resetGame(nextMode, nextPreference, nextTimeControl);
+    return true;
+  }
+
   function selectDifficulty(id: PlayDifficultyId) {
     const next = getPlayDifficulty(id);
     setDifficulty(next);
@@ -331,16 +345,16 @@ export default function Play() {
 
   function selectSidePreference(id: PlaySidePreference) {
     const next = getPlaySide(id);
+    if (!requestGameReset("computer", next)) return;
     setSidePreference(next);
     window.localStorage.setItem(PLAY_SIDE_STORAGE_KEY, next);
-    resetGame("computer", next);
   }
 
   function selectTimeControl(id: PlayTimeControlId) {
     const next = getPlayTimeControl(id);
+    if (!requestGameReset(mode, sidePreference, next)) return;
     setTimeControl(next);
     window.localStorage.setItem(PLAY_TIME_CONTROL_STORAGE_KEY, next.id);
-    resetGame(mode, sidePreference, next);
     toast(`Time control set to ${next.label}.`);
   }
 
@@ -457,10 +471,10 @@ export default function Play() {
             </div>
 
             <div className="play-mode-switcher" aria-label="Play mode">
-              <button type="button" className={mode === "computer" ? "is-active" : ""} aria-pressed={mode === "computer"} onClick={() => resetGame("computer")} disabled={busy || computerThinking}>
+              <button type="button" className={mode === "computer" ? "is-active" : ""} aria-pressed={mode === "computer"} onClick={() => requestGameReset("computer")} disabled={busy || computerThinking}>
                 <Bot size={16} /><span><strong>Play ChessIQ</strong><small>vs engine</small></span>
               </button>
-              <button type="button" className={mode === "local" ? "is-active" : ""} aria-pressed={mode === "local"} onClick={() => resetGame("local")} disabled={busy || computerThinking}>
+              <button type="button" className={mode === "local" ? "is-active" : ""} aria-pressed={mode === "local"} onClick={() => requestGameReset("local")} disabled={busy || computerThinking}>
                 <Users size={16} /><span><strong>Local</strong><small>two players</small></span>
               </button>
             </div>
@@ -548,7 +562,7 @@ export default function Play() {
 
             <div className="game-panel-actions">
               <button type="button" onClick={undoMove} disabled={!canUndo || busy || computerThinking || terminal} title={!clockHistory && moves.length ? "Undo is unavailable for games saved before clock-history support." : undefined}><ArrowLeft size={15} /> Undo</button>
-              <button type="button" onClick={() => resetGame()} disabled={busy || computerThinking}><RotateCcw size={15} /> New game</button>
+              <button type="button" onClick={() => requestGameReset()} disabled={busy || computerThinking}><RotateCcw size={15} /> New game</button>
               <button type="button" className="play-resign-action" onClick={resignGame} disabled={!moves.length || busy || computerThinking || terminal}><Flag size={15} /> Resign</button>
             </div>
             <Link href={analysisHrefForGame(fen, gameId)} className="primary-action play-analyze-link">Review game</Link>
