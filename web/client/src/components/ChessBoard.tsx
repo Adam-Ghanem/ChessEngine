@@ -1,5 +1,6 @@
 /**
  * ChessIQ chess board: original vector pieces plus a single-source motion layer for moves, captures, castling, and promotions.
+ * This component is presentation-only. Engine-backed interaction lives in LegalChessBoard.
  */
 import { useEffect, useMemo, useRef, useState } from "react";
 import "@/chess-piece-motion.css";
@@ -29,17 +30,14 @@ function decodeFen(fen: string) {
 
 function squareCenter(square: string) { return { x: (files.indexOf(square[0]) + .5) * 12.5, y: (ranks.indexOf(Number(square[1])) + .5) * 12.5 }; }
 function squareOrigin(square: string) { return { x: files.indexOf(square[0]) * 12.5, y: ranks.indexOf(Number(square[1])) * 12.5 }; }
-const legalTargets: Record<string, string[]> = { e4: ["e5"], f3: ["d2", "d4", "e1", "e5", "g1", "g5", "h2", "h4"], b5: ["a4", "a6", "c4", "c6", "d3", "d7", "e2", "f1"], e1: ["d1", "d2", "e2", "f1", "f2"], a2: ["a3", "a4"], a7: ["a6", "a5"] };
 
 const markerSymbols: Record<string, string> = { BRILLIANT: "!!", GREAT: "!", BEST: "✓", EXCELLENT: "✓", GOOD: "·", BOOK: "♟", INACCURACY: "?!", MISTAKE: "?", BLUNDER: "×" };
 
 export function ChessBoard({ fen, lastMove, engineArrow, classification, showClassificationMarker = false }: ChessBoardProps) {
-  const [selectedSquare, setSelectedSquare] = useState<string | null>(null);
   const [motion, setMotion] = useState<MotionPiece | null>(null);
   const motionKey = useRef(0);
   const priorPosition = useRef<Map<string, BoardPiece> | null>(null);
   const position = useMemo(() => decodeFen(fen), [fen]);
-  const targets = selectedSquare ? legalTargets[selectedSquare] ?? [] : [];
   const start = squareCenter(engineArrow.from); const end = squareCenter(engineArrow.to);
   const movingPiece = position.get(lastMove.to);
 
@@ -52,18 +50,17 @@ export function ChessBoard({ fen, lastMove, engineArrow, classification, showCla
     priorPosition.current = position;
   }, [lastMove.from, lastMove.to, movingPiece, position]);
 
-  function selectSquare(square: string) { const piece = position.get(square); if (piece) setSelectedSquare((current) => current === square ? null : square); else if (targets.includes(square)) setSelectedSquare(null); }
   const motionFrom = motion ? squareOrigin(motion.from) : null;
   const motionTo = motion ? squareOrigin(motion.to) : null;
   const isCastle = Boolean(motion && motion.piece.kind === "K" && Math.abs(files.indexOf(motion.from[0]) - files.indexOf(motion.to[0])) === 2);
   const castleRook = isCastle && motion ? { color: motion.piece.color, kind: "R" as const, from: motion.to[0] === "g" ? `h${motion.from[1]}` : `a${motion.from[1]}`, to: motion.to[0] === "g" ? `f${motion.from[1]}` : `d${motion.from[1]}` } : null;
 
-  return <section className="board-instrument" aria-label="Interactive chessboard"><div className="board-frame"><div className="chessboard" role="grid" aria-label="Chess position"><svg className="engine-arrow-layer" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><defs><marker id="engine-arrowhead" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="currentColor" /></marker></defs><line x1={start.x} y1={start.y} x2={end.x} y2={end.y} markerEnd="url(#engine-arrowhead)" className="engine-arrow" /></svg>{ranks.map((rank, rowIndex) => files.map((file, columnIndex) => { const square = `${file}${rank}`; const piece = position.get(square); const lightSquare = (rowIndex + columnIndex) % 2 === 0; const isLastMove = square === lastMove.from || square === lastMove.to; const isSelected = square === selectedSquare; const isTarget = targets.includes(square); const isArrival = Boolean(motion && square === motion.to); const hasMarker = Boolean(showClassificationMarker && classification && square === lastMove.to && piece); return <button key={square} className={`board-square ${lightSquare ? "is-light" : "is-dark"} ${isLastMove ? "is-last-move" : ""} ${isSelected ? "is-selected" : ""} ${isTarget ? "is-target" : ""} ${isArrival ? "is-arrival" : ""}`} onClick={() => selectSquare(square)} role="gridcell" aria-label={piece ? `${piece.color} ${PIECE_NAMES[piece.kind]} on ${square}` : `Empty ${square}`}><>{columnIndex === 0 && <span className="rank-label">{rank}</span>}{rowIndex === 7 && <span className="file-label">{file}</span>}{isTarget && <span className="legal-target" aria-hidden="true" />}{piece && <ChessPiece color={piece.color} kind={piece.kind} className={isArrival ? "is-arriving" : ""} />}{hasMarker && <PieceClassificationMarker classification={classification!} />}</></button>; }))}
+  return <section className="board-instrument" aria-label="Chess position board"><div className="board-frame"><div className="chessboard" role="grid" aria-label="Chess position" aria-rowcount={8} aria-colcount={8}><svg className="engine-arrow-layer" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true"><defs><marker id="engine-arrowhead" markerWidth="6" markerHeight="6" refX="5" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="currentColor" /></marker></defs><line x1={start.x} y1={start.y} x2={end.x} y2={end.y} markerEnd="url(#engine-arrowhead)" className="engine-arrow" /></svg>{ranks.map((rank, rowIndex) => files.map((file, columnIndex) => { const square = `${file}${rank}`; const piece = position.get(square); const lightSquare = (rowIndex + columnIndex) % 2 === 0; const isLastMove = square === lastMove.from || square === lastMove.to; const isArrival = Boolean(motion && square === motion.to); const hasMarker = Boolean(showClassificationMarker && classification && square === lastMove.to && piece); return <div key={square} className={`board-square ${lightSquare ? "is-light" : "is-dark"} ${isLastMove ? "is-last-move" : ""} ${isArrival ? "is-arrival" : ""}`} role="gridcell" aria-label={piece ? `${piece.color} ${PIECE_NAMES[piece.kind]} on ${square}` : `Empty ${square}`}><>{columnIndex === 0 && <span className="rank-label">{rank}</span>}{rowIndex === 7 && <span className="file-label">{file}</span>}{piece && <ChessPiece color={piece.color} kind={piece.kind} className={isArrival ? "is-arriving" : ""} />}{hasMarker && <PieceClassificationMarker classification={classification!} />}</></div>; }))}
       {motion && motionFrom && motionTo && <div key={motion.key} className={`moving-piece ${motion.capture ? "is-capture" : ""} ${motion.promotion ? "is-promotion" : ""}`} style={{ left: `${motionFrom.x}%`, top: `${motionFrom.y}%`, ["--move-x" as string]: `${motionTo.x - motionFrom.x}%`, ["--move-y" as string]: `${motionTo.y - motionFrom.y}%` }} aria-hidden="true"><ChessPiece color={motion.piece.color} kind={motion.piece.kind} className="is-traveling" /></div>}
       {castleRook && <CastlingRook motionKey={motion?.key || 0} rook={castleRook} />}
       {motion?.capture && motionTo && <span key={`capture-${motion.key}`} className="capture-impact" style={{ left: `${motionTo.x}%`, top: `${motionTo.y}%` }} aria-hidden="true" />}
       {motion?.promotion && motionTo && <span key={`promotion-${motion.key}`} className="promotion-flare" style={{ left: `${motionTo.x}%`, top: `${motionTo.y}%` }} aria-hidden="true" />}
-    </div></div><p className="board-hint">Select a piece to inspect legal destinations. The teal arrow marks the suggested continuation.</p></section>;
+    </div></div><p className="board-hint">Position display. The teal arrow marks the suggested continuation.</p></section>;
   }
 
 function PieceClassificationMarker({ classification }: { classification: MoveClassification }) {
