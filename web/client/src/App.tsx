@@ -1,13 +1,14 @@
 /**
  * ChessIQ production web shell. Vercel currently builds from web/, so all live product routes originate here.
  */
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import { Route, Switch } from "wouter";
+import { Route, Switch, useLocation } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { productRouteLoaders } from "./lib/productRouteLoaders";
+import { documentTitleForPath } from "./lib/routeDocumentTitle";
 
 const Dashboard = lazy(productRouteLoaders["/"]);
 const Analyze = lazy(productRouteLoaders["/analyze"]);
@@ -40,25 +41,38 @@ function RouteLoadingState() {
   );
 }
 
+function RouteDocumentTitle() {
+  const [location] = useLocation();
+
+  useEffect(() => {
+    document.title = documentTitleForPath(location);
+  }, [location]);
+
+  return null;
+}
+
 function Router() {
   return (
-    <Suspense fallback={<RouteLoadingState />}>
-      <Switch>
-        <Route path="/" component={Dashboard} />
-        <Route path="/play" component={Play} />
-        <Route path="/games" component={Games} />
-        <Route path="/analyze" component={Analyze} />
-        <Route path="/review" component={Analyze} />
-        <Route path="/learn/openings/:id" component={OpeningDetail} />
-        <Route path="/learn/openings" component={Openings} />
-        <Route path="/learn" component={Learn} />
-        <Route path="/puzzles" component={Puzzles} />
-        <Route path="/progress" component={Progress} />
-        <Route path="/coach" component={Coach} />
-        <Route path="/404" component={NotFound} />
-        <Route component={NotFound} />
-      </Switch>
-    </Suspense>
+    <>
+      <RouteDocumentTitle />
+      <Suspense fallback={<RouteLoadingState />}>
+        <Switch>
+          <Route path="/" component={Dashboard} />
+          <Route path="/play" component={Play} />
+          <Route path="/games" component={Games} />
+          <Route path="/analyze" component={Analyze} />
+          <Route path="/review" component={Analyze} />
+          <Route path="/learn/openings/:id" component={OpeningDetail} />
+          <Route path="/learn/openings" component={Openings} />
+          <Route path="/learn" component={Learn} />
+          <Route path="/puzzles" component={Puzzles} />
+          <Route path="/progress" component={Progress} />
+          <Route path="/coach" component={Coach} />
+          <Route path="/404" component={NotFound} />
+          <Route component={NotFound} />
+        </Switch>
+      </Suspense>
+    </>
   );
 }
 
