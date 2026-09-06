@@ -27,6 +27,7 @@ describe("production route prefetch contract", () => {
     expect(header).toContain("onFocus: () => prefetchProductRoute(href)");
     expect(header).toContain("onTouchStart: () => prefetchProductRoute(href)");
     expect(header).toContain("{...routeIntentProps(href)}");
+    expect(header).not.toContain('if (href === "/") return {}');
     expect(loaders).toContain("if (prefetchedRoutes.has(path)) return;");
     expect(loaders).not.toContain('path === "/"');
     expect(loaders).toContain("prefetchedRoutes.delete(path)");
