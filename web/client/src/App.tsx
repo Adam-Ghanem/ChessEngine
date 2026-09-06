@@ -41,14 +41,22 @@ function RouteLoadingState() {
   );
 }
 
-function RouteAccessibility() {
+function RouteDocumentTitle() {
+  const [location] = useLocation();
+
+  useEffect(() => {
+    document.title = documentTitleForPath(location);
+  }, [location]);
+
+  return null;
+}
+
+function RouteAnnouncement() {
   const [location] = useLocation();
   const [announcement, setAnnouncement] = useState("");
 
   useEffect(() => {
-    const title = documentTitleForPath(location);
-    document.title = title;
-    setAnnouncement(`${title} loaded`);
+    setAnnouncement(`${documentTitleForPath(location)} loaded`);
   }, [location]);
 
   return (
@@ -61,7 +69,8 @@ function RouteAccessibility() {
 function Router() {
   return (
     <>
-      <RouteAccessibility />
+      <RouteDocumentTitle />
+      <RouteAnnouncement />
       <Suspense fallback={<RouteLoadingState />}>
         <Switch>
           <Route path="/" component={Dashboard} />
