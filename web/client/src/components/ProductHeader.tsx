@@ -149,6 +149,7 @@ export function ProductHeader({ activePath }: ProductHeaderProps) {
           <summary
             className="mobile-more-button"
             aria-label={activeMoreRoute ? `${activeMoreRoute.label}, open more ChessIQ sections` : "Open more ChessIQ sections"}
+            aria-current={moreIsActive ? "page" : undefined}
           >
             <MobileMoreIcon size={19} aria-hidden="true" />
             <span>{activeMoreRoute?.label ?? "More"}</span>
