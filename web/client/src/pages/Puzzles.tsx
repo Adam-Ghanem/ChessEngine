@@ -132,6 +132,12 @@ export default function Puzzles() {
   }
 
   function resetProgress() {
+    if (solvedCount === 0) return;
+    const puzzleLabel = solvedCount === 1 ? "puzzle" : "puzzles";
+    const confirmed = window.confirm(
+      `Reset progress for ${solvedCount} solved ${puzzleLabel}? This cannot be undone.`,
+    );
+    if (!confirmed) return;
     setSolved([]);
     localStorage.removeItem(PUZZLE_STORAGE_KEY);
     toast("Puzzle progress reset.");
@@ -170,7 +176,7 @@ export default function Puzzles() {
                 </button>
               ))}
             </div>
-            <button className="puzzle-reset" onClick={resetProgress}><RotateCcw size={15} /> Reset progress</button>
+            <button className="puzzle-reset" onClick={resetProgress} disabled={solvedCount === 0}><RotateCcw size={15} /> Reset progress</button>
           </aside>
 
           <section className="puzzle-stage" aria-labelledby="puzzle-title">
