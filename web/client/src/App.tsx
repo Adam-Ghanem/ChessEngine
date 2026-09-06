@@ -1,7 +1,7 @@
 /**
  * ChessIQ production web shell. Vercel currently builds from web/, so all live product routes originate here.
  */
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense, useEffect, useState } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Route, Switch, useLocation } from "wouter";
@@ -41,20 +41,27 @@ function RouteLoadingState() {
   );
 }
 
-function RouteDocumentTitle() {
+function RouteAccessibility() {
   const [location] = useLocation();
+  const [announcement, setAnnouncement] = useState("");
 
   useEffect(() => {
-    document.title = documentTitleForPath(location);
+    const title = documentTitleForPath(location);
+    document.title = title;
+    setAnnouncement(`${title} loaded`);
   }, [location]);
 
-  return null;
+  return (
+    <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+      {announcement}
+    </p>
+  );
 }
 
 function Router() {
   return (
     <>
-      <RouteDocumentTitle />
+      <RouteAccessibility />
       <Suspense fallback={<RouteLoadingState />}>
         <Switch>
           <Route path="/" component={Dashboard} />
