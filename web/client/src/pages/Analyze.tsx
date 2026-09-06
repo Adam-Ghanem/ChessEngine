@@ -454,6 +454,22 @@ export default function Analyze() {
                       >
                         <Sparkles size={15} /> {reviewAllProgress ? `Stop review (${reviewAllProgress.completed}/${reviewAllProgress.total})` : remainingReviewPlies.length === 0 ? "All moves reviewed" : `Review remaining moves (${remainingReviewPlies.length})`}
                       </button>
+                      {reviewAllProgress && (
+                        <div
+                          className="game-review-progress"
+                          role="progressbar"
+                          aria-label="Saved game review progress"
+                          aria-valuemin={0}
+                          aria-valuemax={reviewAllProgress.total}
+                          aria-valuenow={reviewAllProgress.completed}
+                          aria-valuetext={`${reviewAllProgress.completed} of ${reviewAllProgress.total} moves reviewed`}
+                          aria-live="polite"
+                          aria-atomic="true"
+                        >
+                          <span>Reviewing saved game</span>
+                          <strong>{reviewAllProgress.completed} / {reviewAllProgress.total}</strong>
+                        </div>
+                      )}
                       {reviewError && <p className="analysis-inline-error" role="alert">{reviewError}</p>}
                       {visibleMoveReview && (
                         <div className={`game-review-engine-result ${moveReviewMatchesEngine ? "is-match" : "is-alternative"}`}>
