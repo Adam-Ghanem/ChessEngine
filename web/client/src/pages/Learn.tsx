@@ -35,6 +35,12 @@ export default function Learn() {
   }
 
   function resetLesson() {
+    if (completed === 0) return;
+    const confirmed = window.confirm(
+      `Reset ${completed} completed checkpoint${completed === 1 ? "" : "s"} in "${selectedLesson.title}"? This cannot be undone.`,
+    );
+    if (!confirmed) return;
+
     persistProgress({ ...lessonProgress, [selectedLesson.key]: 0 });
     toast("Lesson progress reset.");
   }
