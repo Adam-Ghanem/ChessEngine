@@ -43,5 +43,14 @@ describe("ChessIQ mobile premium navigation", () => {
     expect(header).toContain("<MobileMoreIcon size={19} aria-hidden=\"true\" />");
     expect(header).toContain("<span>{activeMoreRoute?.label ?? \"More\"}</span>");
     expect(header).toContain('aria-label={activeMoreRoute ? `${activeMoreRoute.label}, open more ChessIQ sections` : "Open more ChessIQ sections"}');
+    expect(header).toContain('aria-current={moreIsActive ? "page" : undefined}');
+  });
+
+  it("keeps mobile theme control at an accessible touch target size", () => {
+    const css = readFileSync(new URL("./mobile-navigation.css", import.meta.url), "utf8");
+
+    expect(css).toContain(".premium-sidebar-actions .theme-toggle");
+    expect(css).toContain("min-width: 44px");
+    expect(css).toContain("min-height: 44px");
   });
 });
