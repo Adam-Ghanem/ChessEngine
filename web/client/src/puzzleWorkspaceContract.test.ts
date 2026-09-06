@@ -41,4 +41,13 @@ describe("production interactive Puzzles workspace", () => {
     expect(puzzles).not.toContain("<span>Streak</span>");
     expect(puzzles).toContain("nextUnsolvedIndex");
   });
+
+  it("protects persisted puzzle progress from accidental reset", () => {
+    const puzzles = readFileSync(new URL("./pages/Puzzles.tsx", import.meta.url), "utf8");
+    expect(puzzles).toContain("window.confirm(");
+    expect(puzzles).toContain("solvedCount");
+    expect(puzzles).toContain("cannot be undone");
+    expect(puzzles).toContain('disabled={solvedCount === 0}');
+    expect(puzzles.indexOf("window.confirm(")).toBeLessThan(puzzles.indexOf("localStorage.removeItem(PUZZLE_STORAGE_KEY)"));
+  });
 });
