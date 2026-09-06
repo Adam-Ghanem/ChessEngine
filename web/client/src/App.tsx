@@ -1,7 +1,7 @@
 /**
  * ChessIQ production web shell. Vercel currently builds from web/, so all live product routes originate here.
  */
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Route, Switch, useLocation } from "wouter";
@@ -66,11 +66,44 @@ function RouteAnnouncement() {
   );
 }
 
+function RouteFocusManagement() {
+  const [location] = useLocation();
+  const previousLocationRef = useRef(location);
+
+  useEffect(() => {
+    if (previousLocationRef.current === location) return;
+    previousLocationRef.current = location;
+
+    const focusMainContent = () => {
+      const target = document.getElementById("main-content");
+      if (!target) return false;
+      target.focus();
+      return true;
+    };
+
+    if (focusMainContent()) return;
+
+    const observer = new MutationObserver(() => {
+      if (focusMainContent()) observer.disconnect();
+    });
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    const timeoutId = window.setTimeout(() => observer.disconnect(), 2000);
+    return () => {
+      observer.disconnect();
+      window.clearTimeout(timeoutId);
+    };
+  }, [location]);
+
+  return null;
+}
+
 function Router() {
   return (
     <>
       <RouteDocumentTitle />
       <RouteAnnouncement />
+      <RouteFocusManagement />
       <Suspense fallback={<RouteLoadingState />}>
         <Switch>
           <Route path="/" component={Dashboard} />
