@@ -80,7 +80,12 @@ export default function Games() {
                     {hasReviewProgress && reviewProgress && (
                       <div
                         className={`game-review-progress${reviewComplete ? " is-complete" : ""}`}
-                        aria-label={`Game review progress: ${reviewProgress.reviewed} of ${reviewProgress.total} plies reviewed at depth ${reviewProgress.depth}`}
+                        role="progressbar"
+                        aria-label="Game review progress"
+                        aria-valuemin={0}
+                        aria-valuemax={reviewProgress.total}
+                        aria-valuenow={reviewProgress.reviewed}
+                        aria-valuetext={`${reviewProgress.reviewed} of ${reviewProgress.total} plies reviewed at depth ${reviewProgress.depth}`}
                       >
                         <span>Game review</span>
                         <strong>{reviewProgress.reviewed}/{reviewProgress.total}</strong>
