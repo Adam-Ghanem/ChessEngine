@@ -120,7 +120,7 @@ export default function Dashboard() {
             </div>
           </article>
 
-          <article className="premium-panel premium-next-panel">
+          <article className="premium-panel premium-next-panel desktop-dashboard-next-step">
             <header><div><span className="premium-label">Continue</span><h2>Next best action</h2></div><BarChart3 size={19} /></header>
             <p>{nextAction.copy}</p>
             <Link href={nextAction.href} className="premium-secondary-action">
@@ -129,6 +129,17 @@ export default function Dashboard() {
             </Link>
           </article>
         </section>
+
+        <nav className="dashboard-mobile-next-step" aria-label="Mobile dashboard next action">
+          <div>
+            <span>Next best action</span>
+            <strong>{nextAction.label}</strong>
+          </div>
+          <Link href={nextAction.href} className="premium-secondary-action">
+            <NextActionIcon size={16} aria-hidden="true" />
+            {nextAction.label}
+          </Link>
+        </nav>
       </div>
     </main>
   );
