@@ -66,6 +66,18 @@ export default function Games() {
 
         {games.length ? (
           <>
+            {latestGame && (
+              <aside className="games-mobile-next-step" aria-label="Mobile games next action">
+                <div>
+                  <span>Latest saved game</span>
+                  <strong>{latestGameIsResumable ? "Continue playing" : "Turn it into training"}</strong>
+                </div>
+                <Link href={latestGamePrimaryHref} className="primary-action">
+                  {latestGameIsResumable ? <PlayCircle size={16} aria-hidden="true" /> : <Sparkles size={16} aria-hidden="true" />}
+                  {latestGamePrimaryLabel}
+                </Link>
+              </aside>
+            )}
             <div className="games-toolbar">
               <span><History size={16} /> Recent games</span>
               <button type="button" onClick={clearHistory}><Trash2 size={15} /> Clear history</button>
@@ -121,19 +133,6 @@ export default function Games() {
             <p>Start a game against ChessIQ or use the local board. Your first move will create a private device-local record here.</p>
             <Link href="/play" className="primary-action">Start playing</Link>
           </section>
-        )}
-
-        {latestGame && (
-          <aside className="games-mobile-next-step" aria-label="Mobile games next action">
-            <div>
-              <span>Latest saved game</span>
-              <strong>{latestGameIsResumable ? "Continue playing" : "Turn it into training"}</strong>
-            </div>
-            <Link href={latestGamePrimaryHref} className="primary-action">
-              {latestGameIsResumable ? <PlayCircle size={16} aria-hidden="true" /> : <Sparkles size={16} aria-hidden="true" />}
-              {latestGamePrimaryLabel}
-            </Link>
-          </aside>
         )}
 
         <footer className="chessiq-footer product-footer">
