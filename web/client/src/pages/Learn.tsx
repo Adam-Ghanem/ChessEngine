@@ -103,6 +103,25 @@ export default function Learn() {
               </span>
             </header>
 
+            <div className="learn-mobile-action-dock" aria-label="Mobile lesson controls">
+              <button type="button" className="lesson-secondary" onClick={resetLesson} disabled={completed === 0}>
+                <RotateCcw size={15} /> Reset
+              </button>
+              {isComplete ? (
+                nextLessonKey ? (
+                  <button type="button" className="primary-action lesson-primary" onClick={() => setSelectedKey(nextLessonKey)}>
+                    Next lesson
+                  </button>
+                ) : (
+                  <Link href="/analyze" className="primary-action lesson-primary">Open Analyze</Link>
+                )
+              ) : (
+                <button type="button" className="primary-action lesson-primary" onClick={completeCheckpoint}>
+                  Complete checkpoint
+                </button>
+              )}
+            </div>
+
             <ol className="checkpoint-list">
               {selectedLesson.checkpoints.map((checkpoint, index) => {
                 const done = index < completed;
@@ -116,7 +135,7 @@ export default function Learn() {
               })}
             </ol>
 
-            <div className="lesson-actions">
+            <div className="lesson-actions learn-desktop-actions">
               <button type="button" className="lesson-secondary" onClick={resetLesson} disabled={completed === 0}>
                 <RotateCcw size={15} /> Reset
               </button>
