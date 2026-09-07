@@ -165,6 +165,14 @@ export default function Coach() {
           <article className="coach-stat-card"><Target size={18} /><span>Solved puzzles</span><strong>{puzzles}</strong><small>verified catalog entries</small></article>
         </section>
 
+        <nav className="coach-mobile-next-step" aria-label="Recommended next training step">
+          <div className="coach-mobile-next-step-copy">
+            <span>Next · {primaryPlan.eyebrow}</span>
+            <strong>{primaryPlan.title}</strong>
+          </div>
+          <Link href={primaryPlan.href}>{primaryPlan.action}</Link>
+        </nav>
+
         <section className="coach-plan" aria-label="Recommended training plan">
           <div className="coach-plan-icon"><PlanIcon size={24} /></div>
           <div className="coach-plan-copy">
