@@ -11,6 +11,16 @@ describe("Games persisted review progress", () => {
     expect(games).toContain("Continue review");
   });
 
+  it("exposes cached Game Review completion as semantic progress", () => {
+    const games = readFileSync(new URL("./pages/Games.tsx", import.meta.url), "utf8");
+
+    expect(games).toContain('role="progressbar"');
+    expect(games).toContain("aria-valuemin={0}");
+    expect(games).toContain("aria-valuemax={reviewProgress.total}");
+    expect(games).toContain("aria-valuenow={reviewProgress.reviewed}");
+    expect(games).toContain("aria-valuetext={`${reviewProgress.reviewed} of ${reviewProgress.total} plies reviewed at depth ${reviewProgress.depth}`}");
+  });
+
   it("cleans persisted review cache when saved games are deleted", () => {
     const games = readFileSync(new URL("./pages/Games.tsx", import.meta.url), "utf8");
 
