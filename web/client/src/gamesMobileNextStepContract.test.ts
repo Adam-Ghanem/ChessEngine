@@ -13,7 +13,7 @@ describe("Games mobile next-step contract", () => {
     expect(games).toContain('href={latestGamePrimaryHref}');
     expect(games).toContain('{latestGamePrimaryLabel}');
 
-    expect(styles).toMatch(/\.games-mobile-next-step\s*\{[^}]*display:\s*none;/);
+    expect(styles).toMatch(/\.games-mobile-next-step\s*\{[^}]*display:\s*none;?[^}]*\}/);
     expect(styles).toMatch(/@media\(max-width:700px\)[\s\S]*\.games-mobile-next-step\s*\{[^}]*display:\s*grid;/);
     expect(styles).toMatch(/@media\(max-width:700px\)[\s\S]*\.games-mobile-next-step\s*\{[^}]*position:\s*sticky;/);
     expect(styles).toMatch(/\.games-mobile-next-step \.primary-action\s*\{[^}]*min-height:\s*44px;/);
