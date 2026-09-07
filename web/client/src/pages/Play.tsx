@@ -461,6 +461,21 @@ export default function Play() {
             </div>
 
             {renderPlayerBar(bottomSide)}
+
+            <nav className="play-mobile-actions" aria-label="Mobile game actions">
+              <button type="button" onClick={undoMove} disabled={!canUndo || busy || computerThinking || terminal} aria-label="Undo last move">
+                <ArrowLeft size={16} /><span>Undo</span>
+              </button>
+              <button type="button" onClick={() => requestGameReset()} disabled={busy || computerThinking} aria-label="Start new game">
+                <RotateCcw size={16} /><span>New</span>
+              </button>
+              <button type="button" className="is-danger" onClick={resignGame} disabled={!moves.length || busy || computerThinking || terminal} aria-label="Resign game">
+                <Flag size={16} /><span>Resign</span>
+              </button>
+              <Link href={analysisHrefForGame(fen, gameId)} aria-label="Review game in Analyze">
+                <Swords size={16} /><span>Review</span>
+              </Link>
+            </nav>
           </div>
 
           <aside className="game-panel play-rail" aria-label="Game panel">
