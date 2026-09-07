@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { clockSnapshotAfterUndo, elapsedClockSeconds } from "./playClock";
+import { clockAccessibleLabel, clockSnapshotAfterUndo, elapsedClockSeconds } from "./playClock";
 
 describe("elapsedClockSeconds", () => {
   it("counts only complete elapsed seconds", () => {
@@ -15,6 +15,14 @@ describe("elapsedClockSeconds", () => {
   it("never reports negative elapsed time", () => {
     expect(elapsedClockSeconds(5_000, 4_000)).toBe(0);
     expect(elapsedClockSeconds(Number.NaN, 5_000)).toBe(0);
+  });
+});
+
+describe("clockAccessibleLabel", () => {
+  it("includes the player and remaining clock value for assistive technology", () => {
+    expect(clockAccessibleLabel("You", 300)).toBe("You clock, 5 minutes remaining");
+    expect(clockAccessibleLabel("ChessIQ", 61)).toBe("ChessIQ clock, 1 minute 1 second remaining");
+    expect(clockAccessibleLabel("Black", 0)).toBe("Black clock, 0 seconds remaining");
   });
 });
 
