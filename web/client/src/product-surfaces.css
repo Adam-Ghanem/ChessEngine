@@ -65,6 +65,9 @@
 .puzzle-stage-header p { margin: 0; color: var(--muted-foreground); }
 .puzzle-solved-chip { display: inline-flex; gap: 6px; align-items: center; padding: 8px 11px; border-radius: 999px; background: color-mix(in srgb, var(--primary) 12%, transparent); color: var(--primary); font-size: .8rem; font-weight: 800; white-space: nowrap; }
 .puzzle-board-wrap { width: min(100%, 650px); margin: 24px auto; }
+.puzzle-mobile-action-dock { display: none; position: sticky; bottom: calc(72px + env(safe-area-inset-bottom, 0px)); z-index: 24; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 8px; margin: -10px 0 18px; padding: 8px; border: 1px solid color-mix(in srgb, var(--border) 82%, transparent); border-radius: 16px; background: color-mix(in srgb, var(--card) 90%, transparent); box-shadow: 0 14px 36px rgba(0,0,0,.18); backdrop-filter: blur(16px); }
+.puzzle-mobile-action-dock button { min-height: 44px; width: 100%; }
+.puzzle-mobile-action-dock button:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
 .puzzle-answer-panel { border-top: 1px solid var(--border); padding-top: 22px; }
 .puzzle-feedback { margin-top: 14px; padding: 14px 16px; border: 1px solid var(--border); border-radius: 14px; background: var(--muted); }
 .puzzle-feedback p { margin: 4px 0 0; color: var(--muted-foreground); line-height: 1.5; }
@@ -89,4 +92,8 @@
   .lesson-actions, .puzzle-next-row { flex-direction: column-reverse; align-items: stretch; }
   .lesson-secondary, .lesson-primary { width: 100%; }
   .puzzle-stage { padding-inline: 12px; }
+}
+@media (max-width: 680px) {
+  .puzzle-mobile-action-dock { display: grid; }
+  .puzzle-mobile-hidden-action { display: none; }
 }

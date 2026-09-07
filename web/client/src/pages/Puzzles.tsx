@@ -195,6 +195,11 @@ export default function Puzzles() {
               />
             </div>
 
+            <div className="puzzle-mobile-action-dock" aria-label="Mobile puzzle controls">
+              <button type="button" className="lesson-secondary" onClick={restartPuzzle} disabled={busy}><RotateCcw size={15} /> Reset</button>
+              <button type="button" className="lesson-primary primary-action" disabled={feedback !== "solved" || nextUnsolvedIndex === null} onClick={openNextUnsolvedPuzzle}>{nextUnsolvedIndex === null && solvedCount === puzzles.length ? "Set complete" : "Next puzzle"}</button>
+            </div>
+
             <div className="puzzle-answer-panel">
               <div className="analysis-section-heading compact"><div><span className="analysis-label">Board attempt</span><h2>Find the move</h2></div><Lightbulb size={18} /></div>
               <p className="sidebar-note">Play only your side of the tactic. ChessIQ validates your UCI move, auto-plays the curated reply through the first-party engine, then returns the board to you.</p>
@@ -206,9 +211,9 @@ export default function Puzzles() {
                 </div>
               )}
               <div className="puzzle-next-row">
-                <button type="button" className="lesson-secondary" onClick={restartPuzzle} disabled={busy}><RotateCcw size={15} /> Reset position</button>
+                <button type="button" className="lesson-secondary puzzle-mobile-hidden-action" onClick={restartPuzzle} disabled={busy}><RotateCcw size={15} /> Reset position</button>
                 <Link href="/learn" className="lesson-secondary">Study the concept</Link>
-                <button className="lesson-primary primary-action" disabled={feedback !== "solved" || nextUnsolvedIndex === null} onClick={openNextUnsolvedPuzzle}>{nextUnsolvedIndex === null && solvedCount === puzzles.length ? "Set complete" : "Next puzzle"}</button>
+                <button className="lesson-primary primary-action puzzle-mobile-hidden-action" disabled={feedback !== "solved" || nextUnsolvedIndex === null} onClick={openNextUnsolvedPuzzle}>{nextUnsolvedIndex === null && solvedCount === puzzles.length ? "Set complete" : "Next puzzle"}</button>
               </div>
             </div>
           </section>
