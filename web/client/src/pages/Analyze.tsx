@@ -309,6 +309,22 @@ export default function Analyze() {
                 <ChessBoard fen={loadedFen} lastMove={replayPositions ? replayArrow : { from: "a1", to: "a1" }} engineArrow={bestArrow} />
               </div>
             </div>
+            {gameContext && replayPositions && (
+              <nav className="game-review-mobile-dock" aria-label="Mobile Game Review controls">
+                <button type="button" onClick={() => selectReplayPosition(replayIndex - 1)} disabled={replayIndex === 0 || reviewBusy} aria-label="Previous position">
+                  <ChevronLeft size={17} /><span>Previous</span>
+                </button>
+                <div className="game-review-mobile-position" aria-live="polite">
+                  <span>Position</span><strong>{replayIndex} / {Math.max(0, replayPositions.length - 1)}</strong>
+                </div>
+                <button type="button" onClick={() => selectReplayPosition(replayIndex + 1)} disabled={replayIndex >= replayPositions.length - 1 || reviewBusy} aria-label="Next position">
+                  <span>Next</span><ChevronRight size={17} />
+                </button>
+                <button type="button" className="game-review-mobile-review" onClick={reviewSelectedMove} disabled={!selectedMoveContext || reviewBusy} aria-label="Review selected move with ChessEngine">
+                  <Sparkles size={16} /><span>{reviewLoading ? "Reviewing…" : visibleMoveReview ? "Re-review move" : "Review move"}</span>
+                </button>
+              </nav>
+            )}
           </div>
 
           <aside className="fen-analyze-rail">
