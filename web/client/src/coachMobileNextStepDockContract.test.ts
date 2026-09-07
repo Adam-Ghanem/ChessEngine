@@ -11,9 +11,10 @@ describe("Coach mobile next-step dock contract", () => {
     expect(coach).toContain('href={primaryPlan.href}');
     expect(coach).toContain('{primaryPlan.action}');
 
-    expect(styles).toContain(".coach-mobile-next-step { display: none;");
-    expect(styles).toMatch(/@media \(max-width: 720px\)[\s\S]*\.coach-mobile-next-step \{ display: grid;/);
-    expect(styles).toMatch(/\.coach-mobile-next-step \{[^}]*position: sticky;/);
-    expect(styles).toMatch(/\.coach-mobile-next-step a \{[^}]*min-height: 44px;/);
+    expect(styles).toMatch(/\.coach-mobile-next-step\s*\{[^}]*display:\s*none;/);
+    expect(styles).toMatch(/@media \(max-width: 720px\)[\s\S]*\.coach-mobile-next-step\s*\{[^}]*display:\s*grid;/);
+    expect(styles).toMatch(/\.coach-mobile-next-step\s*\{[^}]*position:\s*sticky;/);
+    expect(styles).toMatch(/\.coach-mobile-next-step a\s*\{[^}]*min-height:\s*44px;/);
+    expect(styles).toContain("bottom: calc(88px + env(safe-area-inset-bottom));");
   });
 });
