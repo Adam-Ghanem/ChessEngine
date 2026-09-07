@@ -47,6 +47,19 @@ export function ProductHeader({ activePath }: ProductHeaderProps) {
     if (mobileMoreRef.current) mobileMoreRef.current.open = false;
   }
 
+  function handleMobileMoreToggle() {
+    if (!mobileMoreRef.current?.open) return;
+
+    const details = mobileMoreRef.current;
+    const preferredLink = details
+      .querySelector<HTMLAnchorElement>(".mobile-more-link.is-active, .mobile-more-link");
+    if (!preferredLink) return;
+
+    window.requestAnimationFrame(() => {
+      if (details.open) preferredLink.focus({ preventScroll: true });
+    });
+  }
+
   useEffect(() => {
     const nav = navRef.current;
     const activeLink = activeLinkRef.current;
@@ -145,7 +158,11 @@ export function ProductHeader({ activePath }: ProductHeaderProps) {
             </Link>
           );
         })}
-        <details ref={mobileMoreRef} className={`mobile-more ${moreIsActive ? "is-active" : ""}`}>
+        <details
+          ref={mobileMoreRef}
+          className={`mobile-more ${moreIsActive ? "is-active" : ""}`}
+          onToggle={handleMobileMoreToggle}
+        >
           <summary
             className="mobile-more-button"
             aria-label={activeMoreRoute ? `${activeMoreRoute.label}, open more ChessIQ sections` : "Open more ChessIQ sections"}
