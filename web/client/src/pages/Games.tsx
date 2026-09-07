@@ -12,6 +12,14 @@ import "../games.css";
 
 export default function Games() {
   const [games, setGames] = useState(() => readGameHistory());
+  const latestGame = games[0] ?? null;
+  const latestGameIsResumable = latestGame ? isResumableGame(latestGame) : false;
+  const latestGamePrimaryHref = latestGame
+    ? latestGameIsResumable
+      ? `/play?resume=${encodeURIComponent(latestGame.id)}`
+      : analysisHrefForGame(latestGame.fen, latestGame.id)
+    : "/play";
+  const latestGamePrimaryLabel = latestGameIsResumable ? "Resume latest game" : "Review latest game";
 
   async function copyFen(fen: string) {
     try {
@@ -58,6 +66,18 @@ export default function Games() {
 
         {games.length ? (
           <>
+            {latestGame && (
+              <aside className="games-mobile-next-step" aria-label="Mobile games next action">
+                <div>
+                  <span>Latest saved game</span>
+                  <strong>{latestGameIsResumable ? "Continue playing" : "Turn it into training"}</strong>
+                </div>
+                <Link href={latestGamePrimaryHref} className="primary-action">
+                  {latestGameIsResumable ? <PlayCircle size={16} aria-hidden="true" /> : <Sparkles size={16} aria-hidden="true" />}
+                  {latestGamePrimaryLabel}
+                </Link>
+              </aside>
+            )}
             <div className="games-toolbar">
               <span><History size={16} /> Recent games</span>
               <button type="button" onClick={clearHistory}><Trash2 size={15} /> Clear history</button>
