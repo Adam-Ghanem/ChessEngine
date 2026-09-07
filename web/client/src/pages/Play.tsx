@@ -4,7 +4,7 @@ import { Link } from "wouter";
 import { toast } from "sonner";
 import { LegalChessBoard } from "@/components/LegalChessBoard";
 import { ProductHeader } from "@/components/ProductHeader";
-import { clockSnapshotAfterUndo, elapsedClockSeconds, type ClockSnapshot } from "@/engine/playClock";
+import { clockAccessibleLabel, clockSnapshotAfterUndo, elapsedClockSeconds, type ClockSnapshot } from "@/engine/playClock";
 import { PLAY_DIFFICULTIES, PLAY_DIFFICULTY_STORAGE_KEY, getPlayDifficulty, type PlayDifficultyId } from "@/engine/playDifficulty";
 import { fetchLegalMoves, playMove, type PlayEngineStatus } from "@/engine/playEngine";
 import { requiresNewGameConfirmation } from "@/engine/playReset";
@@ -404,7 +404,7 @@ export default function Play() {
           <span className={`play-player-avatar ${isUser ? "is-user" : ""}`}>{isUser ? <Users size={19} /> : <Bot size={19} />}</span>
           <span><strong>{name}</strong><small>{detail}</small></span>
         </div>
-        <div className="play-clock" aria-label={`${name} clock`}>{formatClock(seconds)}</div>
+        <div className="play-clock" role="timer" aria-label={clockAccessibleLabel(name, seconds)}>{formatClock(seconds)}</div>
       </div>
     );
   }
