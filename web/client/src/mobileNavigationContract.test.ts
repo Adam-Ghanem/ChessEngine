@@ -35,6 +35,16 @@ describe("ChessIQ mobile premium navigation", () => {
     expect(header).toContain("onClick={closeMobileMore}");
   });
 
+  it("moves focus into the mobile More menu when it opens", () => {
+    const header = readFileSync(new URL("./components/ProductHeader.tsx", import.meta.url), "utf8");
+
+    expect(header).toContain("function handleMobileMoreToggle()");
+    expect(header).toContain("if (!mobileMoreRef.current?.open) return");
+    expect(header).toContain('.querySelector<HTMLAnchorElement>(".mobile-more-link.is-active, .mobile-more-link")');
+    expect(header).toContain("requestAnimationFrame");
+    expect(header).toContain("onToggle={handleMobileMoreToggle}");
+  });
+
   it("surfaces the current secondary section directly in the mobile dock", () => {
     const header = readFileSync(new URL("./components/ProductHeader.tsx", import.meta.url), "utf8");
 
