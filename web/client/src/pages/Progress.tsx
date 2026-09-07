@@ -151,6 +151,14 @@ export default function Progress() {
           </div>
         </section>
 
+        <nav className="progress-mobile-next-step" aria-label="Mobile progress next step">
+          <div>
+            <span>Next best step</span>
+            <strong>{nextStep.label}</strong>
+          </div>
+          <Link href={nextStep.href} className="primary-action">{nextStep.label}</Link>
+        </nav>
+
         <section className="progress-grid" aria-label="Training progress summary">
           <article className="progress-card">
             <div className="progress-card-icon"><BookOpenCheck size={20} /></div>
@@ -286,7 +294,7 @@ export default function Progress() {
               <p>{nextStep.detail}</p>
             </div>
           </div>
-          <Link href={nextStep.href} className="primary-action progress-primary">{nextStep.label}</Link>
+          <Link href={nextStep.href} className="primary-action progress-primary progress-desktop-primary">{nextStep.label}</Link>
         </section>
 
         <section className="progress-evidence" aria-label="What this dashboard measures">
