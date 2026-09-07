@@ -12,6 +12,7 @@ describe("Games mobile next-step contract", () => {
     expect(games).toContain('isResumableGame(latestGame)');
     expect(games).toContain('href={latestGamePrimaryHref}');
     expect(games).toContain('{latestGamePrimaryLabel}');
+    expect(games.indexOf('className="games-mobile-next-step"')).toBeLessThan(games.indexOf('className="games-grid"'));
 
     expect(styles).toMatch(/\.games-mobile-next-step\s*\{[^}]*display:\s*none;?[^}]*\}/);
     expect(styles).toMatch(/@media\(max-width:700px\)[\s\S]*\.games-mobile-next-step\s*\{[^}]*display:\s*grid;/);
