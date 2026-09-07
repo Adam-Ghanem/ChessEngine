@@ -103,7 +103,7 @@ function percentage(value: number, total: number) {
   return total > 0 ? Math.round((Math.min(total, Math.max(0, value)) / total) * 100) : 0;
 }
 
-function ProgressMeter({ label, value }: { label: string; value: number }) {
+function ProgressMeter({ label, value, valueText }: { label: string; value: number; valueText: string }) {
   return (
     <div
       className="progress-meter"
@@ -112,6 +112,7 @@ function ProgressMeter({ label, value }: { label: string; value: number }) {
       aria-valuemin={0}
       aria-valuemax={100}
       aria-valuenow={value}
+      aria-valuetext={valueText}
     >
       <span style={{ width: `${value}%` }} />
     </div>
@@ -143,7 +144,7 @@ export default function Progress() {
             <h1>See the work compound.</h1>
             <p>One honest view of the activity saved on this device—no invented rating, streak, or performance data.</p>
           </div>
-          <div className="progress-score" role="progressbar" aria-label="Overall training completion" aria-valuemin={0} aria-valuemax={100} aria-valuenow={overallPercent}>
+          <div className="progress-score" role="progressbar" aria-label="Overall training completion" aria-valuemin={0} aria-valuemax={100} aria-valuenow={overallPercent} aria-valuetext={`${overallPercent}% of Learn and Puzzle training completed`}>
             <span>Training completion</span>
             <strong>{overallPercent}%</strong>
             <small>Learn + Puzzles</small>
@@ -156,7 +157,7 @@ export default function Progress() {
             <span className="analysis-label">Learn</span>
             <strong>{snapshot.learnCheckpoints}/{LEARN_TOTAL_CHECKPOINTS}</strong>
             <p>checkpoints completed</p>
-            <ProgressMeter label="Learn progress" value={learnPercent} />
+            <ProgressMeter label="Learn progress" value={learnPercent} valueText={`${snapshot.learnCheckpoints} of ${LEARN_TOTAL_CHECKPOINTS} checkpoints completed`} />
             <small>{snapshot.completedLessons}/{LESSONS.length} lessons fully completed</small>
           </article>
 
@@ -165,7 +166,7 @@ export default function Progress() {
             <span className="analysis-label">Puzzles</span>
             <strong>{snapshot.solvedPuzzles}/{PUZZLE_TOTAL}</strong>
             <p>positions solved</p>
-            <ProgressMeter label="Puzzle progress" value={puzzlePercent} />
+            <ProgressMeter label="Puzzle progress" value={puzzlePercent} valueText={`${snapshot.solvedPuzzles} of ${PUZZLE_TOTAL} puzzles solved`} />
             <small>Engine-legal tactical attempts</small>
           </article>
 
@@ -183,7 +184,7 @@ export default function Progress() {
             <span className="analysis-label">Completion</span>
             <strong>{overallPercent}%</strong>
             <p>current training set</p>
-            <ProgressMeter label="Overall progress" value={overallPercent} />
+            <ProgressMeter label="Overall progress" value={overallPercent} valueText={`${overallPercent}% of Learn and Puzzle training completed`} />
             <small>Calculated only from saved Learn and Puzzle activity</small>
           </article>
         </section>
