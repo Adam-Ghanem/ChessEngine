@@ -27,6 +27,10 @@
 .lesson-workspace-header p { margin: 0; color: var(--muted-foreground); max-width: 640px; line-height: 1.6; }
 .lesson-status { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; padding: 8px 11px; border-radius: 999px; background: var(--muted); color: var(--muted-foreground); font-size: .8rem; font-weight: 700; }
 .lesson-status.is-complete { color: var(--primary); background: color-mix(in srgb, var(--primary) 12%, transparent); }
+.learn-mobile-action-dock { display: none; position: sticky; bottom: calc(72px + env(safe-area-inset-bottom, 0px)); z-index: 24; grid-template-columns: minmax(0, .8fr) minmax(0, 1.2fr); gap: 8px; margin: 14px 0 -8px; padding: 8px; border: 1px solid color-mix(in srgb, var(--border) 82%, transparent); border-radius: 16px; background: color-mix(in srgb, var(--card) 90%, transparent); box-shadow: 0 14px 36px rgba(0,0,0,.18); backdrop-filter: blur(16px); }
+.learn-mobile-action-dock button { min-height: 44px; width: 100%; }
+.learn-mobile-action-dock a { min-height: 44px; width: 100%; }
+.learn-mobile-action-dock button:focus-visible, .learn-mobile-action-dock a:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
 .checkpoint-list { display: grid; gap: 12px; padding: 26px 0; margin: 0; list-style: none; }
 .checkpoint-list li { display: grid; grid-template-columns: 36px 1fr; gap: 13px; align-items: start; padding: 15px; border: 1px solid var(--border); border-radius: 16px; color: var(--muted-foreground); }
 .checkpoint-list li > span { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 10px; background: var(--muted); color: var(--foreground); font-weight: 800; }
@@ -94,6 +98,8 @@
   .puzzle-stage { padding-inline: 12px; }
 }
 @media (max-width: 680px) {
+  .learn-mobile-action-dock { display: grid; }
+  .learn-desktop-actions { display: none; }
   .puzzle-mobile-action-dock { display: grid; }
   .puzzle-mobile-hidden-action { display: none; }
 }
