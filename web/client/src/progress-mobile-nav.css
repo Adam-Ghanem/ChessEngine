@@ -1,0 +1,10 @@
+@media (max-width: 640px) {
+  .progress-mobile-next-step {
+    display: grid;
+    position: sticky;
+  }
+
+  .progress-desktop-primary {
+    display: none;
+  }
+}
