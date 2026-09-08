@@ -135,9 +135,12 @@
     right: -1px;
     bottom: calc(100% + 11px);
     width: min(230px, calc(100vw - 34px));
+    max-height: calc(100dvh - 108px - env(safe-area-inset-bottom));
     display: grid;
     gap: 5px;
     padding: 8px;
+    overflow-y: auto;
+    overscroll-behavior: contain;
     border: 1px solid rgba(255, 255, 255, 0.09);
     border-radius: 16px;
     background: rgba(12, 18, 27, 0.98);
