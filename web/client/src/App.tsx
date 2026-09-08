@@ -15,11 +15,11 @@ const Analyze = lazy(productRouteLoaders["/analyze"]);
 const Coach = lazy(productRouteLoaders["/coach"]);
 const Games = lazy(productRouteLoaders["/games"]);
 const Learn = lazy(productRouteLoaders["/learn"]);
+const Openings = lazy(productRouteLoaders["/learn/openings"]);
 const Play = lazy(productRouteLoaders["/play"]);
 const Puzzles = lazy(productRouteLoaders["/puzzles"]);
 const Progress = lazy(productRouteLoaders["/progress"]);
 const OpeningDetail = lazy(() => import("./pages/OpeningDetail"));
-const Openings = lazy(() => import("./pages/Openings"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 
 function RouteLoadingState() {
