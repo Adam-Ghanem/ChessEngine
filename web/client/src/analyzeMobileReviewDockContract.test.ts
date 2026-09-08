@@ -11,10 +11,16 @@ describe("Analyze mobile Game Review dock contract", () => {
     expect(analyze).toContain('onClick={() => selectReplayPosition(replayIndex - 1)}');
     expect(analyze).toContain('onClick={() => selectReplayPosition(replayIndex + 1)}');
     expect(analyze).toContain('onClick={reviewSelectedMove}');
+    expect(analyze).toContain('className="game-review-mobile-review-all"');
+    expect(analyze).toContain('onClick={reviewAllProgress ? stopReviewRemainingMoves : reviewRemainingMoves}');
+    expect(analyze).toContain('aria-label={reviewAllProgress ? "Stop full saved-game review" : "Review remaining saved-game moves"}');
+    expect(analyze).toContain('reviewAllProgress ? `Stop review (${reviewAllProgress.completed}/${reviewAllProgress.total})`');
+    expect(analyze).toContain('`Review remaining (${remainingReviewPlies.length})`');
 
     expect(styles).toContain(".game-review-mobile-dock { display: none;");
     expect(styles).toMatch(/@media \(max-width: 680px\)[\s\S]*\.game-review-mobile-dock \{ display: grid;/);
     expect(styles).toMatch(/\.game-review-mobile-dock \{[^}]*position: sticky;/);
     expect(styles).toMatch(/\.game-review-mobile-dock button \{[^}]*min-height: 44px;/);
+    expect(styles).toMatch(/\.game-review-mobile-dock \.game-review-mobile-review-all \{[^}]*grid-column: 1 \/ -1;/);
   });
 });
