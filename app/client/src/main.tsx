@@ -14,6 +14,7 @@ import "./openings-premium.css";
 import "./trainer-premium.css";
 import "./opening-progress-premium.css";
 import "./learning-premium.css";
+import "./lesson-workspace.css";
 
 const queryClient = new QueryClient();
 
