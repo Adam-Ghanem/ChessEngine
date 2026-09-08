@@ -34,7 +34,7 @@ export default function OpeningDetail() {
     return (
       <main className="app-shell chessiq-shell">
         <div className="analysis-product-shell opening-detail-product-shell">
-          <ProductHeader activePath="/learn" />
+          <ProductHeader activePath="/learn/openings" />
           <section className="opening-detail-missing" aria-labelledby="opening-missing-title">
             <span className="analysis-label">Opening not found</span>
             <h1 id="opening-missing-title">That opening family is not in the current ChessIQ catalog.</h1>
@@ -88,7 +88,7 @@ export default function OpeningDetail() {
   return (
     <main className="app-shell chessiq-shell">
       <div className="analysis-product-shell opening-detail-product-shell">
-        <ProductHeader activePath="/learn" />
+        <ProductHeader activePath="/learn/openings" />
 
         <section className="opening-detail-hero">
           <div>

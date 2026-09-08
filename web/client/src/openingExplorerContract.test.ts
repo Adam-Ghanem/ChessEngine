@@ -32,6 +32,7 @@ describe("ChessIQ opening explorer production foundation", () => {
   it("provides a directly addressable board-first detail workspace for every opening family", () => {
     const app = readFileSync(new URL("./App.tsx", import.meta.url), "utf8");
     const explorer = readFileSync(new URL("./pages/Openings.tsx", import.meta.url), "utf8");
+    const detail = readFileSync(new URL("./pages/OpeningDetail.tsx", import.meta.url), "utf8");
     const data = readFileSync(new URL("./data/openings.ts", import.meta.url), "utf8");
     const vercel = readFileSync(new URL("../../vercel.json", import.meta.url), "utf8");
 
@@ -41,5 +42,7 @@ describe("ChessIQ opening explorer production foundation", () => {
     expect(vercel).toContain('"source": "/learn/openings/:id"');
     expect(existsSync(new URL("./pages/OpeningDetail.tsx", import.meta.url))).toBe(true);
     expect(existsSync(new URL("./opening-detail.css", import.meta.url))).toBe(true);
+    expect(explorer).toContain('<ProductHeader activePath="/learn/openings" />');
+    expect(detail).toContain('<ProductHeader activePath="/learn/openings" />');
   });
 });

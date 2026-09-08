@@ -3,6 +3,7 @@ export const productRoutes = [
   { href: "/play", label: "Play" },
   { href: "/puzzles", label: "Puzzles" },
   { href: "/learn", label: "Learn" },
+  { href: "/learn/openings", label: "Openings" },
   { href: "/games", label: "Games" },
   { href: "/analyze", label: "Analyze" },
   { href: "/coach", label: "Coach" },

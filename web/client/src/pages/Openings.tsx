@@ -23,7 +23,7 @@ export default function Openings() {
   return (
     <main className="app-shell chessiq-shell">
       <div className="analysis-product-shell openings-product-shell">
-        <ProductHeader activePath="/learn" />
+        <ProductHeader activePath="/learn/openings" />
 
         <section className="openings-hero">
           <div>

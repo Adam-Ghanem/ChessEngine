@@ -6,16 +6,18 @@ const header = readFileSync(new URL("./components/ProductHeader.tsx", import.met
 const loaders = readFileSync(new URL("./lib/productRouteLoaders.ts", import.meta.url), "utf8");
 
 describe("production route prefetch contract", () => {
-  it("route-splits every product page, including Dashboard, behind shared lazy loaders", () => {
+  it("route-splits every product page, including Dashboard and Openings, behind shared lazy loaders", () => {
     expect(app).toContain('import { productRouteLoaders } from "./lib/productRouteLoaders"');
     expect(app).not.toContain('import Dashboard from "./pages/Dashboard"');
     expect(app).toContain('lazy(productRouteLoaders["/"]');
     expect(app).toContain('lazy(productRouteLoaders["/play"]');
     expect(app).toContain('lazy(productRouteLoaders["/analyze"]');
+    expect(app).toContain('lazy(productRouteLoaders["/learn/openings"]');
     expect(loaders).toContain('"/": () => import("../pages/Dashboard")');
     expect(loaders).toContain('"/play": () => import("../pages/Play")');
     expect(loaders).toContain('"/puzzles": () => import("../pages/Puzzles")');
     expect(loaders).toContain('"/learn": () => import("../pages/Learn")');
+    expect(loaders).toContain('"/learn/openings": () => import("../pages/Openings")');
     expect(loaders).toContain('"/games": () => import("../pages/Games")');
     expect(loaders).toContain('"/analyze": () => import("../pages/Analyze")');
     expect(loaders).toContain('"/coach": () => import("../pages/Coach")');
