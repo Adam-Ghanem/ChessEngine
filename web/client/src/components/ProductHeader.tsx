@@ -5,6 +5,7 @@ import { BrandMark } from "@/components/BrandMark";
 import { useTheme } from "@/contexts/ThemeContext";
 import { prefetchProductRoute } from "@/lib/productRouteLoaders";
 import { productRoutes, type ProductPath } from "@/lib/productRoutes";
+import "../mobile-training-docks.css";
 
 type ProductHeaderProps = {
   activePath: ProductPath;
