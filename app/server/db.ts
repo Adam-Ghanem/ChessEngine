@@ -1,6 +1,15 @@
 import { and, desc, eq } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { analysisSessions, games, InsertUser, lessonProgress, puzzleAttempts, users } from "../drizzle/schema";
+import {
+  analysisSessions,
+  games,
+  InsertUser,
+  lessonProgress,
+  openingAttempts,
+  openingReviewItems,
+  puzzleAttempts,
+  users,
+} from "../drizzle/schema";
 import { ENV } from './_core/env';
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -93,6 +102,9 @@ type GameMode = "local" | "computer" | "imported";
 type GameStatus = "active" | "completed" | "abandoned";
 type LessonStatus = "not_started" | "in_progress" | "completed";
 type PuzzleResult = "solved" | "failed" | "abandoned";
+type OpeningSide = "white" | "black";
+type OpeningAttemptResult = "correct" | "acceptable" | "wrong";
+type OpeningReviewRating = "again" | "hard" | "good" | "easy";
 
 async function requireDb() {
   const db = await getDb();
@@ -182,4 +194,77 @@ export async function createPuzzleAttempt(input: { userId: number; puzzleKey: st
 export async function listPuzzleAttemptsForUser(userId: number) {
   const db = await requireDb();
   return db.select().from(puzzleAttempts).where(eq(puzzleAttempts.userId, userId)).orderBy(desc(puzzleAttempts.createdAt));
+}
+
+export async function getOpeningReviewItemForUser(userId: number, openingNodeId: string, side: OpeningSide) {
+  const db = await requireDb();
+  const rows = await db.select().from(openingReviewItems).where(and(
+    eq(openingReviewItems.userId, userId),
+    eq(openingReviewItems.openingNodeId, openingNodeId),
+    eq(openingReviewItems.side, side),
+  )).limit(1);
+  return rows[0] ?? null;
+}
+
+export async function listOpeningReviewItemsForUser(userId: number) {
+  const db = await requireDb();
+  return db.select().from(openingReviewItems)
+    .where(eq(openingReviewItems.userId, userId))
+    .orderBy(desc(openingReviewItems.updatedAt));
+}
+
+export async function upsertOpeningReviewItem(input: {
+  userId: number;
+  openingNodeId: string;
+  side: OpeningSide;
+  ease: number;
+  intervalDays: number;
+  dueAt: Date;
+  streak: number;
+  lapses: number;
+  lastResult: OpeningReviewRating;
+  lastReviewedAt: Date;
+}) {
+  const db = await requireDb();
+  await db.insert(openingReviewItems).values(input).onDuplicateKeyUpdate({
+    set: {
+      ease: input.ease,
+      intervalDays: input.intervalDays,
+      dueAt: input.dueAt,
+      streak: input.streak,
+      lapses: input.lapses,
+      lastResult: input.lastResult,
+      lastReviewedAt: input.lastReviewedAt,
+    },
+  });
+  const record = await getOpeningReviewItemForUser(input.userId, input.openingNodeId, input.side);
+  if (!record) throw new Error("Opening review item could not be read after upsert");
+  return record;
+}
+
+export async function createOpeningAttempt(input: {
+  userId: number;
+  openingNodeId: string;
+  side: OpeningSide;
+  result: OpeningAttemptResult;
+  responseMs: number;
+  usedHint: boolean;
+  rating: OpeningReviewRating;
+}) {
+  const db = await requireDb();
+  const result = await db.insert(openingAttempts).values(input);
+  const id = insertId(result);
+  const rows = await db.select().from(openingAttempts).where(and(
+    eq(openingAttempts.id, id),
+    eq(openingAttempts.userId, input.userId),
+  )).limit(1);
+  if (!rows[0]) throw new Error("Opening attempt could not be read after creation");
+  return rows[0];
+}
+
+export async function listOpeningAttemptsForUser(userId: number) {
+  const db = await requireDb();
+  return db.select().from(openingAttempts)
+    .where(eq(openingAttempts.userId, userId))
+    .orderBy(desc(openingAttempts.createdAt));
 }
