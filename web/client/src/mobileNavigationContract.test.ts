@@ -72,4 +72,12 @@ describe("ChessIQ mobile premium navigation", () => {
     expect(css).toContain("min-width: 44px");
     expect(css).toContain("min-height: 44px");
   });
+
+  it("keeps the mobile More menu usable in short landscape viewports", () => {
+    const css = readFileSync(new URL("./mobile-navigation.css", import.meta.url), "utf8");
+
+    expect(css).toContain("max-height: calc(100dvh - 108px - env(safe-area-inset-bottom))");
+    expect(css).toContain("overflow-y: auto");
+    expect(css).toContain("overscroll-behavior: contain");
+  });
 });
