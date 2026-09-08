@@ -7,6 +7,7 @@ describe("productRoutes", () => {
     expect(productRoutes).toEqual([
       { href: "/play", label: "Play" },
       { href: "/analyze", label: "Analyze" },
+      { href: "/openings", label: "Openings" },
       { href: "/puzzles", label: "Puzzles" },
       { href: "/learn", label: "Learn" },
       { href: "/games", label: "Games" },
@@ -17,14 +18,12 @@ describe("productRoutes", () => {
 
   it("keeps product navigation reachable on mobile", () => {
     const source = readFileSync(new URL("../components/ProductHeader.tsx", import.meta.url), "utf8");
-
     expect(source).toContain('className="mobile-product-nav"');
     expect(source).toContain('aria-label="Mobile ChessIQ product navigation"');
   });
 
   it("never serves the legacy review screen from /review", () => {
     const source = readFileSync(new URL("../App.tsx", import.meta.url), "utf8");
-
     expect(source).toContain('<Route path="/review" component={AnalyzePage} />');
     expect(source).not.toContain('import Home from "./pages/Home"');
   });
@@ -33,7 +32,6 @@ describe("productRoutes", () => {
 describe("Play workspace", () => {
   it("keeps the board as the primary product surface", () => {
     const source = readFileSync(new URL("../pages/PlayPage.tsx", import.meta.url), "utf8");
-
     expect(source).not.toContain("Play a legal game. Keep every position.");
     expect(source).toContain('className="play-cockpit"');
     expect(source).toContain("New game");
@@ -44,7 +42,6 @@ describe("Play workspace", () => {
 describe("Analyze workspace", () => {
   it("presents real ChessEngine analysis as the flagship workflow", () => {
     const source = readFileSync(new URL("../pages/AnalyzePage.tsx", import.meta.url), "utf8");
-
     expect(source).not.toContain("Ask the engine about a real saved position.");
     expect(source).toContain('className="analysis-cockpit"');
     expect(source).toContain("Engine analysis");
