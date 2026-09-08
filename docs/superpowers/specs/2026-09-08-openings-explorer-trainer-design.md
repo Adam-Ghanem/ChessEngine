@@ -6,7 +6,7 @@ Turn ChessIQ into a premium chess openings encyclopedia and interactive repertoi
 
 Phase 1 focuses on two first-class product areas:
 
-- a production-grade Openings Explorer covering ECO A00-E99;
+- a production-grade Openings Explorer covering the complete ECO code space A00-E99 and the major/minor named opening families and variations represented by that catalog;
 - an interactive opening trainer with persisted mastery and spaced repetition.
 
 The design must feel calm, premium, and education-first. It should reuse ChessIQ's current React/Vite, tRPC, Drizzle, authentication, theme, chess.js, and existing product shell rather than migrating to Next.js or creating a parallel application stack.
@@ -36,12 +36,12 @@ No second frontend application, second router, second database layer, or direct 
 1. `/openings` as a first-class product route.
 2. `/openings/:slug` opening detail workspace.
 3. `/trainer` opening trainer route.
-4. ECO A00-E99 canonical local opening data architecture.
+4. A canonical local opening catalog in which every ECO code from A00 through E99 resolves to at least one valid node, with named major and minor families/variations represented beneath the appropriate ECO branches.
 5. Search by opening name, alias, ECO code, SAN sequence, or UCI sequence.
 6. Hierarchical opening tree: family -> variation -> subvariation -> line.
 7. Interactive board playback and move navigation.
 8. Live popularity and White/Draw/Black statistics through a server-side Lichess Opening Explorer proxy.
-9. Graceful stale-cache fallback when live statistics are unavailable.
+9. Graceful persistent stale-cache fallback when live statistics are unavailable.
 10. Opening repertoire selection by side.
 11. Guided learning, recall, and mixed-review trainer modes.
 12. Persisted opening review state, mastery, and spaced repetition for authenticated users.
@@ -117,6 +117,18 @@ The canonical dataset is the source of truth for:
 - acceptable repertoire continuations.
 
 External statistics never define trainer correctness.
+
+### Coverage requirement
+
+The shipped Phase 1 catalog is not considered complete merely because the schema supports A00-E99. Completion requires automated validation that:
+
+- all 500 ECO codes A00-E99 are represented;
+- every code resolves to at least one legal canonical position/line;
+- major and minor named families and variations used by the catalog are attached to the correct ECO branches;
+- aliases and transpositions do not create duplicate contradictory identities;
+- catalog coverage can be summarized by a deterministic build-time coverage report.
+
+The implementation plan may stage the data import/authoring work by ECO volume, but the Phase 1 completion gate remains full A00-E99 coverage.
 
 ## Canonical opening model
 
@@ -253,13 +265,21 @@ The browser must not call the Lichess API directly.
 
 The server procedure receives a normalized position input and returns a typed ChessIQ response shape. External response validation is mandatory before data reaches the client.
 
-### Cache
+### Persistent statistics cache
 
-Cache entries are keyed by a normalized position identity, preferably a normalized FEN subset or another deterministic key that ignores irrelevant move counters where safe.
+Use the existing Drizzle/MySQL layer for a public, non-user-specific cache table such as `openingStatsCache` rather than relying only on process memory. A row should contain fields equivalent to:
 
-The cache should support:
+- normalized `positionKey` primary/unique key;
+- validated serialized statistics payload;
+- `fetchedAt`;
+- `expiresAt`.
+
+A small process-memory cache may additionally reduce repeated database reads, but it is only an optimization. The database-backed cache is the reliability layer that enables stale fallback across process restarts or serverless cold starts.
+
+The cache must support:
 
 - fresh live response;
+- fresh persistent cached response;
 - stale-while-error fallback;
 - bounded TTL;
 - no fabricated statistics.
@@ -318,7 +338,7 @@ After a move, feedback may classify the answer as:
 - Inaccuracy;
 - Wrong.
 
-Phase 1 does not need engine-strength semantic grading. `Inaccuracy` may be reserved for deterministic repertoire alternatives known by the canonical dataset. If the implementation cannot define that safely, Phase 1 should use `Correct`, `Acceptable`, and `Wrong` rather than fabricate nuanced grading.
+Phase 1 does not need engine-strength semantic grading. `Inaccuracy` may be used only when the canonical dataset explicitly marks a deterministic repertoire continuation as suboptimal-but-trainable. If that metadata is absent, the trainer uses only `Correct`, `Acceptable`, and `Wrong` rather than inventing nuanced grading.
 
 Feedback should include:
 
@@ -405,14 +425,15 @@ Recommended user-facing states:
 
 Add dedicated opening-learning persistence rather than overloading generic lesson progress.
 
-Suggested tables:
+Required tables:
 
 - `openingReviewItems`
 - `openingAttempts`
+- `openingStatsCache`
 
 If a separate summarized opening-progress table materially simplifies reads, it may be added, but the design should prefer deriving opening-level summaries from review items unless profiling shows a real need.
 
-All authenticated opening data is private per user. Every protected query must scope by `ctx.user.id`.
+All authenticated opening-learning data is private per user. Every protected query must scope by `ctx.user.id`. `openingStatsCache` is public shared cache data and contains no user identity.
 
 Guest sessions may remain local-only and must not fabricate synced state.
 
@@ -516,6 +537,7 @@ Malformed canonical data is treated as a build/test failure, not a recoverable p
 
 Automated validation must reject:
 
+- missing ECO codes in A00-E99 coverage;
 - illegal move sequences;
 - missing parents;
 - duplicate IDs/slugs;
@@ -551,6 +573,8 @@ Use TDD for functional increments.
 
 ### Canonical data tests
 
+- all 500 ECO codes A00-E99 represented;
+- deterministic coverage report;
 - ECO code validity;
 - unique IDs and slugs;
 - parent/child integrity;
@@ -577,14 +601,16 @@ Use TDD for functional increments.
 - external payload validation;
 - timeout behavior;
 - rate-limit behavior;
+- persistent cache write/read;
 - fresh cache;
-- stale cache fallback;
+- stale cache fallback after simulated process-memory loss;
 - unavailable state without fabricated data.
 
 ### Trainer tests
 
 - correct canonical move;
 - acceptable alternative;
+- explicitly tagged inaccuracy behavior;
 - wrong move;
 - illegal move rejection;
 - side selection;
@@ -620,10 +646,10 @@ Implement incrementally without disrupting current Play, Analyze, Learn, Puzzles
 
 Recommended release order:
 
-1. canonical opening schema + validation;
+1. canonical opening schema + validation + A00-E99 coverage pipeline;
 2. `/openings` explorer shell and search;
 3. opening detail board/tree navigation;
-4. server-side live statistics proxy and cache;
+4. server-side live statistics proxy and persistent cache;
 5. trainer correctness and guided sessions;
 6. review persistence and SRS;
 7. Progress integration;
@@ -636,9 +662,11 @@ The legacy `web/` opening prototype can be used as reference material, but produ
 Phase 1 is complete when a user can:
 
 - open ChessIQ and navigate to a dedicated Openings area;
-- search and browse a canonical ECO A00-E99 hierarchy;
+- browse a validated catalog with every ECO code A00-E99 represented and major/minor named variations organized beneath the appropriate branches;
+- search the catalog by name, alias, ECO, or moves;
 - navigate opening moves on an interactive legal board;
 - inspect live opening popularity and result statistics when available;
+- receive persistent stale statistics after an upstream failure when cached data exists;
 - continue using the Explorer when external stats are unavailable;
 - start training from a chosen opening line;
 - receive deterministic move validation and useful explanations;
@@ -647,4 +675,4 @@ Phase 1 is complete when a user can:
 - return later and receive due reviews based on persisted SRS state;
 - see opening mastery and weaknesses in Progress;
 - use the complete experience comfortably on mobile and desktop;
-- encounter no fabricated statistics, fake trainer correctness, or cross-user progress leakage.
+- encounter no fabricated statistics, fake trainer correctness, incomplete ECO-code coverage, or cross-user progress leakage.
