@@ -1,4 +1,12 @@
 @media (max-width: 640px) {
+  .progress-hero {
+    padding-top: 28px;
+  }
+
+  .progress-hero h1 {
+    font-size: clamp(38px, 12vw, 52px);
+  }
+
   .progress-mobile-next-step {
     display: grid;
     position: sticky;
@@ -6,5 +14,62 @@
 
   .progress-desktop-primary {
     display: none;
+  }
+
+  .progress-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .progress-results,
+  .progress-review {
+    gap: 16px;
+    padding: 17px;
+  }
+
+  .progress-results-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 7px;
+  }
+
+  .progress-results-grid > div,
+  .progress-review-grid > div {
+    padding: 11px 8px;
+  }
+
+  .progress-results-grid dd,
+  .progress-review-grid dd {
+    font-size: 21px;
+  }
+
+  .progress-form,
+  .progress-review-heading {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .progress-form-list {
+    justify-content: flex-start;
+  }
+
+  .progress-form-empty {
+    text-align: left;
+  }
+
+  .progress-review-action {
+    width: 100%;
+  }
+
+  .progress-focus {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .progress-focus-copy {
+    align-items: flex-start;
+  }
+
+  .progress-primary {
+    width: 100%;
   }
 }
