@@ -22,7 +22,7 @@ describe("ChessIQ mobile premium navigation", () => {
 
     expect(header).toContain('const mobilePrimaryRoutes: ProductPath[] = ["/", "/play", "/puzzles", "/analyze"]');
     expect(header).toContain('aria-current={isActive ? "page" : undefined}');
-    expect(header).toContain('const mobileMoreRoutes: ProductPath[] = ["/learn", "/games", "/coach", "/progress"]');
+    expect(header).toContain('const mobileMoreRoutes: ProductPath[] = ["/learn", "/learn/openings", "/games", "/coach", "/progress"]');
   });
 
   it("keeps the mobile More menu dismissible and route-aware", () => {
