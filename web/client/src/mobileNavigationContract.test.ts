@@ -45,6 +45,15 @@ describe("ChessIQ mobile premium navigation", () => {
     expect(header).toContain("onToggle={handleMobileMoreToggle}");
   });
 
+  it("closes the mobile More menu when keyboard focus leaves the popover", () => {
+    const header = readFileSync(new URL("./components/ProductHeader.tsx", import.meta.url), "utf8");
+
+    expect(header).toContain("function handleFocusIn(event: FocusEvent)");
+    expect(header).toContain("if (mobileMoreRef.current?.contains(event.target as Node)) return");
+    expect(header).toContain('document.addEventListener("focusin", handleFocusIn)');
+    expect(header).toContain('document.removeEventListener("focusin", handleFocusIn)');
+  });
+
   it("surfaces the current secondary section directly in the mobile dock", () => {
     const header = readFileSync(new URL("./components/ProductHeader.tsx", import.meta.url), "utf8");
 
