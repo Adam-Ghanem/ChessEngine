@@ -3,12 +3,13 @@ import { describe, expect, it } from "vitest";
 import { productRoutes } from "./lib/productRoutes";
 
 describe("ChessIQ public product routing", () => {
-  it("exposes eight real product destinations including Home, Games, and Coach", () => {
+  it("exposes Openings as a first-class production destination", () => {
     expect(productRoutes).toEqual([
       { href: "/", label: "Home" },
       { href: "/play", label: "Play" },
       { href: "/puzzles", label: "Puzzles" },
       { href: "/learn", label: "Learn" },
+      { href: "/learn/openings", label: "Openings" },
       { href: "/games", label: "Games" },
       { href: "/analyze", label: "Analyze" },
       { href: "/coach", label: "Coach" },
@@ -17,7 +18,7 @@ describe("ChessIQ public product routing", () => {
   });
 
   it("keeps preview-only navigation copy out of product pages", () => {
-    const files = ["pages/Dashboard.tsx", "pages/Analyze.tsx", "pages/Play.tsx", "pages/Games.tsx", "pages/Learn.tsx", "pages/Puzzles.tsx", "pages/Progress.tsx", "pages/Coach.tsx"];
+    const files = ["pages/Dashboard.tsx", "pages/Analyze.tsx", "pages/Play.tsx", "pages/Games.tsx", "pages/Learn.tsx", "pages/Openings.tsx", "pages/Puzzles.tsx", "pages/Progress.tsx", "pages/Coach.tsx"];
     for (const file of files) {
       const source = readFileSync(new URL(`./${file}`, import.meta.url), "utf8");
       expect(source).not.toMatch(/coming next|next production surface|aria-disabled=\"true\">Play/);
@@ -33,5 +34,6 @@ describe("ChessIQ public product routing", () => {
     expect(source).toContain('<Route path="/games" component={Games} />');
     expect(source).toContain('<Route path="/progress" component={Progress} />');
     expect(source).toContain('<Route path="/coach" component={Coach} />');
+    expect(source).toContain('<Route path="/learn/openings" component={Openings} />');
   });
 });
