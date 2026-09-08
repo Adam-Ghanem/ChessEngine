@@ -2,22 +2,44 @@
 
 ## Public routes
 
-Desktop verification confirms that the Play, Analyze, Learn, Puzzles, Games, and Progress routes share one product header, preserve the Intelligence in Motion visual system, and expose clear sign-in gates before user-owned persistence is accessed. The public lesson and puzzle catalog states render without personal data.
+Desktop verification covers Play, Analyze, Openings, opening detail, Learn, Puzzles, Games, Progress, Coach, and Trainer under the shared ChessIQ product header. Public opening catalog/detail/statistics/training-line reads do not require access to user-owned records. Protected opening review history and progress remain scoped to the authenticated user.
+
+## Openings Explorer
+
+`/openings` uses the project-owned canonical opening catalog for identity, ECO, names, legal move sequences, ancestry, ideas, and trainer correctness. The browser can search by opening name, ECO code, aliases, and move text, replay each legal line on the same ChessIQ board system, flip orientation, and jump to the dedicated detail workspace.
+
+The local catalog is built from the vendored pinned CC0 `lichess-org/chess-openings` snapshot in `app/shared/openings/generated/`. Automated catalog validation confirms coverage for all 500 ECO codes from A00 through E99 and replays every stored line through `chess.js` legality checks.
+
+## Live opening statistics failure boundary
+
+Opening popularity is optional enrichment, not a correctness source. Server-side Lichess explorer responses are schema-validated and stored in the persistent `openingStatsCache` table. Fresh cache entries can be reused without an upstream request. On timeout, invalid payload, or upstream error, a stale persistent entry can be returned with an explicit stale state. If no cache exists, the UI reports statistics unavailable instead of inventing counts or win percentages.
+
+## Opening Trainer
+
+`/trainer` supports White and Black board orientation plus learn, recall, and mixed presentation modes. The client verifies chess legality before classifying an answer as canonical, acceptable repertoire alternative, legal but wrong, or illegal. The server independently replays the canonical prefix and revalidates legality and repertoire membership before any authenticated attempt is persisted.
+
+Guests can train a selected opening locally. Authenticated users additionally persist attempts and deterministic spaced-repetition state. A failed save is surfaced as `Not synced` while the current local session continues; the client does not pretend that an unsuccessful write was stored.
+
+The trainer unit contract covers canonical moves, accepted alternatives, legal non-repertoire moves, illegal moves, Black-to-move legality, deterministic queue ordering, and side-to-board orientation.
+
+## Opening Progress
+
+The Progress route includes opening-specific White and Black repertoire summaries, due-review count, recent accuracy only when attempt evidence exists, and weakest branches. Mastery is derived from recorded accuracy, retention, due state, interval, and review evidence; completing or merely viewing a line does not automatically mark it mastered.
 
 ## Responsive board
 
-At 390px, the puzzle board remains square, pieces remain visible, coordinates do not overlap the interactive squares, and the action row stays touch-reachable. The mobile header reduces navigation clutter while retaining theme and sign-in actions.
+At mobile widths, the openings explorer collapses from three columns to a board-first single-column flow and keeps the selected-line training action touch-reachable in a fixed bottom dock. The opening detail and trainer workspaces also collapse to board-first layouts. Board squares remain keyboard-focusable and retain visible selected, legal, active-move, and expected-move states.
 
 ## Functional boundary
 
-Legal moves are calculated in the browser through `chess.js`; protected actions are routed through tRPC and stored with the authenticated user. The C++ ChessEngine parser and a real depth-two opening search pass unit tests. End-to-end authenticated persistence requires a signed-in user session and is intentionally not fabricated in test data.
+Legal moves are calculated in the browser through `chess.js`; protected actions are routed through tRPC and stored with the authenticated user. The C++ ChessEngine remains responsible for engine analysis, while opening identity/training is intentionally deterministic and independent of engine evaluation or live popularity.
 
 ## Accessibility and final route review
 
-All primary product actions, navigation links, board squares, promotion choices, and text areas have visible `:focus-visible` treatment. The app-level reduced-motion guard removes non-essential animation. A desktop review of Play and Coach confirms clear signed-out account boundaries, while the 390px review of Play, Analyze, Learn, Puzzles, Progress, and Coach confirms that headline copy, account gates, and the active product action remain readable without horizontal overflow.
+Primary product actions, navigation links, board squares, opening-tree controls, search controls, transport buttons, trainer ratings, and text inputs use native interactive controls with visible `:focus-visible` treatment. The app-level reduced-motion guard removes non-essential animation, and openings/trainer styles add reduced-motion protection for feature-specific transitions.
 
-The automated `uiAccessibility` test verifies native link and button controls for the full product navigation, the keyboard-operable board squares and promotion buttons, the explicit focus-visible CSS rules, the global `prefers-reduced-motion` rule, and all seven functional routes. TypeScript, the production build, and all eight unit tests pass after this check.
+The automated frontend suite checks the product navigation, openings routes, three-column-to-mobile collapse contract, the detail **Train this line** action, trainer move contracts, opening progress surfaces, keyboard-operable board behavior, reduced-motion CSS, and the existing ChessIQ accessibility checks. The production quality gate also runs TypeScript checking and the app production build.
 
 ### Runtime accessibility pass
 
-`pnpm test:accessibility` was run against the active local full-stack service in Chromium. On each of Play, Analyze, Learn, Puzzles, Games, Progress, and Coach, the first five Tab presses reached the ChessIQ home link and primary navigation links with a visible `auto 1px` outline. With `prefers-reduced-motion: reduce` emulated in Chromium, the media query matched and button animation and transition durations computed to `1e-05s` (equivalent to the `.01ms` suppression rule). The machine-readable test record is retained in `docs/runtime_accessibility_result.json`.
+The existing Chromium accessibility workflow remains the runtime gate for keyboard focus and reduced-motion behavior. Authenticated persistence is intentionally not fabricated by static test data; database-backed opening progress and SRS writes require a real signed-in user and the configured MySQL service.
