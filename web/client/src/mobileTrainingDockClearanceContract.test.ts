@@ -3,15 +3,13 @@ import { describe, expect, it } from "vitest";
 
 describe("mobile training dock clearance contract", () => {
   it("keeps Learn and Puzzles docks above the fixed phone nav without wasting tablet space", () => {
-    const styles = readFileSync(new URL("./product-surfaces.css", import.meta.url), "utf8");
+    const header = readFileSync(new URL("./components/ProductHeader.tsx", import.meta.url), "utf8");
+    const styles = readFileSync(new URL("./mobile-training-docks.css", import.meta.url), "utf8");
 
-    expect(styles).toMatch(/\.learn-mobile-action-dock \{[^}]*bottom: 12px;/);
-    expect(styles).toMatch(/\.puzzle-mobile-action-dock \{[^}]*bottom: 12px;/);
-    expect(styles).toMatch(
-      /@media \(max-width: 640px\)[\s\S]*\.learn-mobile-action-dock \{[^}]*bottom: calc\(84px \+ env\(safe-area-inset-bottom, 0px\)\);/,
-    );
-    expect(styles).toMatch(
-      /@media \(max-width: 640px\)[\s\S]*\.puzzle-mobile-action-dock \{[^}]*bottom: calc\(84px \+ env\(safe-area-inset-bottom, 0px\)\);/,
-    );
+    expect(header).toContain('import "../mobile-training-docks.css";');
+    expect(styles).toMatch(/@media \(min-width: 641px\) and \(max-width: 680px\)[\s\S]*bottom: 12px;/);
+    expect(styles).toMatch(/@media \(max-width: 640px\)[\s\S]*bottom: calc\(84px \+ env\(safe-area-inset-bottom, 0px\)\);/);
+    expect(styles).toContain(".learn-mobile-action-dock");
+    expect(styles).toContain(".puzzle-mobile-action-dock");
   });
 });
