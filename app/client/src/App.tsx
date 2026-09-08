@@ -13,6 +13,7 @@ import OpeningsPage from "./pages/OpeningsPage";
 import OpeningDetailPage from "./pages/OpeningDetailPage";
 import OpeningTrainerPage from "./pages/OpeningTrainerPage";
 import LearnPage from "./pages/LearnPage";
+import OpeningLessonPage from "./pages/OpeningLessonPage";
 import PuzzlesPage from "./pages/PuzzlesPage";
 import GamesPage from "./pages/GamesPage";
 import ProgressPage from "./pages/ProgressPage";
@@ -28,6 +29,7 @@ function Router() {
       <Route path="/openings/:slug" component={OpeningDetailPage} />
       <Route path="/trainer" component={OpeningTrainerPage} />
       <Route path="/learn" component={LearnPage} />
+      <Route path="/learn/openings/:lessonSlug" component={OpeningLessonPage} />
       <Route path="/puzzles" component={PuzzlesPage} />
       <Route path="/games" component={GamesPage} />
       <Route path="/progress" component={ProgressPage} />

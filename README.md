@@ -140,3 +140,14 @@ The canonical opening data is vendored into `app/shared/openings/generated/` fro
 Live opening popularity is deliberately separate from correctness. Server-side queries to the Lichess opening explorer are validated, cached in MySQL, and bounded by a timeout. When the upstream service is unavailable, ChessIQ serves a stale persistent cache if one exists; otherwise it clearly reports statistics as unavailable. It never fabricates win rates or move counts.
 
 Trainer correctness comes only from the canonical local repertoire plus `chess.js` legality. An upstream popularity result can never make a move correct or incorrect. Authenticated attempts are revalidated server-side before they update the dedicated spaced-repetition tables; guests can complete a session locally without persistence.
+
+### Visual Opening Courses
+
+ChessIQ Learn now includes exactly **100 complete opening courses** organized across five balanced families. The courses are built from the same local canonical opening catalog as Explorer and Trainer, so lesson positions and legal-move checkpoints remain deterministic and do not depend on live statistics.
+
+- `/learn` is the discovery hub with text search plus family, side-focus, and difficulty filters.
+- `/learn/openings/:lessonSlug` is a board-first lesson workspace with chapter navigation, authored explanations, visual arrows/zones/key squares, and legal-move checkpoints.
+- Guests can study every course locally without signing in; authenticated users get monotonic saved progress and resume behavior.
+- Checkpoint correctness is evaluated locally with `chess.js` against authored accepted moves. Illegal and legal-but-wrong moves receive distinct feedback.
+- Course progress is shown separately from opening-trainer repertoire mastery. Completing a lesson records study progress; it does not claim that the opening has been mastered.
+- Explorer and Trainer remain one click away from each lesson so study, reference, and spaced-repetition recall stay connected without duplicating opening data or board logic.

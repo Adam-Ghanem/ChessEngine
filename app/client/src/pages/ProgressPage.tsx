@@ -2,6 +2,7 @@ import { Activity, BrainCircuit, Trophy } from "lucide-react";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { startLogin } from "@/const";
 import { ProductHeader } from "@/components/ProductHeader";
+import { OpeningCourseProgressSection } from "@/components/learning/OpeningCourseProgressSection";
 import { OpeningProgressSection } from "@/components/openings/OpeningProgressSection";
 import { trpc } from "@/lib/trpc";
 
@@ -31,8 +32,9 @@ export default function ProgressPage() {
               <article><Activity size={20}/><span>Saved games</span><strong>{games.data?.length ?? 0}</strong></article>
               <article><BrainCircuit size={20}/><span>Engine sessions</span><strong>{analyses.data?.length ?? 0}</strong></article>
               <article><Trophy size={20}/><span>Puzzles solved</span><strong>{solved}</strong></article>
-              <article><Trophy size={20}/><span>Lessons complete</span><strong>{completed}</strong></article>
+              <article><Trophy size={20}/><span>Learning paths complete</span><strong>{completed}</strong></article>
             </div>
+            <OpeningCourseProgressSection />
             <OpeningProgressSection isAuthenticated={isAuthenticated} />
           </>
         )}
