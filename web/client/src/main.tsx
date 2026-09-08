@@ -10,5 +10,6 @@ import "./accessibility.css";
 import "./premium-shell.css";
 import "./mobile-navigation.css";
 import "./home-play-polish.css";
+import "./playMoveListFollow";
 
 createRoot(document.getElementById("root")!).render(<App />);
