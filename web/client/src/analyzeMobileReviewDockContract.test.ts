@@ -16,5 +16,6 @@ describe("Analyze mobile Game Review dock contract", () => {
     expect(styles).toMatch(/@media \(max-width: 680px\)[\s\S]*\.game-review-mobile-dock \{ display: grid;/);
     expect(styles).toMatch(/\.game-review-mobile-dock \{[^}]*position: sticky;/);
     expect(styles).toMatch(/\.game-review-mobile-dock button \{[^}]*min-height: 44px;/);
+    expect(styles).toMatch(/@media \(max-width: 640px\)[\s\S]*\.game-review-mobile-dock \{[^}]*bottom: calc\(84px \+ env\(safe-area-inset-bottom\)\);/);
   });
 });
