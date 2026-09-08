@@ -5,6 +5,8 @@ describe("Progress mobile next-step contract", () => {
   it("keeps the evidence-backed next action within thumb reach wherever mobile navigation is active", () => {
     const progress = readFileSync(new URL("./pages/Progress.tsx", import.meta.url), "utf8");
     const styles = readFileSync(new URL("./progress.css", import.meta.url), "utf8");
+    const mobileNavStyles = readFileSync(new URL("./progress-mobile-nav.css", import.meta.url), "utf8");
+    const main = readFileSync(new URL("./main.tsx", import.meta.url), "utf8");
 
     expect(progress).toContain('className="progress-mobile-next-step"');
     expect(progress).toContain('aria-label="Mobile progress next step"');
@@ -14,9 +16,11 @@ describe("Progress mobile next-step contract", () => {
 
     expect(styles).toContain(".progress-mobile-next-step {");
     expect(styles).toMatch(/\.progress-mobile-next-step \{[^}]*display: none;/);
-    expect(styles).toMatch(/@media \(max-width: 640px\)[\s\S]*\.progress-mobile-next-step \{[^}]*display: grid;/);
-    expect(styles).toMatch(/@media \(max-width: 640px\)[\s\S]*\.progress-mobile-next-step \{[^}]*position: sticky;/);
     expect(styles).toMatch(/\.progress-mobile-next-step \.primary-action \{[^}]*min-height: 44px;/);
-    expect(styles).toMatch(/@media \(max-width: 640px\)[\s\S]*\.progress-desktop-primary \{[^}]*display: none;/);
+
+    expect(main).toContain('import "./progress-mobile-nav.css"');
+    expect(mobileNavStyles).toMatch(/@media \(max-width: 640px\)[\s\S]*\.progress-mobile-next-step \{[^}]*display: grid;/);
+    expect(mobileNavStyles).toMatch(/@media \(max-width: 640px\)[\s\S]*\.progress-mobile-next-step \{[^}]*position: sticky;/);
+    expect(mobileNavStyles).toMatch(/@media \(max-width: 640px\)[\s\S]*\.progress-desktop-primary \{[^}]*display: none;/);
   });
 });
