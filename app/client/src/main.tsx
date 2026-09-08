@@ -11,6 +11,7 @@ import "./product-premium.css";
 import "./analysis-premium.css";
 import "./shell-premium.css";
 import "./openings-premium.css";
+import "./trainer-premium.css";
 
 const queryClient = new QueryClient();
 
