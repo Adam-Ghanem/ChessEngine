@@ -17,6 +17,8 @@ describe("Games mobile next-step contract", () => {
     expect(styles).toMatch(/\.games-mobile-next-step\s*\{[^}]*display:\s*none;?[^}]*\}/);
     expect(styles).toMatch(/@media\(max-width:700px\)[\s\S]*\.games-mobile-next-step\s*\{[^}]*display:\s*grid;/);
     expect(styles).toMatch(/@media\(max-width:700px\)[\s\S]*\.games-mobile-next-step\s*\{[^}]*position:\s*sticky;/);
+    expect(styles).toMatch(/@media\(max-width:700px\)[\s\S]*\.games-mobile-next-step\s*\{[^}]*bottom:\s*12px;/);
+    expect(styles).toMatch(/@media\(max-width:640px\)[\s\S]*\.games-mobile-next-step\s*\{[^}]*bottom:\s*calc\(84px \+ env\(safe-area-inset-bottom\)\);?/);
     expect(styles).toMatch(/\.games-mobile-next-step \.primary-action\s*\{[^}]*min-height:\s*44px;/);
   });
 });
