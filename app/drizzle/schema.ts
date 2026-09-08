@@ -1,5 +1,18 @@
 import { boolean, index, int, json, mysqlEnum, mysqlTable, text, timestamp, uniqueIndex, varchar } from "drizzle-orm/mysql-core";
 
+export type OpeningStatsCachePayload = {
+  totalGames: number;
+  moves: Array<{
+    uci: string;
+    san: string;
+    games: number;
+    white: number;
+    draws: number;
+    black: number;
+    averageRating?: number;
+  }>;
+};
+
 /**
  * Core user table backing auth flow.
  * Extend this file with additional tables as your product grows.
@@ -107,9 +120,17 @@ export const openingAttempts = mysqlTable("openingAttempts", {
   index("opening_attempt_user_node_idx").on(table.userId, table.openingNodeId),
 ]);
 
+export const openingStatsCache = mysqlTable("openingStatsCache", {
+  positionKey: varchar("positionKey", { length: 255 }).primaryKey(),
+  payload: json("payload").$type<OpeningStatsCachePayload>().notNull(),
+  fetchedAt: timestamp("fetchedAt").notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, table => [index("opening_stats_fetched_idx").on(table.fetchedAt)]);
+
 export type Game = typeof games.$inferSelect;
 export type AnalysisSession = typeof analysisSessions.$inferSelect;
 export type LessonProgress = typeof lessonProgress.$inferSelect;
 export type PuzzleAttempt = typeof puzzleAttempts.$inferSelect;
 export type OpeningReviewItem = typeof openingReviewItems.$inferSelect;
 export type OpeningAttempt = typeof openingAttempts.$inferSelect;
+export type OpeningStatsCache = typeof openingStatsCache.$inferSelect;
