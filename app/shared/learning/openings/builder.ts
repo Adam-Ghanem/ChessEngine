@@ -11,7 +11,7 @@ function queryVariants(profile: OpeningLessonProfile) {
     const meaningful = words.filter(word => !SOFT_WORDS.has(word));
     return [value, meaningful.join(" "), meaningful.slice(0, 2).join(" "), meaningful[0] ?? ""];
   });
-  return [...new Set(relaxed.map(value => value.trim()).filter(Boolean))];
+  return Array.from(new Set(relaxed.map(value => value.trim()).filter(Boolean)));
 }
 
 function pickCandidate(results: OpeningNode[], query: string) {
