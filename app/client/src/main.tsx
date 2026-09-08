@@ -13,6 +13,7 @@ import "./shell-premium.css";
 import "./openings-premium.css";
 import "./trainer-premium.css";
 import "./opening-progress-premium.css";
+import "./learning-premium.css";
 
 const queryClient = new QueryClient();
 
