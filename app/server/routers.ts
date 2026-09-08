@@ -1,6 +1,7 @@
 import { Chess } from "chess.js";
 import { z } from "zod";
 import { COOKIE_NAME } from "@shared/const";
+import { OPENING_LESSONS, getOpeningLessonByKey, getOpeningLessonBySlug } from "@shared/learning/openings";
 import { ECO_CATALOG, getOpeningAncestors, getOpeningById, getOpeningBySlug, getOpeningChildren } from "@shared/openings/ecoCatalog";
 import { searchOpenings } from "@shared/openings/search";
 import { calculateOpeningMastery, scheduleOpeningReview, sortOpeningReviewQueue } from "@shared/openings/srs";
@@ -108,6 +109,32 @@ function daysOverdue(dueAt: Date | null, now: Date) {
   return Math.floor((now.getTime() - dueAt.getTime()) / 86_400_000);
 }
 
+function openingLessonStepCount(lesson: (typeof OPENING_LESSONS)[number]) {
+  return lesson.chapters.reduce((total, chapter) => total + chapter.steps.length, 0);
+}
+
+function learnCatalog() {
+  const foundations = lessonCatalog.map(lesson => ({
+    ...lesson,
+    kind: "foundation" as const,
+    slug: lesson.key,
+  }));
+  const openings = OPENING_LESSONS.map(lesson => ({
+    kind: "opening" as const,
+    key: lesson.key,
+    slug: lesson.slug,
+    title: lesson.title,
+    summary: lesson.summary,
+    family: lesson.family,
+    sideFocus: lesson.sideFocus,
+    difficulty: lesson.difficulty,
+    ecoRange: lesson.ecoRange,
+    tags: lesson.tags,
+    steps: openingLessonStepCount(lesson),
+  }));
+  return [...foundations, ...openings];
+}
+
 export const appRouter = router({
     // if you need to use socket.io, read and register route in server/_core/index.ts, all api should start with '/api/' so that the gateway can route correctly
   system: systemRouter,
@@ -160,9 +187,25 @@ export const appRouter = router({
     }),
   }),
   learn: router({
-    catalog: publicProcedure.query(() => lessonCatalog),
+    catalog: publicProcedure.query(() => learnCatalog()),
+    openingLesson: publicProcedure.input(z.object({ slug: z.string().trim().min(1).max(160) })).query(({ input }) => {
+      const lesson = getOpeningLessonBySlug(input.slug);
+      if (!lesson) throw new Error("Opening lesson not found");
+      return lesson;
+    }),
     progress: protectedProcedure.query(({ ctx }) => listLessonProgressForUser(ctx.user.id)),
-    saveProgress: protectedProcedure.input(z.object({ lessonKey: z.enum(["opening-principles", "tactical-motifs", "endgame-activity"]), status: z.enum(["not_started", "in_progress", "completed"]), completedSteps: z.number().int().min(0).max(20) })).mutation(({ ctx, input }) => upsertLessonProgress({ userId: ctx.user.id, ...input })),
+    saveProgress: protectedProcedure.input(z.object({
+      lessonKey: z.string().trim().min(1).max(160),
+      status: z.enum(["not_started", "in_progress", "completed"]),
+      completedSteps: z.number().int().min(0).max(1000),
+    })).mutation(({ ctx, input }) => {
+      const foundation = lessonCatalog.find(lesson => lesson.key === input.lessonKey);
+      const opening = getOpeningLessonByKey(input.lessonKey);
+      if (!foundation && !opening) throw new Error("Lesson not found");
+      const maxSteps = foundation?.steps ?? (opening ? openingLessonStepCount(opening) : 0);
+      if (input.completedSteps > maxSteps) throw new Error("Completed steps exceed lesson length");
+      return upsertLessonProgress({ userId: ctx.user.id, ...input });
+    }),
   }),
   puzzles: router({
     catalog: publicProcedure.query(() => puzzleCatalog),
