@@ -6,6 +6,7 @@ export type ProductRoute = {
 export const productRoutes = [
   { href: "/play", label: "Play" },
   { href: "/analyze", label: "Analyze" },
+  { href: "/openings", label: "Openings" },
   { href: "/puzzles", label: "Puzzles" },
   { href: "/learn", label: "Learn" },
   { href: "/games", label: "Games" },

@@ -1,4 +1,17 @@
-import { index, int, json, mysqlEnum, mysqlTable, text, timestamp, uniqueIndex, varchar } from "drizzle-orm/mysql-core";
+import { boolean, index, int, json, mysqlEnum, mysqlTable, text, timestamp, uniqueIndex, varchar } from "drizzle-orm/mysql-core";
+
+export type OpeningStatsCachePayload = {
+  totalGames: number;
+  moves: Array<{
+    uci: string;
+    san: string;
+    games: number;
+    white: number;
+    draws: number;
+    black: number;
+    averageRating?: number;
+  }>;
+};
 
 /**
  * Core user table backing auth flow.
@@ -73,7 +86,51 @@ export const puzzleAttempts = mysqlTable("puzzleAttempts", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
 }, table => [index("puzzle_attempts_user_created_idx").on(table.userId, table.createdAt)]);
 
+export const openingReviewItems = mysqlTable("openingReviewItems", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  openingNodeId: varchar("openingNodeId", { length: 255 }).notNull(),
+  side: mysqlEnum("side", ["white", "black"]).notNull(),
+  ease: int("ease").notNull().default(250),
+  intervalDays: int("intervalDays").notNull().default(0),
+  dueAt: timestamp("dueAt"),
+  streak: int("streak").notNull().default(0),
+  lapses: int("lapses").notNull().default(0),
+  lastResult: mysqlEnum("lastResult", ["again", "hard", "good", "easy"]),
+  lastReviewedAt: timestamp("lastReviewedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, table => [
+  uniqueIndex("opening_review_user_node_side_unique").on(table.userId, table.openingNodeId, table.side),
+  index("opening_review_user_due_idx").on(table.userId, table.dueAt),
+]);
+
+export const openingAttempts = mysqlTable("openingAttempts", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  openingNodeId: varchar("openingNodeId", { length: 255 }).notNull(),
+  side: mysqlEnum("side", ["white", "black"]).notNull(),
+  result: mysqlEnum("result", ["correct", "acceptable", "wrong"]).notNull(),
+  responseMs: int("responseMs").notNull().default(0),
+  usedHint: boolean("usedHint").notNull().default(false),
+  rating: mysqlEnum("rating", ["again", "hard", "good", "easy"]).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, table => [
+  index("opening_attempt_user_created_idx").on(table.userId, table.createdAt),
+  index("opening_attempt_user_node_idx").on(table.userId, table.openingNodeId),
+]);
+
+export const openingStatsCache = mysqlTable("openingStatsCache", {
+  positionKey: varchar("positionKey", { length: 255 }).primaryKey(),
+  payload: json("payload").$type<OpeningStatsCachePayload>().notNull(),
+  fetchedAt: timestamp("fetchedAt").notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, table => [index("opening_stats_fetched_idx").on(table.fetchedAt)]);
+
 export type Game = typeof games.$inferSelect;
 export type AnalysisSession = typeof analysisSessions.$inferSelect;
 export type LessonProgress = typeof lessonProgress.$inferSelect;
 export type PuzzleAttempt = typeof puzzleAttempts.$inferSelect;
+export type OpeningReviewItem = typeof openingReviewItems.$inferSelect;
+export type OpeningAttempt = typeof openingAttempts.$inferSelect;
+export type OpeningStatsCache = typeof openingStatsCache.$inferSelect;

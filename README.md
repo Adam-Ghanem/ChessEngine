@@ -116,7 +116,7 @@ Correctness comes before optimization. Every major subsystem is compiled and reg
 
 ## ChessIQ application
 
-The repository now also contains **ChessIQ**, a full-stack chess product in [`app/`](app/). It preserves this repository’s C++ engine and adds authenticated play, saved games, PGN import/export, bounded C++ UCI analysis, lessons, puzzles, private progress, and activity-derived coaching.
+The repository now also contains **ChessIQ**, a full-stack chess product in [`app/`](app/). It preserves this repository’s C++ engine and adds authenticated play, saved games, PGN import/export, bounded C++ UCI analysis, lessons, puzzles, private progress, activity-derived coaching, a complete openings explorer, and spaced-repetition opening training.
 
 | Directory | Purpose | Runtime scope |
 | --- | --- | --- |
@@ -125,3 +125,18 @@ The repository now also contains **ChessIQ**, a full-stack chess product in [`ap
 | `src/` | Original C++20 ChessEngine | Engine development and UCI tooling |
 
 For the real product, start with [`app/docs/CHESSIQ_FULLSTACK_DEPLOYMENT.md`](app/docs/CHESSIQ_FULLSTACK_DEPLOYMENT.md). The full-stack service is containerized so it can compile and run the first-party C++ engine alongside the Node API. The static Vercel preview in `web/` does not provide OAuth, database persistence, or server-side engine execution.
+
+### Openings Explorer and Trainer
+
+ChessIQ treats opening knowledge as a product-owned, deterministic learning system rather than a hard-coded popularity list.
+
+- `/openings` is a searchable, board-first ECO explorer with a local A00–E99 catalog, move playback, named variations, ideas, and resilient master-game statistics.
+- `/openings/:slug` is a dedicated opening detail workspace with ancestry, child variations, board playback, plans, statistics, and a direct **Train this line** action.
+- `/trainer` supports White and Black repertoire recall, learn/recall/mixed presentation modes, legal-move validation, canonical alternatives, hints, explicit review ratings, and local guest sessions.
+- `/progress` adds opening-specific White/Black mastery, due reviews, recent accuracy when evidence exists, and weakest branches derived from the user’s own persisted attempts.
+
+The canonical opening data is vendored into `app/shared/openings/generated/` from a pinned snapshot of the `lichess-org/chess-openings` dataset, which is released under **CC0**. It is used locally for names, ECO codes, and legal move sequences. ChessIQ does not depend on that repository at runtime.
+
+Live opening popularity is deliberately separate from correctness. Server-side queries to the Lichess opening explorer are validated, cached in MySQL, and bounded by a timeout. When the upstream service is unavailable, ChessIQ serves a stale persistent cache if one exists; otherwise it clearly reports statistics as unavailable. It never fabricates win rates or move counts.
+
+Trainer correctness comes only from the canonical local repertoire plus `chess.js` legality. An upstream popularity result can never make a move correct or incorrect. Authenticated attempts are revalidated server-side before they update the dedicated spaced-repetition tables; guests can complete a session locally without persistence.
