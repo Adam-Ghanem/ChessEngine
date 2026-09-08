@@ -90,11 +90,19 @@ export function ProductHeader({ activePath }: ProductHeaderProps) {
       mobileMoreRef.current.open = false;
     }
 
+    function handleFocusIn(event: FocusEvent) {
+      if (!mobileMoreRef.current?.open) return;
+      if (mobileMoreRef.current?.contains(event.target as Node)) return;
+      mobileMoreRef.current.open = false;
+    }
+
     document.addEventListener("keydown", handleKeyDown);
     document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("focusin", handleFocusIn);
     return () => {
       document.removeEventListener("keydown", handleKeyDown);
       document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("focusin", handleFocusIn);
     };
   }, []);
 
