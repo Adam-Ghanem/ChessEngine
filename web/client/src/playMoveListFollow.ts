@@ -3,19 +3,11 @@ const appRoot = document.getElementById("root");
 if (appRoot) {
   let activeList: HTMLElement | null = null;
   let lastMoveSignature = "";
+  let moveListObserver: MutationObserver | null = null;
 
   const keepLatestMoveVisible = () => {
-    const list = document.querySelector<HTMLElement>(".play-move-list");
-    if (!list) {
-      activeList = null;
-      lastMoveSignature = "";
-      return;
-    }
-
-    if (list !== activeList) {
-      activeList = list;
-      lastMoveSignature = "";
-    }
+    const list = activeList;
+    if (!list) return;
 
     const moveRows = list.querySelectorAll(".play-move-row").length;
     if (!moveRows) {
@@ -37,7 +29,22 @@ if (appRoot) {
     });
   };
 
-  const observer = new MutationObserver(keepLatestMoveVisible);
-  observer.observe(appRoot, { childList: true, subtree: true, characterData: true });
-  keepLatestMoveVisible();
+  const connectMoveList = () => {
+    const list = document.querySelector<HTMLElement>(".play-move-list");
+    if (list === activeList) return;
+
+    moveListObserver?.disconnect();
+    moveListObserver = null;
+    activeList = list;
+    lastMoveSignature = "";
+
+    if (!list) return;
+    moveListObserver = new MutationObserver(keepLatestMoveVisible);
+    moveListObserver.observe(list, { childList: true, subtree: true, characterData: true });
+    keepLatestMoveVisible();
+  };
+
+  const rootObserver = new MutationObserver(connectMoveList);
+  rootObserver.observe(appRoot, { childList: true, subtree: true });
+  connectMoveList();
 }
