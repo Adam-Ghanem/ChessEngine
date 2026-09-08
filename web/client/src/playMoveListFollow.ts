@@ -4,7 +4,7 @@ if (appRoot) {
   let activeList: HTMLElement | null = null;
   let lastMoveSignature = "";
 
-  function keepLatestMoveVisible() {
+  const keepLatestMoveVisible = () => {
     const list = document.querySelector<HTMLElement>(".play-move-list");
     if (!list) {
       activeList = null;
@@ -35,7 +35,7 @@ if (appRoot) {
         behavior: reduceMotion ? "auto" : "smooth",
       });
     });
-  }
+  };
 
   const observer = new MutationObserver(keepLatestMoveVisible);
   observer.observe(appRoot, { childList: true, subtree: true, characterData: true });
