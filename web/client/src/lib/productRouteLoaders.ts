@@ -8,6 +8,7 @@ export const productRouteLoaders: Record<ProductPath, () => Promise<LazyPageModu
   "/play": () => import("../pages/Play"),
   "/puzzles": () => import("../pages/Puzzles"),
   "/learn": () => import("../pages/Learn"),
+  "/learn/openings": () => import("../pages/Openings"),
   "/games": () => import("../pages/Games"),
   "/analyze": () => import("../pages/Analyze"),
   "/coach": () => import("../pages/Coach"),
