@@ -9,13 +9,13 @@ import type { OpeningCatalog, OpeningNode } from "./types";
 type RawOpeningRow = { eco: string; name: string; pgn: string };
 type PreparedOpening = Omit<OpeningNode, "parentId" | "trainable" | "acceptableContinuations">;
 
-const RAW_OPENINGS: RawOpeningRow[] = [
-  ...RAW_OPENINGS_A,
-  ...RAW_OPENINGS_B,
-  ...RAW_OPENINGS_C,
-  ...RAW_OPENINGS_D,
-  ...RAW_OPENINGS_E,
-] as RawOpeningRow[];
+const RAW_OPENINGS: RawOpeningRow[] = ([] as RawOpeningRow[]).concat(
+  RAW_OPENINGS_A as unknown as RawOpeningRow[],
+  RAW_OPENINGS_B as unknown as RawOpeningRow[],
+  RAW_OPENINGS_C as unknown as RawOpeningRow[],
+  RAW_OPENINGS_D as unknown as RawOpeningRow[],
+  RAW_OPENINGS_E as unknown as RawOpeningRow[],
+);
 
 const FAMILY_ALIASES: Record<string, string[]> = {
   "Ruy Lopez": ["Spanish Opening", "Spanish Game"],
@@ -185,7 +185,7 @@ function buildCatalog(rows: RawOpeningRow[]): OpeningNode[] {
         break;
       }
     }
-    const continuations = [...(nextMoves.get(node.uci.join(" ")) ?? [])].sort();
+    const continuations = Array.from(nextMoves.get(node.uci.join(" ")) ?? new Set<string>()).sort();
     return {
       ...node,
       parentId,
