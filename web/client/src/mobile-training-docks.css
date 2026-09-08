@@ -1,0 +1,14 @@
+/* Keep board-adjacent training actions reachable without colliding with ChessIQ navigation. */
+@media (min-width: 641px) and (max-width: 680px) {
+  body .learn-mobile-action-dock,
+  body .puzzle-mobile-action-dock {
+    bottom: 12px;
+  }
+}
+
+@media (max-width: 640px) {
+  body .learn-mobile-action-dock,
+  body .puzzle-mobile-action-dock {
+    bottom: calc(84px + env(safe-area-inset-bottom, 0px));
+  }
+}
