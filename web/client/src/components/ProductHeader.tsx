@@ -15,6 +15,7 @@ const routeIcons: Record<ProductPath, typeof Home> = {
   "/play": Gamepad2,
   "/puzzles": Puzzle,
   "/learn": BookOpen,
+  "/learn/openings": BookOpen,
   "/games": LibraryBig,
   "/analyze": Search,
   "/coach": Bot,
@@ -22,7 +23,7 @@ const routeIcons: Record<ProductPath, typeof Home> = {
 };
 
 const mobilePrimaryRoutes: ProductPath[] = ["/", "/play", "/puzzles", "/analyze"];
-const mobileMoreRoutes: ProductPath[] = ["/learn", "/games", "/coach", "/progress"];
+const mobileMoreRoutes: ProductPath[] = ["/learn", "/learn/openings", "/games", "/coach", "/progress"];
 
 function routeIntentProps(href: ProductPath) {
   return {
