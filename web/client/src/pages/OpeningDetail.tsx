@@ -126,6 +126,13 @@ export default function OpeningDetail() {
               {error && <div className="opening-replay-error" role="alert"><strong>ChessEngine could not replay the line.</strong><span>{error}</span></div>}
             </div>
 
+            <div className="opening-mobile-navigation-dock" aria-label="Mobile opening move navigation">
+              <button type="button" onClick={previousMove} disabled={busy || atStart}><ChevronLeft size={17} /> Previous</button>
+              <button type="button" className="is-primary" onClick={nextMove} disabled={busy || atEnd}>
+                {busy ? "Checking…" : atEnd ? "Line complete" : "Next move"} <ChevronRight size={17} />
+              </button>
+            </div>
+
             <div className="opening-move-timeline" aria-label={`${activeOpening.name} move timeline`}>
               <button type="button" className={currentPly === 0 ? "is-active" : ""} onClick={() => jumpToPly(0)}>Start</button>
               {sans.map((move, index) => {
