@@ -126,7 +126,7 @@ export default function OpeningDetail() {
               {error && <div className="opening-replay-error" role="alert"><strong>ChessEngine could not replay the line.</strong><span>{error}</span></div>}
             </div>
 
-            <div className="opening-mobile-navigation-dock" aria-label="Mobile opening move navigation">
+            <div className="opening-mobile-navigation-dock" role="navigation" aria-label="Mobile opening move navigation">
               <button type="button" onClick={previousMove} disabled={busy || atStart}><ChevronLeft size={17} /> Previous</button>
               <button type="button" className="is-primary" onClick={nextMove} disabled={busy || atEnd}>
                 {busy ? "Checking…" : atEnd ? "Line complete" : "Next move"} <ChevronRight size={17} />
