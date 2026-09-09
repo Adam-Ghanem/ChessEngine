@@ -7,6 +7,7 @@ describe("Opening detail mobile navigation contract", () => {
     const styles = readFileSync(new URL("./opening-detail.css", import.meta.url), "utf8");
 
     expect(detail).toContain('className="opening-mobile-navigation-dock"');
+    expect(detail).toContain('role="navigation"');
     expect(detail).toContain('aria-label="Mobile opening move navigation"');
     expect(detail).toContain('onClick={previousMove}');
     expect(detail).toContain('onClick={nextMove}');
