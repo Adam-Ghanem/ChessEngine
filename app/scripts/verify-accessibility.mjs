@@ -2,7 +2,7 @@ import puppeteer from "puppeteer-core";
 
 const baseUrl = process.env.CHESSIQ_TEST_URL ?? "http://127.0.0.1:3000";
 const routes = ["/play", "/analyze", "/learn", "/puzzles", "/games", "/progress", "/coach"];
-const browser = await puppeteer.launch({ executablePath: "/usr/bin/chromium", headless: true, args: ["--no-sandbox", "--disable-setuid-sandbox"] });
+const browser = await puppeteer.launch({ executablePath: process.env.CHROME_BIN ?? "/usr/bin/google-chrome", headless: true, args: ["--no-sandbox", "--disable-setuid-sandbox"] });
 
 try {
   const keyboardPage = await browser.newPage();
