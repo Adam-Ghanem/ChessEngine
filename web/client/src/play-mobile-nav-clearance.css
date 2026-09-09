@@ -1,0 +1,5 @@
+@media (max-width: 640px) {
+  .play-mobile-actions {
+    bottom: calc(84px + env(safe-area-inset-bottom));
+  }
+}
