@@ -379,14 +379,13 @@ export default function Analyze() {
                 {criticalReviewMoments.length > 0 && (
                   <div className="game-review-critical-moments" aria-label="Critical review moments">
                     <span className="analysis-label">Critical moments</span>
-                    <div className="game-review-move-timeline" role="list" aria-label="Highest centipawn-loss reviewed moves">
+                    <nav className="game-review-move-timeline" aria-label="Highest centipawn-loss reviewed moves">
                       {criticalReviewMoments.map((moment) => {
                         const move = gameContext.moves[moment.ply - 1] ?? `Ply ${moment.ply}`;
                         return (
                           <button
                             key={moment.ply}
                             type="button"
-                            role="listitem"
                             onClick={() => selectReplayPosition(moment.ply)}
                             disabled={reviewBusy}
                             aria-current={replayIndex === moment.ply ? "step" : undefined}
@@ -399,7 +398,7 @@ export default function Analyze() {
                           </button>
                         );
                       })}
-                    </div>
+                    </nav>
                   </div>
                 )}
                 {replayPositions ? (
@@ -425,7 +424,7 @@ export default function Analyze() {
                     </div>
                     <p id="game-review-keyboard-hint" className="game-review-keyboard-hint">Keyboard: ←/→ step · Home start · End final</p>
                     {gameContext.moves.length > 0 && (
-                      <div className="game-review-move-timeline" role="list" aria-label="Recorded move timeline">
+                      <nav className="game-review-move-timeline" aria-label="Recorded move timeline">
                         {gameContext.moves.map((move, index) => {
                           const reviewed = moveReviews[index + 1]?.classification;
                           const isCurrent = replayIndex === index + 1;
@@ -433,7 +432,6 @@ export default function Analyze() {
                             <button
                               key={`${index}-${move}`}
                               type="button"
-                              role="listitem"
                               onClick={() => selectReplayPosition(index + 1)}
                               aria-label={`Jump to position ${index + 1} after ${move}${reviewed ? `. Reviewed: ${reviewed.label}, ${reviewed.centipawnLoss} centipawn loss` : ""}`}
                               aria-current={isCurrent ? "step" : undefined}
@@ -445,7 +443,7 @@ export default function Analyze() {
                             </button>
                           );
                         })}
-                      </div>
+                      </nav>
                     )}
                     <div className="game-review-replay-actions">
                       <button type="button" onClick={() => selectReplayPosition(replayIndex - 1)} disabled={replayIndex === 0 || reviewBusy} aria-label="Previous position"><ChevronLeft size={16} /> Previous</button>
