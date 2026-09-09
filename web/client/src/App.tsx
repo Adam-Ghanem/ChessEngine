@@ -74,6 +74,13 @@ function RouteFocusManagement() {
     previousLocationRef.current = location;
 
     const focusMainContent = () => {
+      const heading = document.querySelector<HTMLElement>("main h1");
+      if (heading) {
+        heading.tabIndex = -1;
+        heading.focus();
+        return true;
+      }
+
       const target = document.getElementById("main-content");
       if (!target) return false;
       target.focus();
