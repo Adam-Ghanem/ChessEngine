@@ -33,7 +33,7 @@ export function AnalysisPanel({ move, mode, isAnalyzing, liveAnalysis = null }: 
   return (
     <section className={`analysis-panel ${isAnalyzing ? "is-analyzing" : ""}`} aria-labelledby="analysis-heading">
       <div className="analysis-panel-topline">
-        <div className="analysis-status">
+        <div className="analysis-status" role="status" aria-live="polite" aria-atomic="true">
           <IQPulse compact active={isAnalyzing} label={isAnalyzing ? "Engine analyzing" : liveAnalysis ? "Live engine result" : "Engine ready"} />
           <span>{isAnalyzing ? "Calculating" : liveAnalysis ? "Live result" : "Engine ready"}</span>
         </div>
