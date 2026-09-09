@@ -16,6 +16,7 @@ describe("Play mobile action dock contract", () => {
     expect(styles).toContain(".play-mobile-actions{display:none}");
     expect(styles).toMatch(/@media\(max-width:640px\)[\s\S]*\.play-mobile-actions\{display:grid/);
     expect(styles).toMatch(/\.play-mobile-actions\{[^}]*position:sticky/);
+    expect(styles).toMatch(/@media\(max-width:640px\)[\s\S]*\.play-mobile-actions\{[^}]*bottom:calc\(84px \+ env\(safe-area-inset-bottom\)\)/);
     expect(styles).toMatch(/\.play-mobile-actions (?:button|a)[^{]*\{[^}]*min-height:44px/);
   });
 });
