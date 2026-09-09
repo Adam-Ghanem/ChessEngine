@@ -10,6 +10,7 @@
   .progress-mobile-next-step {
     display: grid;
     position: sticky;
+    bottom: calc(84px + env(safe-area-inset-bottom));
   }
 
   .progress-desktop-primary {
