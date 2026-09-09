@@ -21,6 +21,8 @@ describe("Progress mobile next-step contract", () => {
     expect(main).toContain('import "./progress-mobile-nav.css"');
     expect(mobileNavStyles).toMatch(/@media \(max-width: 640px\)[\s\S]*\.progress-mobile-next-step \{[^}]*display: grid;/);
     expect(mobileNavStyles).toMatch(/@media \(max-width: 640px\)[\s\S]*\.progress-mobile-next-step \{[^}]*position: sticky;/);
+    expect(mobileNavStyles).toMatch(/@media \(max-width: 640px\)[\s\S]*\.progress-mobile-next-step \{[^}]*bottom: calc\(84px \+ env\(safe-area-inset-bottom\)\);/);
     expect(mobileNavStyles).toMatch(/@media \(max-width: 640px\)[\s\S]*\.progress-desktop-primary \{[^}]*display: none;/);
+    expect(styles).not.toMatch(/\.progress-mobile-next-step \{[^}]*bottom: calc\(88px \+ env\(safe-area-inset-bottom\)\);/);
   });
 });
