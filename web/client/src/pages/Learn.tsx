@@ -103,7 +103,7 @@ export default function Learn() {
               </span>
             </header>
 
-            <div className="learn-mobile-action-dock" aria-label="Mobile lesson controls">
+            <div className="learn-mobile-action-dock" role="navigation" aria-label="Mobile lesson controls">
               <button type="button" className="lesson-secondary" onClick={resetLesson} disabled={completed === 0}>
                 <RotateCcw size={15} /> Reset
               </button>
