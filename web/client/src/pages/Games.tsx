@@ -67,7 +67,7 @@ export default function Games() {
         {games.length ? (
           <>
             {latestGame && (
-              <aside className="games-mobile-next-step" aria-label="Mobile games next action">
+              <nav className="games-mobile-next-step" aria-label="Mobile games next action">
                 <div>
                   <span>Latest saved game</span>
                   <strong>{latestGameIsResumable ? "Continue playing" : "Turn it into training"}</strong>
@@ -76,7 +76,7 @@ export default function Games() {
                   {latestGameIsResumable ? <PlayCircle size={16} aria-hidden="true" /> : <Sparkles size={16} aria-hidden="true" />}
                   {latestGamePrimaryLabel}
                 </Link>
-              </aside>
+              </nav>
             )}
             <div className="games-toolbar">
               <span><History size={16} /> Recent games</span>

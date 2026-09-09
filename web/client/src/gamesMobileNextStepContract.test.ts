@@ -6,7 +6,7 @@ describe("Games mobile next-step contract", () => {
     const games = readFileSync(new URL("./pages/Games.tsx", import.meta.url), "utf8");
     const styles = readFileSync(new URL("./games.css", import.meta.url), "utf8");
 
-    expect(games).toContain('className="games-mobile-next-step"');
+    expect(games).toContain('<nav className="games-mobile-next-step"');
     expect(games).toContain('aria-label="Mobile games next action"');
     expect(games).toContain('const latestGame = games[0] ?? null;');
     expect(games).toContain('isResumableGame(latestGame)');
