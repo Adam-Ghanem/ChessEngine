@@ -323,7 +323,7 @@
 
 @media (max-width: 640px) {
   .coach-mobile-next-step {
-    bottom: calc(88px + env(safe-area-inset-bottom));
+    bottom: calc(84px + env(safe-area-inset-bottom));
   }
 }
 

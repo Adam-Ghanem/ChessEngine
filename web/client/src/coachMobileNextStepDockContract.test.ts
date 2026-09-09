@@ -15,6 +15,7 @@ describe("Coach mobile next-step dock contract", () => {
     expect(styles).toMatch(/@media \(max-width: 720px\)[\s\S]*\.coach-mobile-next-step\s*\{[^}]*display:\s*grid;/);
     expect(styles).toMatch(/\.coach-mobile-next-step\s*\{[^}]*position:\s*sticky;/);
     expect(styles).toMatch(/\.coach-mobile-next-step a\s*\{[^}]*min-height:\s*44px;/);
-    expect(styles).toContain("bottom: calc(88px + env(safe-area-inset-bottom));");
+    expect(styles).toContain("bottom: calc(84px + env(safe-area-inset-bottom));");
+    expect(styles).not.toContain("bottom: calc(88px + env(safe-area-inset-bottom));");
   });
 });
