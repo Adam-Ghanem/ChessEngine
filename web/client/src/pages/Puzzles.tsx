@@ -195,7 +195,7 @@ export default function Puzzles() {
               />
             </div>
 
-            <div className="puzzle-mobile-action-dock" aria-label="Mobile puzzle controls">
+            <div className="puzzle-mobile-action-dock" role="navigation" aria-label="Mobile puzzle controls">
               <button type="button" className="lesson-secondary" onClick={restartPuzzle} disabled={busy}><RotateCcw size={15} /> Reset</button>
               <button type="button" className="lesson-primary primary-action" disabled={feedback !== "solved" || nextUnsolvedIndex === null} onClick={openNextUnsolvedPuzzle}>{nextUnsolvedIndex === null && solvedCount === puzzles.length ? "Set complete" : "Next puzzle"}</button>
             </div>

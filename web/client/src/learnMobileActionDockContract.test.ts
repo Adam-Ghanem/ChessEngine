@@ -7,6 +7,7 @@ describe("Learn mobile action dock contract", () => {
     const styles = readFileSync(new URL("./product-surfaces.css", import.meta.url), "utf8");
 
     expect(learn).toContain('className="learn-mobile-action-dock"');
+    expect(learn).toContain('role="navigation"');
     expect(learn).toContain('aria-label="Mobile lesson controls"');
     expect(learn).toContain('onClick={completeCheckpoint}');
     expect(learn).toContain('onClick={resetLesson}');

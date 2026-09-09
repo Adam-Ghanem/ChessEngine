@@ -7,6 +7,7 @@ describe("Puzzles mobile action dock contract", () => {
     const styles = readFileSync(new URL("./product-surfaces.css", import.meta.url), "utf8");
 
     expect(puzzles).toContain('className="puzzle-mobile-action-dock"');
+    expect(puzzles).toContain('role="navigation"');
     expect(puzzles).toContain('aria-label="Mobile puzzle controls"');
     expect(puzzles).toContain('onClick={restartPuzzle}');
     expect(puzzles).toContain('onClick={openNextUnsolvedPuzzle}');
