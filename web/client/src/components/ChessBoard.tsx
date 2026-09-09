@@ -3,6 +3,7 @@
  * This component is presentation-only. Engine-backed interaction lives in LegalChessBoard.
  */
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import "@/analysis-board-keyboard.css";
 import "@/chess-piece-motion.css";
 import { ChessPiece, type ChessPieceKind } from "@/components/ChessPiece";
 import { nextBoardFocusSquare } from "@/lib/boardKeyboardNavigation";
