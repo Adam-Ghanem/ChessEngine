@@ -479,7 +479,7 @@ export default function Play() {
           </div>
 
           <aside className="game-panel play-rail" aria-label="Game panel">
-            <div className="game-panel-status" aria-live="polite">
+            <div className="game-panel-status" role="status" aria-live="polite" aria-atomic="true">
               <span><CircleDot size={13} /> {terminal ? "Game finished" : resumedGame?.id === gameId ? "Resumed game" : "Live game"}</span>
               <strong>{statusText}</strong>
               <small>{terminal ? "Start a new game to continue." : `${legalMoves.length} legal moves available`}</small>
