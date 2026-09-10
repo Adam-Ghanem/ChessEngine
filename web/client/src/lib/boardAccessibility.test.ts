@@ -34,4 +34,21 @@ describe("boardSquareAriaLabel", () => {
       isTarget: true,
     })).toBe("black pawn on e5, legal capture target");
   });
+
+  it("describes the origin and destination of the latest move", () => {
+    expect(boardSquareAriaLabel({
+      square: "e2",
+      isSelected: false,
+      isTarget: false,
+      lastMoveState: "from",
+    })).toBe("Empty e2, previous move origin");
+
+    expect(boardSquareAriaLabel({
+      piece: { color: "white", kind: "P" },
+      square: "e4",
+      isSelected: false,
+      isTarget: false,
+      lastMoveState: "to",
+    })).toBe("white pawn on e4, previous move destination");
+  });
 });
