@@ -152,6 +152,9 @@ export default function Puzzles() {
     <main className="app-shell chessiq-shell">
       <div className="puzzles-product-shell">
         <ProductHeader activePath="/puzzles" />
+        <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+          Puzzle {activeIndex + 1} of {puzzles.length}: {puzzle.title}. {puzzle.difficulty}. {puzzle.theme}.
+        </p>
 
         <section className="puzzles-hero">
           <div>
