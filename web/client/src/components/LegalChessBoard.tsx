@@ -1,4 +1,4 @@
-import { useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
+import { useId, useLayoutEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { ChessPiece, type ChessPieceKind } from "@/components/ChessPiece";
 import { sideToMove, moveTargets } from "@/engine/playState";
 import type { PlayerSide } from "@/engine/playSide";
@@ -76,6 +76,7 @@ export function LegalChessBoard({
   const previousBoardRef = useRef<Map<string, BoardPiece> | null>(null);
   const squareRefs = useRef(new Map<string, HTMLButtonElement>());
   const motionKeyRef = useRef(0);
+  const keyboardHintId = useId();
   const board = useMemo(() => decodeFen(fen), [fen]);
   const { files, ranks } = useMemo(() => boardAxes(orientation), [orientation]);
   const turn = sideToMove(fen);
@@ -136,7 +137,9 @@ export function LegalChessBoard({
   const motionTravel = motion ? squareTravel(motion.from, motion.to, files, ranks) : null;
 
   return (
-    <div className="play-board" role="grid" aria-label={ariaLabel} aria-rowcount={8} aria-colcount={8} data-orientation={orientation}>
+    <>
+      <p id={keyboardHintId} className="sr-only">Use arrow keys to move between squares. Press Enter or Space to select a piece and its destination.</p>
+    <div className="play-board" role="grid" aria-label={ariaLabel} aria-describedby={keyboardHintId} aria-rowcount={8} aria-colcount={8} data-orientation={orientation}>
       {ranks.map((rank, row) => files.map((file, column) => {
         const square = `${file}${rank}`;
         const piece = board.get(square);
@@ -192,5 +195,6 @@ export function LegalChessBoard({
         </div>
       )}
     </div>
+    </>
   );
 }
