@@ -24,4 +24,10 @@ describe("ChessIQ chessboard keyboard accessibility contract", () => {
     expect(boardSource).toContain("const lastMoveTo = lastMove?.slice(2, 4) ?? null");
     expect(boardSource).toContain('lastMoveState: square === lastMoveFrom ? "from" : square === lastMoveTo ? "to" : undefined');
   });
+
+  it("keeps a read-only board keyboard-inspectable while preventing moves", () => {
+    expect(boardSource).toContain("aria-disabled={disabled || undefined}");
+    expect(boardSource).not.toContain("disabled={disabled}");
+    expect(boardSource).toContain("if (disabled) return;");
+  });
 });

@@ -171,7 +171,7 @@ export function LegalChessBoard({
               lastMoveState: square === lastMoveFrom ? "from" : square === lastMoveTo ? "to" : undefined,
             })}
             aria-pressed={isSelected}
-            disabled={disabled}
+            aria-disabled={disabled || undefined}
           >
             {piece && <ChessPiece color={piece.color} kind={piece.kind} />}
             {isTarget && <span className="play-target" aria-hidden="true" />}
