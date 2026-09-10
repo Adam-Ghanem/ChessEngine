@@ -138,73 +138,63 @@ export function LegalChessBoard({
 
   return (
     <>
-      <p id={keyboardHintId} className="sr-only">
-        Use arrow keys to move between squares. Press Enter or Space to select a piece and its destination.
-      </p>
-      <div
-        className="play-board"
-        role="grid"
-        aria-label={ariaLabel}
-        aria-describedby={keyboardHintId}
-        aria-rowcount={8}
-        aria-colcount={8}
-        data-orientation={orientation}
-      >
-        {ranks.map((rank, row) => files.map((file, column) => {
-          const square = `${file}${rank}`;
-          const piece = board.get(square);
-          const isSelected = square === selected;
-          const isTarget = targets.includes(square);
-          const isMotionDestination = square === motion?.to;
-          return (
-            <button
-              key={square}
-              ref={element => {
-                if (element) squareRefs.current.set(square, element);
-                else squareRefs.current.delete(square);
-              }}
-              type="button"
-              role="gridcell"
-              data-square={square}
-              tabIndex={square === focusedSquare ? 0 : -1}
-              className={`play-square ${(row + column) % 2 === 0 ? "is-light" : "is-dark"} ${isSelected ? "is-selected" : ""} ${isTarget ? "is-target" : ""} ${isMotionDestination ? "is-motion-destination" : ""}`}
-              onFocus={() => setFocusedSquare(square)}
-              onKeyDown={event => handleSquareKeyDown(event, square)}
-              onClick={() => chooseSquare(square)}
-              aria-label={boardSquareAriaLabel({
-                piece,
-                square,
-                isSelected,
-                isTarget,
-              })}
-              aria-pressed={isSelected}
-              disabled={disabled}
-            >
-              {piece && <ChessPiece color={piece.color} kind={piece.kind} />}
-              {isTarget && <span className="play-target" aria-hidden="true" />}
-              {column === 0 && <span className="rank-label">{rank}</span>}
-              {row === 7 && <span className="file-label">{file}</span>}
-            </button>
-          );
-        }))}
-
-        {motion && motionOrigin && motionTravel && (
-          <div
-            key={motion.key}
-            className="play-moving-piece"
-            style={{
-              left: `${motionOrigin.x}%`,
-              top: `${motionOrigin.y}%`,
-              ["--play-move-x" as string]: `${motionTravel.x}%`,
-              ["--play-move-y" as string]: `${motionTravel.y}%`,
+      <p id={keyboardHintId} className="sr-only">Use arrow keys to move between squares. Press Enter or Space to select a piece and its destination.</p>
+    <div className="play-board" role="grid" aria-label={ariaLabel} aria-describedby={keyboardHintId} aria-rowcount={8} aria-colcount={8} data-orientation={orientation}>
+      {ranks.map((rank, row) => files.map((file, column) => {
+        const square = `${file}${rank}`;
+        const piece = board.get(square);
+        const isSelected = square === selected;
+        const isTarget = targets.includes(square);
+        const isMotionDestination = square === motion?.to;
+        return (
+          <button
+            key={square}
+            ref={element => {
+              if (element) squareRefs.current.set(square, element);
+              else squareRefs.current.delete(square);
             }}
-            onAnimationEnd={() => setMotion(current => current?.key === motion.key ? null : current)}
-            aria-hidden="true"
+            type="button"
+            role="gridcell"
+            data-square={square}
+            tabIndex={square === focusedSquare ? 0 : -1}
+            className={`play-square ${(row + column) % 2 === 0 ? "is-light" : "is-dark"} ${isSelected ? "is-selected" : ""} ${isTarget ? "is-target" : ""} ${isMotionDestination ? "is-motion-destination" : ""}`}
+            onFocus={() => setFocusedSquare(square)}
+            onKeyDown={event => handleSquareKeyDown(event, square)}
+            onClick={() => chooseSquare(square)}
+            aria-label={boardSquareAriaLabel({
+              piece,
+              square,
+              isSelected,
+              isTarget,
+            })}
+            aria-pressed={isSelected}
+            disabled={disabled}
           >
-            <ChessPiece color={motion.piece.color} kind={motion.piece.kind} />
-          </div>
-        )}
-      </div>
+            {piece && <ChessPiece color={piece.color} kind={piece.kind} />}
+            {isTarget && <span className="play-target" aria-hidden="true" />}
+            {column === 0 && <span className="rank-label">{rank}</span>}
+            {row === 7 && <span className="file-label">{file}</span>}
+          </button>
+        );
+      }))}
+
+      {motion && motionOrigin && motionTravel && (
+        <div
+          key={motion.key}
+          className="play-moving-piece"
+          style={{
+            left: `${motionOrigin.x}%`,
+            top: `${motionOrigin.y}%`,
+            ["--play-move-x" as string]: `${motionTravel.x}%`,
+            ["--play-move-y" as string]: `${motionTravel.y}%`,
+          }}
+          onAnimationEnd={() => setMotion(current => current?.key === motion.key ? null : current)}
+          aria-hidden="true"
+        >
+          <ChessPiece color={motion.piece.color} kind={motion.piece.kind} />
+        </div>
+      )}
+    </div>
     </>
   );
 }
