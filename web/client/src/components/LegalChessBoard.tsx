@@ -81,6 +81,8 @@ export function LegalChessBoard({
   const { files, ranks } = useMemo(() => boardAxes(orientation), [orientation]);
   const turn = sideToMove(fen);
   const targets = useMemo(() => selected ? moveTargets(legalMoves, selected) : [], [legalMoves, selected]);
+  const lastMoveFrom = lastMove?.slice(0, 2) ?? null;
+  const lastMoveTo = lastMove?.slice(2, 4) ?? null;
 
   useLayoutEffect(() => {
     const previousBoard = previousBoardRef.current;
@@ -166,6 +168,7 @@ export function LegalChessBoard({
               square,
               isSelected,
               isTarget,
+              lastMoveState: square === lastMoveFrom ? "from" : square === lastMoveTo ? "to" : undefined,
             })}
             aria-pressed={isSelected}
             disabled={disabled}
