@@ -62,7 +62,18 @@ describe("ChessIQ mobile premium navigation", () => {
     expect(header).toContain("<MobileMoreIcon size={19} aria-hidden=\"true\" />");
     expect(header).toContain("<span>{activeMoreRoute?.label ?? \"More\"}</span>");
     expect(header).toContain('aria-label={activeMoreRoute ? `${activeMoreRoute.label}, open more ChessIQ sections` : "Open more ChessIQ sections"}');
-    expect(header).toContain('aria-current={moreIsActive ? "page" : undefined}');
+  });
+
+  it("keeps current-page semantics on the actual More-menu destination", () => {
+    const header = readFileSync(new URL("./components/ProductHeader.tsx", import.meta.url), "utf8");
+    const summaryStart = header.indexOf('<summary\n            className="mobile-more-button"');
+    const summaryEnd = header.indexOf("</summary>", summaryStart);
+    const summaryMarkup = header.slice(summaryStart, summaryEnd);
+
+    expect(summaryStart).toBeGreaterThan(-1);
+    expect(summaryMarkup).not.toContain("aria-current");
+    expect(header).toContain('className={`mobile-more-link ${isActive ? "is-active" : ""}`}');
+    expect(header).toContain('aria-current={isActive ? "page" : undefined}');
   });
 
   it("keeps mobile theme control at an accessible touch target size", () => {
