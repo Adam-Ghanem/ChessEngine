@@ -14,7 +14,12 @@ export function ClassificationBadge({ classification, compact = false }: Classif
   return (
     <span className={`classification-badge tone-${meta.tone} ${compact ? "is-compact" : ""}`}>
       <span aria-hidden="true">{meta.symbol}</span>
-      <span>{compact ? meta.shortLabel : meta.label}</span>
+      <span aria-hidden={compact ? true : undefined}>{compact ? meta.shortLabel : meta.label}</span>
+      {compact ? (
+        <span className="sr-only">{meta.label}. {meta.description}</span>
+      ) : (
+        <span className="sr-only">. {meta.description}</span>
+      )}
     </span>
   );
 }
