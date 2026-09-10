@@ -408,6 +408,7 @@ export default function Analyze() {
                     aria-describedby="game-review-keyboard-hint"
                     tabIndex={0}
                     onKeyDown={(event) => {
+                      if (event.target !== event.currentTarget) return;
                       let nextIndex: number | null = null;
                       if (event.key === "ArrowLeft") nextIndex = replayIndex - 1;
                       if (event.key === "ArrowRight") nextIndex = replayIndex + 1;
