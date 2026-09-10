@@ -7,6 +7,7 @@
 }
 
 @media (max-width: 640px) {
+  body .play-mobile-actions,
   body .learn-mobile-action-dock,
   body .puzzle-mobile-action-dock {
     bottom: calc(84px + env(safe-area-inset-bottom, 0px));
