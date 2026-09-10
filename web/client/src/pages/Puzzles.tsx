@@ -205,7 +205,7 @@ export default function Puzzles() {
               <p className="sidebar-note">Play only your side of the tactic. ChessIQ validates your UCI move, auto-plays the curated reply through the first-party engine, then returns the board to you.</p>
               {error && <div className="puzzle-feedback" role="alert"><strong>Engine error.</strong><p>{error}</p></div>}
               {feedback !== "idle" && !error && (
-                <div className={feedback === "solved" ? "puzzle-feedback is-success" : "puzzle-feedback"} role="status" aria-live="polite">
+                <div className={feedback === "solved" ? "puzzle-feedback is-success" : "puzzle-feedback"} role="status" aria-live="polite" aria-atomic="true">
                   <strong>{feedback === "solved" ? "Correct." : feedback === "progress" ? "Correct — opponent replied. Continue." : "Keep calculating."}</strong>
                   <p>{feedback === "solved" ? puzzle.explanation : feedback === "incorrect" ? "That move is legal, but it is not the tactical solution. The position has not changed." : "The verified reply is on the board. Find your next move."}</p>
                 </div>
