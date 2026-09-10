@@ -18,4 +18,10 @@ describe("ChessIQ chessboard keyboard accessibility contract", () => {
     expect(boardSource).toContain("isSelected,");
     expect(boardSource).toContain("isTarget,");
   });
+
+  it("wires the latest move origin and destination into square labels", () => {
+    expect(boardSource).toContain("const lastMoveFrom = lastMove?.slice(0, 2) ?? null");
+    expect(boardSource).toContain("const lastMoveTo = lastMove?.slice(2, 4) ?? null");
+    expect(boardSource).toContain('lastMoveState: square === lastMoveFrom ? "from" : square === lastMoveTo ? "to" : undefined');
+  });
 });
