@@ -88,6 +88,7 @@ export default function Games() {
                 const hasReviewProgress = Boolean(reviewProgress && reviewProgress.reviewed > 0);
                 const reviewComplete = Boolean(reviewProgress && reviewProgress.total > 0 && reviewProgress.reviewed >= reviewProgress.total);
                 const reviewAction = reviewComplete ? "Open review" : hasReviewProgress ? "Continue review" : "Review in Analyze";
+                const gameActionContext = new Date(game.updatedAt).toLocaleString();
 
                 return (
                   <article className="game-history-card" key={game.id}>
@@ -112,14 +113,14 @@ export default function Games() {
                         <small>{reviewComplete ? `Complete · depth ${reviewProgress.depth}` : `Depth ${reviewProgress.depth}`}</small>
                       </div>
                     )}
-                    <div className="game-history-meta"><Clock3 size={14} /><time dateTime={game.updatedAt}>{new Date(game.updatedAt).toLocaleString()}</time></div>
+                    <div className="game-history-meta"><Clock3 size={14} /><time dateTime={game.updatedAt}>{gameActionContext}</time></div>
                     <div className="game-history-actions">
-                      <button type="button" onClick={() => copyFen(game.fen)}><Copy size={14} /> Copy FEN</button>
-                      <button type="button" className="game-delete-action" onClick={() => deleteSavedGame(game)} aria-label={`Delete saved game from ${new Date(game.updatedAt).toLocaleString()}`}><Trash2 size={14} /> Delete</button>
+                      <button type="button" onClick={() => copyFen(game.fen)} aria-label={`Copy FEN for saved game from ${gameActionContext}`}><Copy size={14} /> Copy FEN</button>
+                      <button type="button" className="game-delete-action" onClick={() => deleteSavedGame(game)} aria-label={`Delete saved game from ${gameActionContext}`}><Trash2 size={14} /> Delete</button>
                       {isResumableGame(game) && (
-                        <Link href={`/play?resume=${encodeURIComponent(game.id)}`} className="primary-action"><PlayCircle size={14} /> Resume game</Link>
+                        <Link href={`/play?resume=${encodeURIComponent(game.id)}`} className="primary-action" aria-label={`Resume saved game from ${gameActionContext}`}><PlayCircle size={14} /> Resume game</Link>
                       )}
-                      <Link href={analysisHrefForGame(game.fen, game.id)} className="primary-action">{reviewAction}</Link>
+                      <Link href={analysisHrefForGame(game.fen, game.id)} className="primary-action" aria-label={`${reviewAction} for saved game from ${gameActionContext}`}>{reviewAction}</Link>
                     </div>
                   </article>
                 );
