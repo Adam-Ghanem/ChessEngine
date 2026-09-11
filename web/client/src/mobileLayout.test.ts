@@ -44,6 +44,13 @@ describe("production mobile product layout", () => {
     expect(css).toMatch(/@media \(max-width: 640px\).*?\.fen-board-card\s+\.board-frame\s*\{[^}]*border-radius:\s*0/s);
   });
 
+  it("gives Puzzles the full phone width for the tactical board", () => {
+    const css = readFileSync(new URL("./product-surfaces.css", import.meta.url), "utf8");
+
+    expect(css).toMatch(/@media \(max-width: 640px\)[\s\S]*?\.puzzle-board-wrap\s*\{[^}]*width:\s*100dvw[^}]*max-width:\s*none[^}]*margin-inline:\s*calc\(50% - 50dvw\)/s);
+    expect(css).toMatch(/@media \(max-width: 640px\)[\s\S]*?\.puzzle-board-wrap\s+\.board-frame\s*\{[^}]*border-radius:\s*0/s);
+  });
+
   it("makes Learn and Puzzles single-column at the 1030px production breakpoint", () => {
     const css = readFileSync(new URL("./product-surfaces.css", import.meta.url), "utf8");
     expect(css).toContain("@media (max-width: 1030px)");
