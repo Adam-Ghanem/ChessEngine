@@ -35,6 +35,15 @@ describe("production mobile product layout", () => {
     expect(css).toMatch(/@media \(max-width: 1030px\).*?\.fen-analyze-layout\s*\{\s*grid-template-columns:\s*1fr/s);
   });
 
+  it("gives Analyze and Game Review the full phone width for the board", () => {
+    const css = readFileSync(new URL("./fen-analyze.css", import.meta.url), "utf8");
+
+    expect(css).toMatch(/@media \(max-width: 640px\).*?\.fen-board-card\s*\{[^}]*width:\s*100dvw[^}]*margin-inline:\s*calc\(50% - 50dvw\)[^}]*border-radius:\s*0/s);
+    expect(css).toMatch(/@media \(max-width: 640px\).*?\.fen-board-card\s+\.analysis-board-stage\s*\{[^}]*padding:\s*0/s);
+    expect(css).toMatch(/@media \(max-width: 640px\).*?\.fen-board-wrap\s*\{[^}]*width:\s*100%[^}]*max-width:\s*none/s);
+    expect(css).toMatch(/@media \(max-width: 640px\).*?\.fen-board-card\s+\.board-frame\s*\{[^}]*border-radius:\s*0/s);
+  });
+
   it("makes Learn and Puzzles single-column at the 1030px production breakpoint", () => {
     const css = readFileSync(new URL("./product-surfaces.css", import.meta.url), "utf8");
     expect(css).toContain("@media (max-width: 1030px)");
