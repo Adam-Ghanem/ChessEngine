@@ -55,7 +55,7 @@ function RouteAnnouncement() {
   const [announcement, setAnnouncement] = useState("");
 
   useEffect(() => {
-    setAnnouncement(`${documentTitleForPath(location)} loaded`);
+    setAnnouncement(`Navigated to ${documentTitleForPath(location)}`);
   }, [location]);
 
   return (
