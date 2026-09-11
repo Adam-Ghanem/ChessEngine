@@ -183,11 +183,11 @@ export default function Coach() {
           <Link href={primaryPlan.href} className="primary-action">{primaryPlan.action}</Link>
         </section>
 
-        <section className="coach-plan-queue" aria-label="Training plan steps">
+        <ol className="coach-plan-queue" aria-label="Training plan steps">
           {trainingQueue.map((step, index) => {
             const StepIcon = step.icon;
             return (
-              <article className="coach-plan-step" key={step.href}>
+              <li className="coach-plan-step" key={step.href}>
                 <div className="coach-plan-step-number">{index === 0 ? "Next" : index === 1 ? "Then" : "After"}</div>
                 <div className="coach-plan-step-icon"><StepIcon size={18} /></div>
                 <div className="coach-plan-step-copy">
@@ -195,10 +195,10 @@ export default function Coach() {
                   <strong>{step.title}</strong>
                 </div>
                 <Link href={step.href} aria-label={`${step.action}: ${step.title}`}>{step.action}</Link>
-              </article>
+              </li>
             );
           })}
-        </section>
+        </ol>
 
         <section className="coach-principles" aria-labelledby="coach-principles-title">
           <div><Brain size={20} /><h2 id="coach-principles-title">How Coach decides</h2></div>

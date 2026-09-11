@@ -13,6 +13,12 @@ describe("Coach training queue", () => {
     expect(coach).toContain("Then");
   });
 
+  it("exposes the prioritized queue as an ordered list", () => {
+    expect(coach).toContain('<ol className="coach-plan-queue" aria-label="Training plan steps">');
+    expect(coach).toContain('<li className="coach-plan-step" key={step.href}>');
+    expect(coach).not.toContain('<section className="coach-plan-queue" aria-label="Training plan steps">');
+  });
+
   it("keeps the queue responsive and touch friendly", () => {
     expect(css).toContain(".coach-plan-queue");
     expect(css).toContain(".coach-plan-step");
