@@ -39,7 +39,7 @@
 .checkpoint-list li.is-done { color: var(--foreground); }
 .checkpoint-list li.is-done > span { color: var(--primary); background: color-mix(in srgb, var(--primary) 12%, transparent); }
 .lesson-actions { display: flex; justify-content: flex-end; gap: 10px; align-items: center; }
-.lesson-secondary, .lesson-primary { min-height: 42px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; text-decoration: none; }
+.lesson-secondary, .lesson-primary { min-height: 44px; border-radius: 12px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; text-decoration: none; }
 .lesson-secondary { border: 1px solid var(--border); background: transparent; color: inherit; padding: 0 14px; }
 .lesson-secondary:disabled { opacity: .45; cursor: not-allowed; }
 .lesson-primary { padding-inline: 18px; }
