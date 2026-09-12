@@ -106,4 +106,6 @@
 @media (max-width: 640px) {
   .learn-mobile-action-dock { bottom: calc(84px + env(safe-area-inset-bottom)); }
   .puzzle-mobile-action-dock { bottom: calc(84px + env(safe-area-inset-bottom)); }
+  .puzzle-board-wrap { width: 100dvw; max-width: none; margin-inline: calc(50% - 50dvw); }
+  .puzzle-board-wrap .board-frame { border-radius: 0; }
 }
