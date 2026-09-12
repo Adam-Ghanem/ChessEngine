@@ -17,6 +17,7 @@ describe("mobile desktop-site viewport contract", () => {
     expect(css).toContain("@media (max-width: 1030px)");
     expect(css).toMatch(/\.brand-wordmark\s*\{[^}]*display:\s*none/s);
     expect(css).toMatch(/\.product-header \.app-nav\s*\{[^}]*min-width:\s*0/s);
+    expect(css).toMatch(/\.product-header \.nav-item\s*\{[^}]*min-height:\s*44px/s);
     expect(css).toMatch(/\.analysis-product-shell\s*\{[^}]*width:\s*100%/s);
     expect(css).toMatch(/\.play-hero\s*>\s*div[\s\S]*?min-width:\s*0/s);
     expect(css).toMatch(/\.play-hero h1\s*\{[^}]*overflow-wrap:\s*anywhere/s);
