@@ -57,4 +57,10 @@ describe("production mobile product layout", () => {
     expect(css).toMatch(/@media \(max-width: 1030px\).*?\.learn-layout\s*\{\s*grid-template-columns:\s*1fr/s);
     expect(css).toMatch(/@media \(max-width: 1030px\).*?\.puzzles-layout\s*\{\s*grid-template-columns:\s*1fr/s);
   });
+
+  it("keeps Learn lesson actions at accessible touch-target height", () => {
+    const css = readFileSync(new URL("./product-surfaces.css", import.meta.url), "utf8");
+
+    expect(css).toMatch(/\.lesson-secondary,\s*\.lesson-primary\s*\{[^}]*min-height:\s*44px/s);
+  });
 });
