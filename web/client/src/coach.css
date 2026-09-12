@@ -238,7 +238,7 @@
 
 .coach-plan-step > a {
   grid-column: 1 / -1;
-  min-height: 42px;
+  min-height: 44px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -273,6 +273,9 @@
 }
 
 .coach-links a {
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
   border: 1px solid var(--border);
   border-radius: 999px;
   padding: 9px 13px;
