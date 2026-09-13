@@ -51,6 +51,12 @@ describe("production mobile product layout", () => {
     expect(css).toMatch(/\.analysis-transport \.transport-play\s*\{[^}]*width:\s*44px/s);
   });
 
+  it("keeps Analyze detail-mode controls at accessible touch-target height", () => {
+    const css = readFileSync(new URL("./accessibility.css", import.meta.url), "utf8");
+
+    expect(css).toMatch(/\.analysis-card-header \.mode-switch button\s*\{[^}]*min-height:\s*44px/s);
+  });
+
   it("keeps Game Review try-again actions at accessible touch-target height", () => {
     const css = readFileSync(new URL("./accessibility.css", import.meta.url), "utf8");
 
