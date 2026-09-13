@@ -63,4 +63,10 @@ describe("production mobile product layout", () => {
 
     expect(css).toMatch(/\.lesson-secondary,\s*\.lesson-primary\s*\{[^}]*min-height:\s*44px/s);
   });
+
+  it("keeps opening move timeline actions at accessible touch-target height", () => {
+    const css = readFileSync(new URL("./opening-detail.css", import.meta.url), "utf8");
+
+    expect(css).toMatch(/\.opening-move-timeline button\s*\{[^}]*min-height:\s*44px/s);
+  });
 });
