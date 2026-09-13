@@ -40,6 +40,10 @@
   width: 44px;
 }
 
+.analysis-card-header .mode-switch button {
+  min-height: 44px;
+}
+
 .analysis-insight-card .inline-try-again {
   min-height: 44px;
 }
