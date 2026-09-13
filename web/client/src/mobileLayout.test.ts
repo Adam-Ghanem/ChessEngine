@@ -44,6 +44,13 @@ describe("production mobile product layout", () => {
     expect(css).toMatch(/@media \(max-width: 640px\).*?\.fen-board-card\s+\.board-frame\s*\{[^}]*border-radius:\s*0/s);
   });
 
+  it("keeps Analyze transport controls at accessible touch-target size", () => {
+    const css = readFileSync(new URL("./accessibility.css", import.meta.url), "utf8");
+
+    expect(css).toMatch(/\.analysis-transport \.transport-button\s*\{[^}]*width:\s*44px[^}]*height:\s*44px/s);
+    expect(css).toMatch(/\.analysis-transport \.transport-play\s*\{[^}]*width:\s*44px/s);
+  });
+
   it("gives Puzzles the full phone width for the tactical board", () => {
     const css = readFileSync(new URL("./product-surfaces.css", import.meta.url), "utf8");
 
