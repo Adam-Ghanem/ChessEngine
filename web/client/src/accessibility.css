@@ -29,7 +29,7 @@
   scroll-margin-top: 84px;
 }
 
-/* Keep high-frequency Analyze/Game Review transport controls finger-friendly
+/* Keep high-frequency Analyze/Game Review controls finger-friendly
  * regardless of the visual sizing defined by the product composition layer. */
 .analysis-transport .transport-button {
   width: 44px;
@@ -38,4 +38,8 @@
 
 .analysis-transport .transport-play {
   width: 44px;
+}
+
+.analysis-insight-card .inline-try-again {
+  min-height: 44px;
 }

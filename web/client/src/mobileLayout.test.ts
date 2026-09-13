@@ -51,6 +51,12 @@ describe("production mobile product layout", () => {
     expect(css).toMatch(/\.analysis-transport \.transport-play\s*\{[^}]*width:\s*44px/s);
   });
 
+  it("keeps Game Review try-again actions at accessible touch-target height", () => {
+    const css = readFileSync(new URL("./accessibility.css", import.meta.url), "utf8");
+
+    expect(css).toMatch(/\.analysis-insight-card \.inline-try-again\s*\{[^}]*min-height:\s*44px/s);
+  });
+
   it("gives Puzzles the full phone width for the tactical board", () => {
     const css = readFileSync(new URL("./product-surfaces.css", import.meta.url), "utf8");
 
