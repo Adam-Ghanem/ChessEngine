@@ -26,7 +26,7 @@
 .opening-replay-error { display: grid; gap: 4px; margin-top: 12px; padding: 12px 14px; border: 1px solid rgba(239,68,68,.24); border-radius: 10px; color: #fecaca; background: rgba(127,29,29,.14); font-size: .8rem; }
 .opening-replay-error span { color: #fca5a5; }
 .opening-move-timeline { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 12px; padding: 12px; border: 1px solid var(--premium-border); border-radius: 13px; background: rgba(17,23,34,.78); }
-.opening-move-timeline button { min-height: 34px; padding: 0 10px; border: 1px solid transparent; border-radius: 8px; color: var(--iq-text-soft); background: rgba(255,255,255,.04); font: 700 .78rem/1 "Space Grotesk",sans-serif; cursor: pointer; }
+.opening-move-timeline button { min-height: 44px; padding: 0 10px; border: 1px solid transparent; border-radius: 8px; color: var(--iq-text-soft); background: rgba(255,255,255,.04); font: 700 .78rem/1 "Space Grotesk",sans-serif; cursor: pointer; }
 .opening-move-timeline button.is-active { border-color: rgba(217,168,78,.35); color: var(--premium-gold-bright); background: var(--premium-gold-soft); }
 .opening-move-timeline button:disabled { opacity: .38; cursor: not-allowed; }
 .opening-study-rail { overflow: hidden; }
