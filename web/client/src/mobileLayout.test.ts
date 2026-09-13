@@ -45,7 +45,7 @@ describe("production mobile product layout", () => {
   });
 
   it("keeps Analyze transport controls at accessible touch-target size", () => {
-    const css = readFileSync(new URL("./production-redesign.css", import.meta.url), "utf8");
+    const css = readFileSync(new URL("./accessibility.css", import.meta.url), "utf8");
 
     expect(css).toMatch(/\.analysis-transport \.transport-button\s*\{[^}]*width:\s*44px[^}]*height:\s*44px/s);
     expect(css).toMatch(/\.analysis-transport \.transport-play\s*\{[^}]*width:\s*44px/s);
