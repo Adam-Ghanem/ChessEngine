@@ -52,7 +52,7 @@ describe("production mobile product layout", () => {
   });
 
   it("keeps Game Review try-again actions at accessible touch-target height", () => {
-    const css = readFileSync(new URL("./production-redesign.css", import.meta.url), "utf8");
+    const css = readFileSync(new URL("./accessibility.css", import.meta.url), "utf8");
 
     expect(css).toMatch(/\.analysis-insight-card \.inline-try-again\s*\{[^}]*min-height:\s*44px/s);
   });
