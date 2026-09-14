@@ -44,7 +44,7 @@
 .openings-empty { display: grid; justify-items: start; gap: 10px; padding: 30px; border: 1px dashed rgba(217,168,78,.25); border-radius: 16px; background: rgba(17,23,34,.72); }
 .openings-empty h2,.openings-empty p { margin: 0; }
 .openings-empty p { color: var(--iq-text-soft); }
-.openings-empty button { min-height: 40px; margin-top: 6px; padding: 0 14px; border: 1px solid rgba(217,168,78,.25); border-radius: 9px; color: var(--premium-gold-bright); background: var(--premium-gold-soft); font-weight: 800; cursor: pointer; }
+.openings-empty button { min-height: 44px; margin-top: 6px; padding: 0 14px; border: 1px solid rgba(217,168,78,.25); border-radius: 9px; color: var(--premium-gold-bright); background: var(--premium-gold-soft); font-weight: 800; cursor: pointer; }
 
 @media (max-width: 1100px) {
   .openings-eco-filters { grid-template-columns: repeat(3,minmax(0,1fr)); }
