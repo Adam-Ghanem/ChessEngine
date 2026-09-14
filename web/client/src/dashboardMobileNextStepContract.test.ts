@@ -12,6 +12,7 @@ describe("Dashboard mobile next-step contract", () => {
     expect(dashboard).toContain('{nextAction.label}');
     expect(dashboard).toContain('premium-next-panel desktop-dashboard-next-step');
 
+    expect(styles).toMatch(/^\.premium-secondary-action\s*\{[^}]*min-height:\s*44px;/m);
     expect(styles).toMatch(/\.dashboard-mobile-next-step\s*\{[^}]*display:\s*none;/);
     expect(styles).toMatch(/@media \(max-width: 640px\)[\s\S]*\.dashboard-mobile-next-step\s*\{[^}]*display:\s*grid;/);
     expect(styles).toMatch(/@media \(max-width: 640px\)[\s\S]*\.dashboard-mobile-next-step\s*\{[^}]*position:\s*sticky;/);

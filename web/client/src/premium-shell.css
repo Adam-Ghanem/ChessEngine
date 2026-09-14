@@ -88,7 +88,7 @@
 .premium-stat-row span { display: block; color: var(--iq-text-faint); font-size: .72rem; }
 .premium-stat-row strong { display: block; margin-top: 8px; font: 700 1.65rem/1 "Space Grotesk",sans-serif; }
 .premium-next-panel p { color: var(--iq-text-soft); line-height: 1.65; }
-.premium-secondary-action { width: fit-content; min-height: 40px; padding: 0 14px; border: 1px solid rgba(217,168,78,.24); border-radius: 9px; color: var(--premium-gold-bright); background: var(--premium-gold-soft); }
+.premium-secondary-action { width: fit-content; min-height: 44px; padding: 0 14px; border: 1px solid rgba(217,168,78,.24); border-radius: 9px; color: var(--premium-gold-bright); background: var(--premium-gold-soft); }
 .dashboard-mobile-next-step { display: none; }
 .dashboard-mobile-next-step > div { min-width: 0; display: grid; gap: 3px; }
 .dashboard-mobile-next-step span { color: var(--iq-text-faint); font-size: 10px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
