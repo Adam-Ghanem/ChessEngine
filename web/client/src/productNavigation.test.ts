@@ -17,7 +17,8 @@ describe("ChessIQ production product navigation", () => {
     expect(app).toContain('path="/progress"');
     expect(app).toContain('path="/coach"');
     expect(productRoutes.map(route => route.href)).toEqual(["/", "/play", "/puzzles", "/learn", "/learn/openings", "/games", "/analyze", "/coach", "/progress"]);
-    expect(header).toContain("productRoutes.map");
+    expect(header).toContain('import { productRoutes, type ProductPath } from "@/lib/productRoutes"');
+    expect(header).toContain("productRoutes.find");
     expect(header).toContain('href={href}');
   });
 

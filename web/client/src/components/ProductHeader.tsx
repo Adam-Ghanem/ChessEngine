@@ -23,6 +23,12 @@ const routeIcons: Record<ProductPath, typeof Home> = {
   "/progress": BarChart3,
 };
 
+const desktopNavSections: ReadonlyArray<{ label: string; routes: readonly ProductPath[] }> = [
+  { label: "Play", routes: ["/", "/play"] },
+  { label: "Improve", routes: ["/puzzles", "/learn", "/learn/openings", "/coach"] },
+  { label: "Review", routes: ["/games", "/analyze", "/progress"] },
+];
+
 const mobilePrimaryRoutes: ProductPath[] = ["/", "/play", "/puzzles", "/analyze"];
 const mobileMoreRoutes: ProductPath[] = ["/learn", "/learn/openings", "/games", "/coach", "/progress"];
 
@@ -116,23 +122,36 @@ export function ProductHeader({ activePath }: ProductHeaderProps) {
           <BrandMark />
         </Link>
         <nav ref={navRef} className="app-nav premium-sidebar-nav" aria-label="Primary navigation">
-          {productRoutes.map(({ href, label }) => {
-            const isActive = activePath === href;
-            const Icon = routeIcons[href];
-            return (
-              <Link
-                key={href}
-                ref={isActive ? activeLinkRef : undefined}
-                className={`nav-item premium-nav-item ${isActive ? "is-active" : ""}`}
-                href={href}
-                aria-current={isActive ? "page" : undefined}
-                {...routeIntentProps(href)}
-              >
-                <span className="sidebar-nav-icon" aria-hidden="true"><Icon size={18} /></span>
-                <span>{label}</span>
-              </Link>
-            );
-          })}
+          {desktopNavSections.map((section) => (
+            <div
+              key={section.label}
+              className="premium-nav-group"
+              role="group"
+              aria-label={`${section.label} navigation`}
+            >
+              <span className="premium-nav-group-label" aria-hidden="true">{section.label}</span>
+              <div className="premium-nav-group-links">
+                {section.routes.map((href) => {
+                  const route = productRoutes.find((candidate) => candidate.href === href)!;
+                  const isActive = activePath === href;
+                  const Icon = routeIcons[href];
+                  return (
+                    <Link
+                      key={href}
+                      ref={isActive ? activeLinkRef : undefined}
+                      className={`nav-item premium-nav-item ${isActive ? "is-active" : ""}`}
+                      href={href}
+                      aria-current={isActive ? "page" : undefined}
+                      {...routeIntentProps(href)}
+                    >
+                      <span className="sidebar-nav-icon" aria-hidden="true"><Icon size={18} /></span>
+                      <span>{route.label}</span>
+                    </Link>
+                  );
+                })}
+              </div>
+            </div>
+          ))}
         </nav>
         <div className="premium-sidebar-meta" aria-label="ChessIQ product status">
           <span className="premium-badge">Premium workspace</span>
