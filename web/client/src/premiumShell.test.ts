@@ -28,4 +28,18 @@ describe("ChessIQ premium application shell", () => {
     expect(css).toContain(".product-sidebar");
     expect(css).toContain("--premium-gold");
   });
+
+  it("groups the desktop navigation into clear product workflows without changing route ownership", () => {
+    const header = readFileSync(new URL("./components/ProductHeader.tsx", import.meta.url), "utf8");
+    const css = readFileSync(new URL("./premium-shell.css", import.meta.url), "utf8");
+
+    expect(header).toContain("const desktopNavSections");
+    expect(header).toContain('label: "Play"');
+    expect(header).toContain('label: "Improve"');
+    expect(header).toContain('label: "Review"');
+    expect(header).toContain('className="premium-nav-group"');
+    expect(header).toContain('className="premium-nav-group-label"');
+    expect(css).toContain(".premium-nav-group-label");
+    expect(css).toContain(".premium-nav-group");
+  });
 });
