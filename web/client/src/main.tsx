@@ -13,6 +13,7 @@ import "./progress-mobile-nav.css";
 import "./home-play-polish.css";
 import "./play-premium-polish.css";
 import "./analyze-premium-polish.css";
+import "./puzzles-premium-polish.css";
 import "./playMoveListFollow";
 
 createRoot(document.getElementById("root")!).render(<App />);
