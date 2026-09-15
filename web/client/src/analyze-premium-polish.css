@@ -1,0 +1,49 @@
+.analysis-product-shell .analysis-hero {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--premium-border);
+  border-radius: 20px;
+  padding: clamp(22px, 3vw, 36px);
+  background: linear-gradient(135deg, rgba(23,30,42,.96), rgba(12,17,25,.94));
+  box-shadow: 0 24px 64px rgba(0,0,0,.18);
+}
+.analysis-product-shell .analysis-hero::after {
+  content: "";
+  position: absolute;
+  width: 260px;
+  height: 260px;
+  right: -90px;
+  top: -120px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(217,168,78,.16), transparent 68%);
+  pointer-events: none;
+}
+.analysis-product-shell .analysis-hero-copy { position: relative; z-index: 1; max-width: 760px; }
+.analysis-product-shell .analysis-hero-copy h1 { margin: 10px 0 12px; font-size: clamp(2rem, 4vw, 3.65rem); line-height: .98; letter-spacing: -.05em; }
+.analysis-product-shell .analysis-hero-copy p { max-width: 700px; margin: 0; color: var(--iq-text-soft); line-height: 1.65; }
+.analysis-product-shell .analysis-hero-meta { position: relative; z-index: 1; display: grid; grid-template-columns: repeat(3,minmax(0,1fr)); gap: 8px; min-width: min(100%, 330px); }
+.analysis-product-shell .analysis-hero-meta > div { min-width: 0; padding: 13px 14px; border: 1px solid rgba(255,255,255,.07); border-radius: 13px; background: rgba(255,255,255,.035); }
+.analysis-product-shell .analysis-hero-meta span { display: block; color: var(--iq-text-faint); font-size: .66rem; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; }
+.analysis-product-shell .analysis-hero-meta strong { display: block; margin-top: 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.analysis-product-shell .fen-analyze-layout { margin-top: 18px; }
+.analysis-product-shell .analysis-board-card,
+.analysis-product-shell .analysis-command-card { border-color: var(--premium-border); background: linear-gradient(180deg,rgba(23,30,42,.94),rgba(15,21,31,.96)); box-shadow: 0 18px 48px rgba(0,0,0,.15); }
+.analysis-product-shell .fen-analyze-rail { position: sticky; top: 20px; }
+.analysis-product-shell .fen-secondary-action,
+.analysis-product-shell .fen-review-link,
+.analysis-product-shell .game-review-replay button { min-height: 44px; }
+.analysis-product-shell .fen-review-link { border-color: rgba(217,168,78,.24); background: rgba(217,168,78,.1); color: var(--premium-gold-bright); text-decoration: none; }
+.analysis-product-shell .game-review-engine-action { box-shadow: 0 10px 28px rgba(217,168,78,.08); }
+@media (max-width: 1030px) { .analysis-product-shell .fen-analyze-rail { position: static; } }
+@media (max-width: 680px) {
+  .analysis-product-shell .analysis-hero { border-radius: 16px; padding: 20px 16px; }
+  .analysis-product-shell .analysis-hero-copy h1 { font-size: 2.15rem; }
+  .analysis-product-shell .analysis-hero-meta { grid-template-columns: repeat(3,minmax(0,1fr)); width: 100%; }
+  .analysis-product-shell .analysis-hero-meta > div { padding: 10px; }
+  .analysis-product-shell .fen-analyze-layout { margin-top: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .analysis-product-shell .fen-secondary-action,
+  .analysis-product-shell .fen-review-link,
+  .analysis-product-shell .game-review-replay button { transition: none; }
+}
