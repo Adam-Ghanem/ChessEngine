@@ -10,9 +10,9 @@ describe("ChessIQ Games action touch targets", () => {
 
   it("keeps saved-game and history actions at least 44px tall on phones", () => {
     const css = readFileSync(new URL("./games.css", import.meta.url), "utf8");
+    const mobileCss = css.split("@media(max-width:700px)")[1]?.split("@media(max-width:640px)")[0] ?? "";
 
-    expect(css).toContain("@media(max-width:700px)");
-    expect(css).toContain(".games-toolbar button{min-height:44px}");
-    expect(css).toContain(".game-history-actions button,.game-history-actions .primary-action{min-height:44px}");
+    expect(mobileCss).toMatch(/\.games-toolbar button\{[^}]*min-height:44px/);
+    expect(mobileCss).toMatch(/\.game-history-actions button,\.game-history-actions \.primary-action\{[^}]*min-height:44px/);
   });
 });
