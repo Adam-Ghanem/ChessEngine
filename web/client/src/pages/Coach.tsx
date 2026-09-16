@@ -142,7 +142,7 @@ export default function Coach() {
   const PlanIcon = primaryPlan.icon;
 
   return (
-    <main className="app-shell chessiq-shell">
+    <main className="app-shell chessiq-shell premium-product-page">
       <div className="analysis-product-shell coach-product-shell">
         <ProductHeader activePath="/coach" />
 
