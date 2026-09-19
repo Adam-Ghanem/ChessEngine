@@ -134,7 +134,7 @@ export default function Progress() {
         : { href: "/analyze", label: "Open Analyze", detail: "Your current training set is complete. Put the habits to work on a real position." };
 
   return (
-    <main className="app-shell chessiq-shell">
+    <main className="app-shell chessiq-shell premium-product-page">
       <div className="analysis-product-shell progress-product-shell">
         <ProductHeader activePath="/progress" />
 
