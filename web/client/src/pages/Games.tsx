@@ -47,7 +47,7 @@ export default function Games() {
   }
 
   return (
-    <main className="app-shell chessiq-shell">
+    <main className="app-shell chessiq-shell premium-product-page">
       <div className="analysis-product-shell games-product-shell">
         <ProductHeader activePath="/games" />
 
