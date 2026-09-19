@@ -74,3 +74,14 @@
     width: 100%;
   }
 }
+
+@media (max-width: 380px) {
+  .progress-mobile-next-step {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
+  .progress-mobile-next-step .primary-action {
+    width: 100%;
+  }
+}
