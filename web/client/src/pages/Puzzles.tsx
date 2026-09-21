@@ -149,7 +149,7 @@ export default function Puzzles() {
   }
 
   return (
-    <main className="app-shell chessiq-shell">
+    <main className="app-shell chessiq-shell premium-product-page">
       <div className="puzzles-product-shell">
         <ProductHeader activePath="/puzzles" />
         <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
