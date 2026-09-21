@@ -51,7 +51,7 @@ export default function Learn() {
   );
 
   return (
-    <main className="app-shell chessiq-shell">
+    <main className="app-shell chessiq-shell premium-product-page">
       <div className="analysis-product-shell learn-product-shell">
         <ProductHeader activePath="/learn" />
 
