@@ -24,6 +24,15 @@
   .play-product-shell .play-mobile-actions button{min-width:44px;min-height:44px}
 }
 
+@media (forced-colors:active){
+  .play-product-shell button,
+  .play-product-shell a,
+  .play-product-shell .game-panel,
+  .play-product-shell .play-player-bar{border-color:CanvasText}
+  .play-product-shell button:focus-visible,
+  .play-product-shell a:focus-visible{outline:3px solid Highlight;outline-offset:3px}
+}
+
 @media (prefers-reduced-motion:reduce){
   .play-product-shell .play-analyze-link{transition:none}
   .play-product-shell .play-analyze-link:hover{transform:none}
