@@ -6,6 +6,14 @@
 .play-product-shell button:focus-visible,
 .play-product-shell a:focus-visible{outline:2px solid currentColor;outline-offset:3px}
 
+@media (pointer:coarse){
+  .play-product-shell .play-mode-switcher button,
+  .play-product-shell .play-time-control-options button,
+  .play-product-shell .play-difficulty-options button,
+  .play-product-shell .game-panel-actions button,
+  .play-product-shell .play-analyze-link{min-height:48px}
+}
+
 @media (min-width:1031px){
   .play-product-shell .game-panel{border-color:rgba(215,168,79,.14);box-shadow:0 28px 80px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.025)}
   .play-product-shell .game-panel-status{padding:.35rem .25rem .8rem}
