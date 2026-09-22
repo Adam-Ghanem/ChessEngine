@@ -9,7 +9,7 @@ describe("Play premium polish contract", () => {
     expect(main).toContain('import "./play-premium-polish.css"');
     expect(css).toMatch(/\.game-panel-actions button\s*\{[^}]*min-height:\s*44px/);
     expect(css).toMatch(/\.play-analyze-link\s*\{[^}]*min-height:\s*44px/);
-    expect(css).toContain("bottom:calc(76px + env(safe-area-inset-bottom))");
+    expect(css).toContain("bottom:calc(84px + env(safe-area-inset-bottom,0px))");
     expect(css).toContain("@media (prefers-reduced-motion:reduce)");
   });
 });
