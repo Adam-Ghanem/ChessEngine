@@ -1,5 +1,10 @@
 .play-product-shell .game-panel-actions button{min-height:44px}
 .play-product-shell .play-analyze-link{min-height:44px}
+.play-product-shell .play-mode-switcher button,
+.play-product-shell .play-time-control-options button,
+.play-product-shell .play-difficulty-options button{min-height:44px}
+.play-product-shell button:focus-visible,
+.play-product-shell a:focus-visible{outline:2px solid currentColor;outline-offset:3px}
 
 @media (min-width:1031px){
   .play-product-shell .game-panel{border-color:rgba(215,168,79,.14);box-shadow:0 28px 80px rgba(0,0,0,.32),inset 0 1px 0 rgba(255,255,255,.025)}
@@ -13,6 +18,10 @@
   .play-product-shell .play-player-bar{background:linear-gradient(145deg,rgba(21,28,40,.98),rgba(11,16,24,.98));box-shadow:0 10px 28px rgba(0,0,0,.2)}
   .play-product-shell .play-mobile-actions{bottom:calc(76px + env(safe-area-inset-bottom));margin-bottom:.35rem}
   .play-product-shell .game-panel{margin-bottom:5.5rem}
+  .play-product-shell .play-time-control-options,
+  .play-product-shell .play-difficulty-options{scroll-margin-inline:1rem}
+  .play-product-shell .play-mobile-actions a,
+  .play-product-shell .play-mobile-actions button{min-width:44px;min-height:44px}
 }
 
 @media (prefers-reduced-motion:reduce){
