@@ -41,6 +41,24 @@
   .puzzles-product-shell .puzzles-stats { width: 100%; }
   .puzzles-product-shell .puzzle-mobile-action-dock { bottom: calc(84px + env(safe-area-inset-bottom)); z-index: 46; }
 }
+@media (forced-colors: active) {
+  .puzzles-product-shell .puzzles-hero,
+  .puzzles-product-shell .puzzles-stats > div,
+  .puzzles-product-shell .puzzle-queue,
+  .puzzles-product-shell .puzzle-stage {
+    border-color: CanvasText;
+    background: Canvas;
+    box-shadow: none;
+    forced-color-adjust: auto;
+  }
+  .puzzles-product-shell .puzzles-hero::after { display: none; }
+  .puzzles-product-shell .puzzles-hero p { color: CanvasText; }
+  .puzzles-product-shell .puzzle-queue-list button.is-active {
+    border-color: Highlight;
+    background: Canvas;
+    box-shadow: inset 2px 0 Highlight;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .puzzles-product-shell .puzzle-queue-list button,
   .puzzles-product-shell .puzzle-reset,
