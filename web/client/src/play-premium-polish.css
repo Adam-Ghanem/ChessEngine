@@ -31,7 +31,7 @@
   .play-product-shell .play-time-control-options,
   .play-product-shell .play-difficulty-options{scroll-margin-inline:1rem}
   .play-product-shell .play-mobile-actions a,
-  .play-product-shell .play-mobile-actions button{min-width:44px;min-height:44px}
+  .play-product-shell .play-mobile-actions button{min-width:48px;min-height:48px}
 }
 
 @media (forced-colors:active){
