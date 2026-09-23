@@ -92,6 +92,12 @@
     background: Canvas;
     forced-color-adjust: auto;
   }
+
+  .game-review-side-performance__heading small,
+  .game-review-side-performance__card-head span,
+  .game-review-side-performance__card dt {
+    color: CanvasText;
+  }
 }
 
 @media (max-width: 640px) {
