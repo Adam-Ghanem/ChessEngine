@@ -42,6 +42,22 @@
   .analysis-product-shell .analysis-hero-meta > div { padding: 10px; }
   .analysis-product-shell .fen-analyze-layout { margin-top: 12px; }
 }
+@media (forced-colors: active) {
+  .analysis-product-shell .analysis-hero,
+  .analysis-product-shell .analysis-hero-meta > div,
+  .analysis-product-shell .analysis-board-card,
+  .analysis-product-shell .analysis-command-card {
+    border-color: CanvasText;
+    background: Canvas;
+    box-shadow: none;
+    forced-color-adjust: auto;
+  }
+  .analysis-product-shell .analysis-hero::after { display: none; }
+  .analysis-product-shell .analysis-hero-copy p,
+  .analysis-product-shell .analysis-hero-meta span,
+  .analysis-product-shell .fen-review-link { color: CanvasText; }
+  .analysis-product-shell .fen-review-link { border-color: LinkText; }
+}
 @media (prefers-reduced-motion: reduce) {
   .analysis-product-shell .fen-secondary-action,
   .analysis-product-shell .fen-review-link,
