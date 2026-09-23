@@ -11,6 +11,8 @@
   .play-product-shell .play-time-control-options button,
   .play-product-shell .play-difficulty-options button,
   .play-product-shell .game-panel-actions button,
+  .play-product-shell .play-mobile-actions a,
+  .play-product-shell .play-mobile-actions button,
   .play-product-shell .play-analyze-link{min-height:48px}
 }
 
