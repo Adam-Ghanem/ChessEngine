@@ -85,6 +85,15 @@
   line-height: 1.2;
 }
 
+@media (forced-colors: active) {
+  .game-review-side-performance,
+  .game-review-side-performance__card {
+    border-color: CanvasText;
+    background: Canvas;
+    forced-color-adjust: auto;
+  }
+}
+
 @media (max-width: 640px) {
   .game-review-side-performance__heading {
     align-items: flex-start;
