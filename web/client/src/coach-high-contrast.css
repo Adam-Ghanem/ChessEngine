@@ -1,0 +1,46 @@
+@media (forced-colors: active) {
+  .coach-trust-card,
+  .coach-stat-card,
+  .coach-plan,
+  .coach-plan-step,
+  .coach-principles,
+  .coach-mobile-next-step {
+    border-color: CanvasText;
+    background: Canvas;
+    color: CanvasText;
+    box-shadow: none;
+  }
+
+  .coach-plan-icon,
+  .coach-plan-step-icon {
+    border: 1px solid CanvasText;
+    background: Canvas;
+    color: CanvasText;
+  }
+
+  .coach-mobile-next-step-copy span,
+  .coach-plan-copy > span,
+  .coach-plan-step-number {
+    color: Highlight;
+  }
+
+  .coach-mobile-next-step a {
+    border: 1px solid ButtonText;
+    background: ButtonFace;
+    color: ButtonText;
+    forced-color-adjust: auto;
+  }
+
+  .coach-plan-step > a,
+  .coach-links a {
+    border-color: LinkText;
+    color: LinkText;
+  }
+
+  .coach-mobile-next-step a:focus-visible,
+  .coach-plan-step > a:focus-visible,
+  .coach-links a:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 3px;
+  }
+}

@@ -8,6 +8,7 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import { productRouteLoaders } from "./lib/productRouteLoaders";
 import { documentTitleForPath } from "./lib/routeDocumentTitle";
+import "./coach-high-contrast.css";
 
 const Dashboard = lazy(productRouteLoaders["/"]);
 const Analyze = lazy(productRouteLoaders["/analyze"]);
