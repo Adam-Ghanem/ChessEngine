@@ -48,6 +48,24 @@
   .learn-product-shell .learn-mobile-action-dock .lesson-secondary,
   .learn-product-shell .learn-mobile-action-dock .lesson-primary { min-height: 48px; }
 }
+@media (forced-colors: active) {
+  .learn-product-shell .learn-hero,
+  .learn-product-shell .learn-hero-stat,
+  .learn-product-shell .lesson-card,
+  .learn-product-shell .lesson-workspace {
+    border-color: CanvasText;
+    background: Canvas;
+    box-shadow: none;
+    forced-color-adjust: auto;
+  }
+  .learn-product-shell .learn-hero::after { display: none; }
+  .learn-product-shell .learn-hero p { color: CanvasText; }
+  .learn-product-shell .lesson-card.is-active {
+    border-color: Highlight;
+    background: Canvas;
+    box-shadow: inset 2px 0 Highlight;
+  }
+}
 @media (prefers-reduced-motion: reduce) {
   .learn-product-shell .lesson-card,
   .learn-product-shell .lesson-secondary,
