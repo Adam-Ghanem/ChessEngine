@@ -24,9 +24,17 @@ const NotFound = lazy(() => import("./pages/NotFound"));
 
 function RouteLoadingState() {
   return (
-    <main className="flex min-h-screen items-center justify-center bg-background px-6 text-foreground" role="status" aria-live="polite" aria-busy="true">
+    <main
+      className="flex min-h-screen items-center justify-center bg-background px-6 text-foreground"
+      role="status"
+      aria-live="polite"
+      aria-busy="true"
+    >
       <div className="flex max-w-sm flex-col items-center gap-3 text-center">
-        <div className="h-8 w-8 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-foreground motion-reduce:animate-none" aria-hidden="true" />
+        <div
+          className="h-8 w-8 animate-spin rounded-full border-2 border-muted-foreground/30 border-t-foreground motion-reduce:animate-none"
+          aria-hidden="true"
+        />
         <p className="text-sm font-medium text-muted-foreground">Loading ChessIQ workspace…</p>
       </div>
     </main>
@@ -35,15 +43,27 @@ function RouteLoadingState() {
 
 function RouteDocumentTitle() {
   const [location] = useLocation();
-  useEffect(() => { document.title = documentTitleForPath(location); }, [location]);
+
+  useEffect(() => {
+    document.title = documentTitleForPath(location);
+  }, [location]);
+
   return null;
 }
 
 function RouteAnnouncement() {
   const [location] = useLocation();
   const [announcement, setAnnouncement] = useState("");
-  useEffect(() => { setAnnouncement(`Navigated to ${documentTitleForPath(location)}`); }, [location]);
-  return <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">{announcement}</p>;
+
+  useEffect(() => {
+    setAnnouncement(`Navigated to ${documentTitleForPath(location)}`);
+  }, [location]);
+
+  return (
+    <p className="sr-only" role="status" aria-live="polite" aria-atomic="true">
+      {announcement}
+    </p>
+  );
 }
 
 function RouteFocusManagement() {
@@ -61,6 +81,7 @@ function RouteFocusManagement() {
         heading.focus();
         return true;
       }
+
       const target = document.getElementById("main-content");
       if (!target) return false;
       target.focus();
@@ -68,10 +89,17 @@ function RouteFocusManagement() {
     };
 
     if (focusMainContent()) return;
-    const observer = new MutationObserver(() => { if (focusMainContent()) observer.disconnect(); });
+
+    const observer = new MutationObserver(() => {
+      if (focusMainContent()) observer.disconnect();
+    });
     observer.observe(document.body, { childList: true, subtree: true });
+
     const timeoutId = window.setTimeout(() => observer.disconnect(), 2000);
-    return () => { observer.disconnect(); window.clearTimeout(timeoutId); };
+    return () => {
+      observer.disconnect();
+      window.clearTimeout(timeoutId);
+    };
   }, [location]);
 
   return null;
