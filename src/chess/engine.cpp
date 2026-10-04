@@ -100,6 +100,7 @@ constexpr std::array<int, 64> KingEndgameTable = {
     -30,-10,  0,  0,  0,  0,-10,-30,
     -30,  0, 20, 30, 30, 20,  0,-30,
     -30,  0, 30, 40, 40, 30,  0,-30,
+    -30,  0, 30, 40, 40, 30,  0,-30,
     -30,  0, 20, 30, 30, 20,  0,-30,
     -30,-10,  0,  0,  0,  0,-10,-30,
     -50,-30,-30,-30,-30,-30,-30,-50
@@ -215,8 +216,8 @@ int pawnStructure(const Position& p) noexcept {
         const Bitboard adjacent =
             (file > 0 ? fileMask(file - 1) : 0ULL) |
             (file < 7 ? fileMask(file + 1) : 0ULL);
-        if (wc == 0 && (wp & adjacent) == 0) score -= 10;
-        if (bc == 0 && (bp & adjacent) == 0) score += 10;
+        if (wc > 0 && (wp & adjacent) == 0) score -= 10 * wc;
+        if (bc > 0 && (bp & adjacent) == 0) score += 10 * bc;
     }
     for (int sq = 0; sq < 64; ++sq) {
         const Bitboard bit = 1ULL << sq;
