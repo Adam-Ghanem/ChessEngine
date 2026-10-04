@@ -22,6 +22,7 @@ The engine has completed the core chess pipeline through PERFT and now has a sub
 - **M22:** null-move pruning with reversible state support and regression coverage
 - **M22.2:** late move reductions for quiet, non-critical moves with tactical safeguards
 - **M22.3:** shallow futility pruning with score-preservation regression coverage
+- **M23:** evaluation correctness hardening: real isolated-pawn detection, per-pawn isolation penalties, a complete symmetric 64-square king endgame table, and dedicated regression coverage
 - **CI:** Release build plus AddressSanitizer/UndefinedBehaviorSanitizer verification
 
 Correctness remains the priority: the existing PERFT suite is kept as a regression gate before search changes are considered complete.
