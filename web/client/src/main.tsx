@@ -10,6 +10,7 @@ import "./accessibility.css";
 import "./premium-shell.css";
 import "./mobile-navigation.css";
 import "./progress-mobile-nav.css";
+import "./progress-high-contrast.css";
 import "./home-play-polish.css";
 import "./play-premium-polish.css";
 import "./analyze-premium-polish.css";

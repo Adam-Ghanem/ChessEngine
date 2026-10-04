@@ -1,0 +1,58 @@
+@media (forced-colors: active) {
+  .progress-score,
+  .progress-card,
+  .progress-results,
+  .progress-review,
+  .progress-focus,
+  .progress-evidence > div,
+  .progress-results-grid > div,
+  .progress-review-grid > div,
+  .progress-form-result,
+  .progress-mobile-next-step {
+    border-color: CanvasText;
+    background: Canvas;
+    color: CanvasText;
+    box-shadow: none;
+  }
+
+  .progress-card-icon,
+  .progress-focus-icon {
+    border: 1px solid CanvasText;
+    background: Canvas;
+    color: CanvasText;
+  }
+
+  .progress-score strong,
+  .progress-activity > span,
+  .progress-results-grid > div:first-child dd,
+  .progress-review-grid > div:first-child dd,
+  .progress-review-grid > div:nth-child(3) dd,
+  .progress-review-grid > div:nth-child(4) dd {
+    color: Highlight;
+  }
+
+  .progress-meter {
+    border: 1px solid CanvasText;
+    background: Canvas;
+  }
+
+  .progress-meter > span {
+    background: Highlight;
+  }
+
+  .progress-primary,
+  .progress-review-action,
+  .progress-mobile-next-step .primary-action {
+    border: 1px solid ButtonText;
+    background: ButtonFace;
+    color: ButtonText;
+    forced-color-adjust: auto;
+  }
+
+  .progress-primary:focus-visible,
+  .progress-review-action:focus-visible,
+  .progress-mobile-next-step .primary-action:focus-visible {
+    outline: 2px solid Highlight;
+    outline-offset: 3px;
+  }
+}
